@@ -1,0 +1,61 @@
+{
+    "Name": "dossier_nameserver_CL",
+    "Properties": [
+        {
+            "Name": "task_id",
+            "Type": "string"
+        },
+        {
+            "Name": "params",
+            "Type": "dynamic"
+        },
+        {
+            "Name": "params_type",
+            "Type": "string"
+        },
+        {
+            "Name": "params_target",
+            "Type": "string"
+        },
+        {
+            "Name": "params_source",
+            "Type": "string"
+        },
+        {
+            "Name": "status",
+            "Type": "string"
+        },
+        {
+            "Name": "time_value",
+            "Type": "real"
+        },
+        {
+            "Name": "v_value",
+            "Type": "string"
+        },
+        {
+            "Name": "data",
+            "Type": "dynamic"
+        },
+        {
+            "Name": "status_message_for_dossier",
+            "Type": "string"
+        },
+        {
+            "Name": "TimeGenerated",
+            "Type": "datetime"
+        },
+        {
+            "Name": "TenantId",
+            "Type": "string"
+        },
+        {
+            "Name": "Type",
+            "Type": "string"
+        },
+        {
+            "Name": "_ResourceId",
+            "Type": "string"
+        }
+    ]
+}

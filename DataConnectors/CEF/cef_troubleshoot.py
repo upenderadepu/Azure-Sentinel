@@ -9,11 +9,11 @@
 # Supported OS:
 #   64-bit
 #       CentOS 7 and 8
-#       Amazon Linux 2017.09
-#       Oracle Linux 7
+#       Amazon Linux 2017.09 and Amazon Linux 2
+#       Oracle Linux 7, 8
 #       Red Hat Enterprise Linux Server 7 and 8
 #       Debian GNU/Linux 8 and 9
-#       Ubuntu Linux 14.04 LTS, 16.04 LTS and 18.04 LTS
+#       Ubuntu Linux 14.04 LTS, 16.04 LTS, 18.04 LTS and 20.04 LTS
 #       SUSE Linux Enterprise Server 12, 15
 #   32-bit
 #       CentOS 7 and 8
@@ -30,6 +30,7 @@ import sys
 import select
 import subprocess
 import time
+import re
 
 daemon_port = "514"
 agent_port = "25226"
@@ -689,6 +690,52 @@ def check_portal_auto_sync():
     return True
 
 
+def is_agent_version_with_patch(installed_version_major, installed_version_minor, installed_version_patch):
+    """
+    Return: True if the agent version is newer/the same as the one containing the OMI patch. Otherwise  False
+    """
+    VERSION_MAJOR = 1
+    VERSION_MINOR = 17
+    VERSION_PATCH = 2
+    if (installed_version_major > VERSION_MAJOR or
+            (installed_version_major == VERSION_MAJOR and installed_version_minor > VERSION_MINOR) or
+            (
+                    installed_version_major == VERSION_MAJOR and installed_version_minor == VERSION_MINOR and installed_version_patch >= VERSION_PATCH)):
+        return True
+    return False
+
+
+def omi_vulnerability_patch_validation():
+    """
+    Return: True is OMI Vulnerability patch is installed. Otherwise false.
+    """
+    print_notice("Validating that the OMI vulnerability patch is installed.")
+    try:
+        OMI_version = subprocess.Popen(["dpkg", "-l"], stdout=subprocess.PIPE)
+    except Exception:
+        OMI_version = subprocess.Popen(["rpm", "-qa"], stdout=subprocess.PIPE)
+    grep = subprocess.Popen(["grep", "omsagent"], stdin=OMI_version.stdout, stdout=subprocess.PIPE)
+    o, e = grep.communicate()
+    if e is not None:
+        print_error("Error: Could not validate omsagent version.")
+        return False
+    else:
+        content = o.decode(encoding='UTF-8')
+        agent_version = re.search("\\d+.\\d+.\\d+", content).group()
+        if agent_version is None:
+            print_error("Error: Could not validate omsagent version.")
+            return False
+        agent_subversion_list = agent_version.split('.')
+        installed_version_major, installed_version_minor, installed_version_patch = int(agent_subversion_list[0]), int(
+            agent_subversion_list[1]), int(agent_subversion_list[2])
+        if is_agent_version_with_patch(installed_version_major, installed_version_minor, installed_version_patch):
+            print_ok("Protected from OMI vulnerability, patch is installed.")
+            return True
+        print_error(
+            "The patch installation is missing and the OMI vulnerability still exists. Please re-install the agent completely.")
+        return False
+
+
 def print_full_disk_warning():
     warn_message = "Warning: please make sure your logging daemon configuration does not store unnecessary logs. " \
                    "This may cause a full disk on your machine, which will disrupt the function of the oms agent installed." \
@@ -735,6 +782,7 @@ def main():
     if not incoming_logs_validations(agent_port, "Mock messages sent and received in daemon incoming port [" + daemon_port + "] and to the omsagent port [" + agent_port + "].", mock_message=True):
         print_error("Please make sure that traffic to the syslog daemon on port " + daemon_port + " and to the OMS agent on port " + agent_port + " are enabled on the internal firewall of the machine")
     check_portal_auto_sync()
+    omi_vulnerability_patch_validation()
     print_full_disk_warning()
     print_ok("Completed troubleshooting.")
     print(

@@ -1,0 +1,54 @@
+id: c6258d51-7b82-4942-8293-94c1dcf91595
+name: API - Rate limiting
+description: |
+  '42Crunch API protection against first-time access'
+severity: Low
+requiredDataConnectors:
+  - connectorId: 42CrunchAPIProtection
+    dataTypes:
+      - FortyTwoCrunchAPIProtection
+  - connectorId: FortyTwoCrunchAPIProtection
+    dataTypes:
+      - FortyTwoCrunchAPIProtection
+queryFrequency: 1d
+queryPeriod: 7d
+triggerOperator: gt
+triggerThreshold: 0
+eventGroupingSettings:
+  aggregationKind: SingleAlert
+status: Available
+tactics:
+  - Discovery
+  - InitialAccess
+relevantTechniques:
+  - T1087
+  - T1190
+query: |
+  let firstRec = FortyTwoCrunchAPIProtection
+  | where TimeGenerated >= ago(5m) 
+  | project-away NonBlockingMode, SourcePort, DestinationPort, Query, ApiId, RequestHeader, ResponseHeader, Errors, EventType, Uuid
+  | where UriPath has "/api/login" |
+  top 1 by Timestamp desc;
+  let ipAddress = toscalar(firstRec | summarize by SourceIp);
+  let secondRec = FortyTwoCrunchAPIProtection
+  | where TimeGenerated >= ago(7d) 
+  | project-away NonBlockingMode, SourcePort, DestinationPort, Query, ApiId, RequestHeader, ResponseHeader, Errors, EventType, Uuid
+  | where UriPath has "/api/login" and SourceIp == ipAddress;
+  let recCount = iff((toscalar(secondRec | count) > 1), 0, 1);
+  secondRec | take recCount
+customDetails:
+entityMappings:
+  - entityType: IP
+    fieldMappings:
+      - identifier: Address
+        columnName: SourceIp
+  - entityType: Host
+    fieldMappings:
+      - identifier: HostName
+        columnName: Hostname
+  - entityType: Account
+    fieldMappings:
+      - identifier: FullName
+        columnName: InstanceName
+version: 3.0.1
+kind: Scheduled

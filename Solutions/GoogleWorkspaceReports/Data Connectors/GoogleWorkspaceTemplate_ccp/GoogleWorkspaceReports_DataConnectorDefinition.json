@@ -1,0 +1,161 @@
+{
+  "type": "Microsoft.SecurityInsights/dataConnectorDefinitions",
+  "apiVersion": "2024-09-01",
+  "name": "GoogleWorkspaceCCPDefinition",
+  "location": "{{location}}",
+  "kind": "Customizable",
+  "properties": {
+    "connectorUiConfig": {
+      "id": "GoogleWorkspaceCCPDefinition",
+      "title": "Google Workspace Activities (via Codeless Connector Framework)",
+      "publisher": "Microsoft",
+      "descriptionMarkdown": "The [Google Workspace](https://workspace.google.com/) Activities data connector provides the capability to ingest Activity Events, including Gmail audit events, from the [Google Workspace API](https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list) into Microsoft Sentinel.",
+      "graphQueriesTableName": "GoogleWorkspaceReports",
+      "graphQueries": [
+        {
+          "metricName": "Total data received",
+          "legend": "Google Workspace Activity Logs",
+          "baseQuery": "{{graphQueriesTableName}}"
+        }
+      ],
+      "sampleQueries": [
+        {
+          "description": "Google Workspace Events - All Activities",
+          "query": "{{graphQueriesTableName}}\n | take 10"
+        }
+      ],
+      "dataTypes": [
+        {
+          "name": "{{graphQueriesTableName}}",
+          "lastDataReceivedQuery": "{{graphQueriesTableName}}\n | summarize Time = max(TimeGenerated)\n | where isnotempty(Time)"
+        }
+      ],
+      "connectivityCriteria": [
+        {
+          "type": "HasDataConnectors"
+        },
+        {
+          "type": "IsConnectedQuery",
+          "value": [
+            "{{graphQueriesTableName}} | where TimeGenerated > ago(1h) | take 1"
+          ]
+        }
+      ],
+      "availability": {
+        "isPreview": false,
+        "status": 1
+      },
+      "permissions": {
+        "resourceProvider": [
+          {
+            "provider": "Microsoft.OperationalInsights/workspaces",
+            "permissionsDisplayText": "Read and Write permissions are required.",
+            "providerDisplayName": "Workspace",
+            "scope": "Workspace",
+            "requiredPermissions": {
+              "write": true,
+              "read": true,
+              "delete": true,
+              "action": false
+            }
+          }
+        ],
+        "customs": [
+          {
+            "name": "Google Workspace API access",
+            "description": "Access to the Google Workspace activities API through OAuth is required."
+          }
+        ]
+      },
+      "instructionSteps": [
+        {
+          "title": "Connect to Google Workspace",
+          "description": "Add and manage independent Google Workspace tenant connections.",
+          "instructions": [
+            {
+              "type": "Markdown",
+              "parameters": {
+                "content": "#### Configuration steps for the Google Reports API\n\n1. In Google Cloud Console, enable the **Admin SDK API**.\n2. Configure the OAuth consent screen.\n3. Create an OAuth 2.0 Client ID for a web application.\n4. Add the redirect URI shown by the connection form.\n5. Add the Admin SDK audit read-only scope."
+              }
+            },
+            {
+              "type": "InfoMessage",
+              "parameters": {
+                "text": "Create a separate connection alias for each Google Workspace tenant.",
+                "visible": true,
+                "inline": true
+              }
+            },
+            {
+              "type": "DataConnectorsGrid",
+              "parameters": {
+                "mapping": [
+                  {
+                    "columnName": "Connection Alias",
+                    "columnValue": "properties.addOnAttributes.friendlyName"
+                  },
+                  {
+                    "columnName": "Activity Type",
+                    "columnValue": "properties.addOnAttributes.dataType"
+                  }
+                ],
+                "menuItems": [
+                  "DeleteConnector"
+                ]
+              }
+            },
+            {
+              "type": "ContextPane",
+              "parameters": {
+                "isPrimary": true,
+                "label": "Add Connection",
+                "title": "Connect a Google Workspace tenant",
+                "subtitle": "Google Workspace Activities",
+                "contextPaneType": "DataConnectorsContextPane",
+                "instructionSteps": [
+                  {
+                    "title": "Authorize Google Workspace",
+                    "instructions": [
+                      {
+                        "type": "Textbox",
+                        "parameters": {
+                          "label": "Connection Alias",
+                          "placeholder": "Production or Contoso",
+                          "type": "text",
+                          "name": "friendlyName",
+                          "validations": {
+                            "required": true
+                          }
+                        }
+                      },
+                      {
+                        "type": "InfoMessage",
+                        "parameters": {
+                          "text": "Use a unique alias for each Google Workspace tenant. All 22 activity pollers created from this pane use the same alias for their OAuth credentials.",
+                          "visible": true,
+                          "inline": true
+                        }
+                      },
+                      {
+                        "type": "OAuthForm",
+                        "parameters": {
+                          "clientIdLabel": "Client ID",
+                          "clientSecretLabel": "Client Secret",
+                          "connectButtonLabel": "Authenticate",
+                          "disconnectButtonLabel": "Disconnect",
+                          "isMultiRule": true,
+                          "showRedirectUri": true,
+                          "sendRedirectUri": true
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

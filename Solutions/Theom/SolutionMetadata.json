@@ -1,0 +1,19 @@
+{
+    "publisherId": "azuresentinel",
+    "offerId": "azure-sentinel-solution-theom",
+    "firstPublishDate": "2022-11-04",
+    "providers": [
+      "Theom"
+    ],
+    "categories": {
+      "domains": [
+        "Security - Cloud Security"
+      ]
+    },
+    "support": {
+      "name": "Microsoft",
+      "email": "support@microsoft.com",
+      "tier": "Microsoft",
+      "link": "https://support.microsoft.com"
+    }
+}

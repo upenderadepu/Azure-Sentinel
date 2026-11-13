@@ -1,0 +1,101 @@
+{
+    "Name": "InfobloxInsightIndicators_CL",
+    "Properties": [
+        {
+            "Name": "TenantId",
+            "Type": "String"
+        },
+        {
+            "Name": "SourceSystem",
+            "Type": "String"
+        },
+        {
+            "Name": "MG",
+            "Type": "String"
+        },
+        {
+            "Name": "ManagementGroupName",
+            "Type": "String"
+        },
+        {
+            "Name": "TimeGenerated",
+            "Type": "DateTime"
+        },
+        {
+            "Name": "Computer",
+            "Type": "String"
+        },
+        {
+            "Name": "RawData",
+            "Type": "String"
+        },
+        {
+            "Name": "status",
+            "Type": "Dynamic"
+        },
+        {
+            "Name": "verified_assets",
+            "Type": "Dynamic"
+        },
+        {
+            "Name": "total_events",
+            "Type": "Int"
+        },
+        {
+            "Name": "threat_level",
+            "Type": "Int"
+        },
+        {
+            "Name": "threat_indicator",
+            "Type": "String"
+        },
+        {
+            "Name": "detected_at",
+            "Type": "String"
+        },
+        {
+            "Name": "unverified_assets",
+            "Type": "Dynamic"
+        },
+        {
+            "Name": "users",
+            "Type": "Dynamic"
+        },
+        {
+            "Name": "description",
+            "Type": "String"
+        },
+        {
+            "Name": "threat_actors",
+            "Type": "Dynamic"
+        },
+        {
+            "Name": "confidence_level",
+            "Type": "Int"
+        },
+        {
+            "Name": "first_detected",
+            "Type": "String"
+        },
+        {
+            "Name": "last_detected",
+            "Type": "String"
+        },
+        {
+            "Name": "InfobloxInsightID",
+            "Type": "String"
+        },
+        {
+            "Name": "InfobloxInsightLogType",
+            "Type": "String"
+        },
+        {
+            "Name": "Type",
+            "Type": "String"
+        },
+        {
+            "Name": "_ResourceId",
+            "Type": "String"
+        }
+    ]
+}

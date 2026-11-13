@@ -1,0 +1,113 @@
+{
+    "Name": "dossier_dns_CL",
+    "Properties": [
+        {
+            "Name": "task_id",
+            "Type": "string"
+        },
+        {
+            "Name": "params",
+            "Type": "dynamic"
+        },
+        {
+            "Name": "params_type",
+            "Type": "string"
+        },
+        {
+            "Name": "params_target",
+            "Type": "string"
+        },
+        {
+            "Name": "params_source",
+            "Type": "string"
+        },
+        {
+            "Name": "status",
+            "Type": "string"
+        },
+        {
+            "Name": "time_value",
+            "Type": "real"
+        },
+        {
+            "Name": "v_value",
+            "Type": "string"
+        },
+        {
+            "Name": "data",
+            "Type": "dynamic"
+        },
+        {
+            "Name": "data_A",
+            "Type": "dynamic"
+        },
+        {
+            "Name": "data_AAAA",
+            "Type": "dynamic"
+        },
+        {
+            "Name": "data_CERT",
+            "Type": "dynamic"
+        },
+        {
+            "Name": "data_CNAME",
+            "Type": "dynamic"
+        },
+        {
+            "Name": "data_HTTPS",
+            "Type": "dynamic"
+        },
+        {
+            "Name": "data_MX",
+            "Type": "dynamic"
+        },
+        {
+            "Name": "data_NS",
+            "Type": "dynamic"
+        },
+        {
+            "Name": "data_SOA",
+            "Type": "dynamic"
+        },
+        {
+            "Name": "data_SVCB",
+            "Type": "dynamic"
+        },
+        {
+            "Name": "data_TSIG",
+            "Type": "dynamic"
+        },
+        {
+            "Name": "data_TXT",
+            "Type": "dynamic"
+        },
+        {
+            "Name": "data_rcode",
+            "Type": "string"
+        },
+        {
+            "Name": "status_message_for_dossier",
+            "Type": "string"
+        },
+        {
+            "Name": "TimeGenerated",
+            "Type": "datetime"
+        },
+        {
+            "Name": "RowData",
+            "Type": "dynamic"
+        },
+        {
+            "Name": "TenantId",
+            "Type": "string"
+        },
+        {
+            "Name": "Type",
+            "Type": "string"
+        },
+        {
+            "Name": "_ResourceId",
+            "Type": "string"
+        }
+    ]
+}

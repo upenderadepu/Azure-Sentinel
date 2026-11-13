@@ -1,0 +1,25 @@
+id: d218204e-3d8f-566e-ac43-e74ff300a09d
+Function:
+  Title: corelight_files_red parser for Corelight
+  Version: '2.0.0'
+  LastUpdated: '2026-08-17'
+Category: Microsoft Sentinel Parser
+FunctionName: corelight_files_red
+FunctionAlias: corelight_files_red
+FunctionQuery: |+
+  let dummy_table = datatable(TimeGenerated: datetime) [];
+  let corelight_files_red = view () {
+      union isfuzzy=true Corelight_v3_files_red_CL, dummy_table
+        | extend
+            _path=path,
+            _system_name=system_name,
+            _write_ts=write_ts
+      | extend
+          EventVendor="Corelight",
+          EventProduct="CorelightSensor",
+          EventType="files_red",
+          ts=TimeGenerated
+  };
+  corelight_files_red
+
+...

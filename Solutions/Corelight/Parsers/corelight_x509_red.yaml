@@ -1,0 +1,25 @@
+id: 5d0f3956-e370-5df0-92be-cda1cc503d09
+Function:
+  Title: corelight_x509_red parser for Corelight
+  Version: '2.0.0'
+  LastUpdated: '2026-08-17'
+Category: Microsoft Sentinel Parser
+FunctionName: corelight_x509_red
+FunctionAlias: corelight_x509_red
+FunctionQuery: |+
+  let dummy_table = datatable(TimeGenerated: datetime) [];
+  let corelight_x509_red = view () {
+      union isfuzzy=true Corelight_v3_x509_red_CL, dummy_table
+        | extend
+            _path=path,
+            _system_name=system_name,
+            _write_ts=write_ts
+      | extend
+          EventVendor="Corelight",
+          EventProduct="CorelightSensor",
+          EventType="x509_red",
+          ts=TimeGenerated
+  };
+  corelight_x509_red
+
+...

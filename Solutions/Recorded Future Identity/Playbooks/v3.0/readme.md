@@ -1,0 +1,455 @@
+# Recorded Future Identity Installation Guide
+
+### This is a readme for the old version of Recorded Future Identity, for the new version based on Playbook Alerts, see [readme](../readme.md)
+
+> [!IMPORTANT]
+> ### Log Ingestion API migration (deadline: 2026-09-14)
+>
+> These playbooks previously used the deprecated Azure Log Analytics Data Collector connector, which Microsoft is retiring on September 14, 2026. They have been updated to use the Log Ingestion API via a Data Collection Endpoint (DCE) and Data Collection Rules (DCRs).
+>
+> Notable solution changes:
+> - `RFI-lookup-and-save-user`, `RFI-search-external-user`, and `RFI-search-workforce-user` now authenticate to Log Analytics via managed identity and route data through a DCE and DCRs rather than a shared workspace key.
+> - The Log Analytics table names have changed. The following tables are created by the new Data Connectors infrastructure (step 1):
+>   - `RFI_UsersLookupResults_V2_CL` (previously `RFI_UsersLookupResults_CL`)
+>   - `RFI_CredentialDumps_V2_CL` (previously `RFI_CredentialDumps_CL`)
+>   - `RFI_MalwareLogs_V2_CL` (previously `RFI_MalwareLogs_CL`)
+>
+>   Microsoft doesn't allow targeting existing "v1" tables with DCR/DCE without running migration scripts, so new tables were needed. If you have KQL queries, workbooks, or alerts targeting the old table names, update them to the new names.
+>
+> **Migration path:**
+> 1. Deploy the updated Data Connectors infrastructure (step 1 below).
+> 2. Redeploy each affected playbook (`RFI-lookup-and-save-user`, `RFI-search-external-user`, `RFI-search-workforce-user`) using the updated templates.
+> 3. _Optional_: If you have KQL queries, workbooks, or alerts referencing the old table names, update them to the `_V2_CL` equivalents listed above.
+
+## Table of Contents
+
+1. [Overview](#overview)
+1. [Deployment](#deployment)
+1. [Prerequisites](#prerequisites)
+1. [Playbooks](#playbooks)
+   1. ["Connector" playbooks](#connector_playbooks)
+      1. [RFI-CustomConnector](#RFI-CustomConnector)
+   1. [Base playbooks](#Base-playbooks)
+      1. [Add risky user to Microsoft EntraID Group](#RFI-add-EntraID-security-group-user)
+      1. [Microsoft EntraID Protection - confirm user is compromised](#entraid_identity_protection_confirm_user_is_compromised)
+      1. [Lookup risky user and save results](#RFI-lookup-and-save-user)
+   1. ["Search" playbooks (Workforce and External)](#search_playbooks)
+      1. [RFI-search-workforce-user](#RFI-search-workforce-user)
+      1. [RFI-search-external-user](#RFI-search-external-user)
+1. [How to configure playbooks](#configuration)
+   1. [How to find the playbooks (Logic Apps) after deployment](#find_playbooks_after_deployment)
+   1. [Configuring Playbooks Connections](#configuration_connections)
+   1. [API connector authorization](#API-connector-authorization)
+   1. [Configuring Playbooks Parameters](#configuration_parameters)
+1. [How to Run Playbooks](#how_to_run_playbooks)
+1. [Suggestions for advanced users](#suggestions_for_advanced_users)
+1. [How to access Log Analytics Custom Logs](#how_to_access_log_analytics_custom_logs)
+1. [Useful Azure documentation](#useful_documentation)
+1. [How to obtain Recorded Future API token](#how_to_obtain_Recorded_Future_API_token)
+1. [How to contact Recorded Future](#how_to_contact_Recorded_Future)
+
+<a id="overview"></a>
+## Overview
+
+This Solution consists of 6 playbooks (Logic Apps). Due to inconsistent naming of Logic Apps in Microsoft security products like Sentinel we will use the name playbooks instead of Logic Apps in this README. The playbooks need to be installed in the following order: custom-connector, base playbooks and one of the search playbooks.
+
+<details>
+<summary>Expand playbook overview</summary>
+
+<br/>
+
+Connector playbooks:
+Custom connectors are used to communicate and authorize towards Recorded Future backend API.
+
+| Playbook Name| Description  |
+|-|-|
+| **RFI-CustomConnector** | RFI-CustomConnector connection and authorization to Recorded Future Backend API.|
+
+Base playbooks:
+Sub playbooks that are called by the search playbooks.
+
+| Playbook Name | Description |
+|-|-|
+| **RFI-add-EntraID-security-group-user** | Add risky user to Microsoft EntraID Group for users at risk. |
+| **RFI-confirm-EntraID-risky-user** | Confirm to Microsoft EntraID Identity Protection that user is compromised. |
+| **RFI-lookup-and-save-user** | Lookup additional information on a compromised user and save results to Log Analytics. |
+
+Search playbooks:
+These are the main playbooks, select one and run on a schedule.
+
+| Playbook Name | Description |
+|-|-|
+| **RFI-search-workforce-user** | Search new exposures for Workforce users. |
+| **RFI-search-external-user** | Search new exposures for External users. |
+</details>
+
+## Deployment
+
+Recorded Future recommend deploying playbooks in this solution from this README, first the connector and then the base playbooks. Deploy search playbook dependent on your use case. After installation configure connectors inside of each playbook. Lastly configure playbook parameters in the search playbook.
+
+### Prerequisites
+
+- A Microsoft EntraID Tenant and subscription.
+- A [Log Analytics workspace](https://docs.microsoft.com/azure/azure-monitor/essentials/resource-logs#send-to-log-analytics-workspace). Note its name — it is required during deployment. If you don't have one, learn [how to create a Log Analytics workspace](https://docs.microsoft.com/azure/azure-monitor/logs/quick-create-workspace).
+- For `Recorded Future Identity` Connections you will need `Recorded Future Identity API` token. To obtain one - check out [this section](#how_to_obtain_Recorded_Future_API_token).
+- In Consumption logic apps, before you can create or manage logic apps and their connections, you need specific permissions. For more information about these permissions, review [Secure operations - Secure access and data in Azure Logic Apps](https://docs.microsoft.com/azure/logic-apps/logic-apps-securing-a-logic-app#secure-operations).
+
+<a id="required-permissions"></a>
+
+#### Required permissions (resource group scope)
+
+| Deployment step | Required roles |
+|-|-|
+| Step 1 — Data Connectors infrastructure | [Monitoring Contributor](https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles#monitoring-contributor) + [Log Analytics Contributor](https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles#log-analytics-contributor) |
+| Steps 2–6 — Connector and playbooks (with auto role assignment) | [Owner](https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles/privileged#owner) or [Logic App Contributor](https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles#logic-app-contributor) + [Role Based Access Control Administrator](https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles#role-based-access-control-administrator) |
+| Steps 2–6 — Connector and playbooks (manual role assignment) | [Logic App Contributor](https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles#logic-app-contributor) — then ask an admin to assign [Monitoring Metrics Publisher](https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles/monitor#monitoring-metrics-publisher) on the relevant DCRs to the Logic App's managed identity |
+
+
+<a id="playbooks"></a>
+## Playbooks
+
+> [!IMPORTANT]
+> Deploy the Data Connectors infrastructure (step 1) and connector (step 2) before deploying the base and search playbooks.
+
+### Step 1 — Deploy Data Connectors infrastructure
+
+Deploys a shared Data Collection Endpoint (DCE) and three Data Collection Rules (DCRs) — one each for lookup results, malware logs, and credential dumps — along with the corresponding Log Analytics tables. Deploy this into the same resource group as your Log Analytics Workspace.
+
+<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Frecordedfuture%2FAzure-Sentinel%2Fmaster%2FSolutions%2FRecorded%20Future%20Identity%2FData%20Connectors%2Fazuredeploy-v3.json" target="_blank">![Deploy to Azure](https://aka.ms/deploytoazurebutton)</a>
+<a href="https://portal.azure.us/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Frecordedfuture%2FAzure-Sentinel%2Fmaster%2FSolutions%2FRecorded%20Future%20Identity%2FData%20Connectors%2Fazuredeploy-v3.json" target="_blank">![Deploy to Azure Gov](https://aka.ms/deploytoazuregovbutton)</a>
+
+<details>
+<summary>Expand deployment parameters:</summary>
+
+| Parameter | Description |
+|-|-|
+| **log_analytics_workspace_name** | Name of your Log Analytics Workspace. Must be in the same resource group. |
+| **log_analytics_workspace_location** | Location of the workspace. Defaults to the resource group location. |
+
+</details>
+<hr/>
+
+<a id="connector_playbooks"></a>
+
+### Step 2 — Connector playbooks
+
+Connector playbooks are used by other playbooks in this solution to communicate with Recorded Future backend API.
+
+## RFI-CustomConnector
+
+This connector is used by other playbooks in this solution to communicate with Recorded Future backend API.
+
+### Deployment
+
+<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Frecordedfuture%2FAzure-Sentinel%2Fmaster%2FSolutions%2FRecorded%20Future%20Identity%2FPlaybooks%2Fv3.0%2FRFI-CustomConnector-0-1-0%2Fazuredeploy.json" target="_blank">![Deploy to Azure](https://aka.ms/deploytoazurebutton)</a>
+<a href="https://portal.azure.us/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Frecordedfuture%2FAzure-Sentinel%2Fmaster%2FSolutions%2FRecorded%20Future%20Identity%2FPlaybooks%2Fv3.0%2FRFI-CustomConnector-0-1-0%2Fazuredeploy.json" target="_blank">![Deploy to Azure Gov](https://aka.ms/deploytoazuregovbutton)</a>
+
+<details>
+<summary>Expand deployment parameters:</summary>
+
+| Parameter | Description |
+|-|-|
+| **Connector-Name**  | Connector name to use for this playbook (ex. "RFI-CustomConnector-0-1-0"). |
+|**Service Endpoint**| API Endpoint, always use the default ```https://api.recordedfuture.com/gw/azure-identity```|
+</details>
+<hr/>
+
+## Base-playbooks
+
+Base playbooks are called within the search playbooks to take action and mitigate the risks.
+
+## RFI-add-EntraID-security-group-user
+
+This playbook adds a compromised user to an Microsoft EntraID group. Triage and remediation should be handled in sub playbooks.
+By applying security policies to the Microsoft EntraID group and adding leaked users to that group - you can react to a leak and mitigate the risks.
+
+<details>
+<summary>
+Expand Playbook Workflow
+</summary>
+
+| # | Action |
+|-|-|
+| 1 | Called by search playbooks. |
+| 2 | From `user_principal_name` (email or email username + Entra ID domain if it is not empty). |
+| 3 | Get user from EntraID by `user_principal_name`. |
+| 4 | Add user to EntraID security group. |
+</details>
+
+### Deployment
+
+<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Frecordedfuture%2FAzure-Sentinel%2Fmaster%2FSolutions%2FRecorded%20Future%20Identity%2FPlaybooks%2Fv3.0%2FRFI-add-EntraID-security-group-user%2Fazuredeploy.json" target="_blank">![Deploy to Azure](https://aka.ms/deploytoazurebutton)</a>
+<a href="https://portal.azure.us/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Frecordedfuture%2FAzure-Sentinel%2Fmaster%2FSolutions%2FRecorded%20Future%20Identity%2FPlaybooks%2Fv3.0%2FRFI-add-EntraID-security-group-user%2Fazuredeploy.json" target="_blank">![Deploy to Azure Gov](https://aka.ms/deploytoazuregovbutton)</a>
+
+<details>
+<summary>Expand deployment parameters:</summary>
+
+| Parameter | Description |
+|-|-|
+| **Playbook-Name** | Playbook name to use for this playbook (ex. "RFI-add-EntraID-security-group-user"). |
+</details>
+<hr/>
+
+<a id="entraid_identity_protection_confirm_user_is_compromised"></a>
+
+## RFI-confirm-EntraID-risky-user
+
+This playbook confirms compromise of users deemed "high risk" by Microsoft Entra ID Protection.
+
+For more info on Microsoft EntraID Protection, read here:
+- [Microsoft Entra ID Protection](https://learn.microsoft.com/en-gb/entra/id-protection/)
+- [What is Identity Protection](https://learn.microsoft.com/en-gb/entra/id-protection/overview-identity-protection)
+- [Remediate risks and unblock users](https://learn.microsoft.com/en-gb/entra/id-protection/howto-identity-protection-remediate-unblock).
+
+Note that this playbook only runs on already flagged risky users. If a user isn't flagged as a risky user by Entra ID Protection, this playbook won't do anything.
+
+<details>
+<summary>
+Expand Playbook Workflow
+</summary>
+
+| # | Action |
+|-|-|
+| 1 | Called by search playbooks. |
+| 2 | Get user from Microsoft EntraID by `user_principal_name`. |
+| 3 | Check if Microsoft EntraID Identity Protection contains the user in a list of risky users. |
+| 4 | Confirm to Microsoft EntraID Identity Protection that user is compromised. |
+</details>
+
+### Deployment
+
+<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Frecordedfuture%2FAzure-Sentinel%2Fmaster%2FSolutions%2FRecorded%20Future%20Identity%2FPlaybooks%2Fv3.0%2FRFI-confirm-EntraID-risky-user%2Fazuredeploy.json" target="_blank" >![Deploy to Azure](https://aka.ms/deploytoazurebutton)</a>
+<a href="https://portal.azure.us/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Frecordedfuture%2FAzure-Sentinel%2Fmaster%2FSolutions%2FRecorded%20Future%20Identity%2FPlaybooks%2Fv3.0%2FRFI-confirm-EntraID-risky-user%2Fazuredeploy.json" target="_blank">![Deploy to Azure Gov](https://aka.ms/deploytoazuregovbutton)</a>
+
+<details>
+<summary>Expand deployment parameters:</summary>
+
+| Parameter | Description |
+|-|-|
+| **Playbook-Name**  | Playbook name to use for this playbook (ex. "RFI-confirm-EntraID-risky-user"). |
+</details>
+<hr/>
+
+## RFI-lookup-and-save-user
+
+This playbook gets compromised identity details from Recorded Future Identity Intelligence and saves the data in Azure Log Analytics Workspace for further review and analysis.
+
+Lookup returns more data than initial Search, so you will get the leaks history for the email and other info.
+
+<details>
+<summary>
+Expand Playbook Workflow
+</summary>
+
+| # | Action |
+|-|-|
+| 1 | Called by search playbooks. |
+| 2 | Pull data from Recorded Future Identity API for specified email and time range. |
+| 3 | Save Lookup results to Log Analytics Custom Log. |
+</details>
+
+### Deployment
+
+<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Frecordedfuture%2FAzure-Sentinel%2Fmaster%2FSolutions%2FRecorded%20Future%20Identity%2FPlaybooks%2Fv3.0%2FRFI-lookup-and-save-user%2Fazuredeploy.json" target="_blank">![Deploy to Azure](https://aka.ms/deploytoazurebutton)</a>
+<a href="https://portal.azure.us/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Frecordedfuture%2FAzure-Sentinel%2Fmaster%2FSolutions%2FRecorded%20Future%20Identity%2FPlaybooks%2Fv3.0%2FRFI-lookup-and-save-user%2Fazuredeploy.json" target="_blank">![Deploy to Azure Gov](https://aka.ms/deploytoazuregovbutton)</a>
+
+<details>
+<summary>Expand deployment parameters:</summary>
+
+| Parameter | Description |
+|-|-|
+| **Playbook-Name** | Playbook name to use for this playbook (default: `RFI-lookup-and-save-user`). |
+| **IdentityCustomConnectorName** | Name of the `RFI-CustomConnector` deployed in step 2 (default: `RFI-CustomConnector-0-1-0`). |
+| **create_role_assignment** | Whether to automatically assign the _Monitoring Metrics Publisher_ role on the DCR to the Logic App's managed identity. See [Required Permissions](#required-permissions) for details. |
+
+</details>
+<hr/>
+
+<a id="search_playbooks"></a>
+
+## Search playbooks (Workforce and External)
+
+Search the Recorded Future Identity Intelligence Module for compromised workforce or external users.
+
+<details>
+<summary> Workflow of Search Playbooks (both Workforce and External use cases)</summary>
+
+| # | Action |
+|-|-|
+| 1 | Pull data from Recorded Future Identity API for specified domain and time range (can be "workforce" or "external" use case). |
+| 2 | Pull previously seen/saved leaks data from Log Analytics Custom Log. |
+| 3 | Compare data from step 1 and step 2 - to determine which leaks are new and haven't been seen previously by the Search Playbook. |
+| 4 | Save the new leaks from step 3, so on the next run of the Search Playbook we would get that data on step 2. |
+| 5 | Use Base Playbooks to react / take actions on the newly leaked credentials. |
+</details>
+
+External search playbook - will get data from Recorded Future on your clients leaks. The most valuable base playbook is "Lookup risky user and save results", as "Add risky user to Microsoft EntraID Group" and "Microsoft EntraID Identity Protection - confirm user is compromised" assumes that the leaked email is a user in your organization Microsoft EntraID, which is not true for External use case.
+
+<a id="RFI-search-workforce-user"></a>
+### Deployment RFI-search-workforce-user
+
+<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Frecordedfuture%2FAzure-Sentinel%2Fmaster%2FSolutions%2FRecorded%20Future%20Identity%2FPlaybooks%2Fv3.0%2FRFI-search-workforce-user%2Fazuredeploy.json" target="_blank">![Deploy to Azure](https://aka.ms/deploytoazurebutton)</a>
+<a href="https://portal.azure.us/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Frecordedfuture%2FAzure-Sentinel%2Fmaster%2FSolutions%2FRecorded%20Future%20Identity%2FPlaybooks%2Fv3.0%2FRFI-search-workforce-user%2Fazuredeploy.json" target="_blank">![Deploy to Azure Gov](https://aka.ms/deploytoazuregovbutton)</a>
+
+<details>
+<summary>Expand deployment parameters:</summary>
+
+| Parameter | Description |
+|-|-|
+| **Playbook-Name** | Playbook name to use for this playbook (default: `RFI-search-workforce-user`). |
+| **workspace_name** | Name of your Log Analytics Workspace. Used to resolve the DCE and DCRs deployed in step 1. |
+| **Playbook-Name-add-EntraID-security-group-user** | Name of the `RFI-add-EntraID-security-group-user` playbook. |
+| **Playbook-Name-confirm-EntraID-risky-user** | Name of the `RFI-confirm-EntraID-risky-user` playbook. |
+| **Playbook-Name-lookup-and-save-user** | Name of the `RFI-lookup-and-save-user` playbook. |
+| **create_role_assignment** | Whether to automatically assign the _Monitoring Metrics Publisher_ role on the DCRs to the Logic App's managed identity. See [Required Permissions](#required-permissions) for details. |
+
+</details>
+<hr/>
+
+<a id="RFI-search-external-user"></a>
+### Deployment RFI-search-external-user (Service Providers or MSSPs)
+
+<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Frecordedfuture%2FAzure-Sentinel%2Fmaster%2FSolutions%2FRecorded%20Future%20Identity%2FPlaybooks%2Fv3.0%2FRFI-search-external-user%2Fazuredeploy.json" target="_blank">![Deploy to Azure](https://aka.ms/deploytoazurebutton)</a>
+<a href="https://portal.azure.us/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Frecordedfuture%2FAzure-Sentinel%2Fmaster%2FSolutions%2FRecorded%20Future%20Identity%2FPlaybooks%2Fv3.0%2FRFI-search-external-user%2Fazuredeploy.json" target="_blank">![Deploy to Azure Gov](https://aka.ms/deploytoazuregovbutton)</a>
+
+<details>
+<summary>Expand deployment parameters:</summary>
+
+| Parameter | Description |
+|-|-|
+| **Playbook-Name** | Playbook name to use for this playbook (default: `RFI-search-external-user`). |
+| **workspace_name** | Name of your Log Analytics Workspace. Used to resolve the DCE and DCR deployed in step 1. |
+| **Playbook-Name-add-EntraID-security-group-user** | Name of the `RFI-add-EntraID-security-group-user` playbook. |
+| **Playbook-Name-confirm-EntraID-risky-user** | Name of the `RFI-confirm-EntraID-risky-user` playbook. |
+| **Playbook-Name-lookup-and-save-user** | Name of the `RFI-lookup-and-save-user` playbook. |
+| **create_role_assignment** | Whether to automatically assign the _Monitoring Metrics Publisher_ role on the DCR to the Logic App's managed identity. See [Required Permissions](#required-permissions) for details. |
+
+</details>
+<hr/>
+
+## Configuration
+
+<a id="find_playbooks_after_deployment"></a>
+### How to find the playbooks (Logic Apps) after deployment
+
+To find installed Playbooks (Logic Apps) after deployment - you can search for `Logic Apps` from the [Azure Portal](https://portal.azure.com/) page and find deployed Logic Apps there.
+
+<a id="configuration_connections"></a>
+### Configuring Playbook Connections
+
+After deployment - create/validate the Connections in each of deployed Playbooks. The logic app will have errors and save is disabled until all connectors are authorized.
+
+<img src="../images/playbookauth.png" alt="Logic Apps Parameters #1" width="70%"/>
+
+
+<a id="API-connector-authorization"></a>
+### API connector authorization
+The Recorded Future identity solution uses the following connectors. Information on how to authorize connectors is documented in the provided links. Playbooks use connectors that have to be individually authorized during deployment.
+
+| Connector | Description |
+|-|-|
+| **/recordedfutureidenti** | [Microsoft power platform connector](https://learn.microsoft.com/en-us/connectors/recordedfutureidenti/).<br/> [How to obtain Recorded Future API token](#how_to_obtain_Recorded_Future_API_token) |
+| **/RFI-CustomConnector** | [RecordedFuture-CustomConnector](../../../Recorded%20Future/Playbooks/Connectors/RecordedFuture-CustomConnector/readme.md) <br/> Same API token as the recordedfutureidenti connector. |
+| **/azuread** | [Microsoft Entra ID power platform connectors](https://learn.microsoft.com/en-us/connectors/azuread/). |
+| **/azureadip** | [Azure AD Identity Protection](https://learn.microsoft.com/en-us/connectors/azureadip/) |
+| **/azuremonitorlogs** | [Azure Monitor Logs](https://learn.microsoft.com/en-us/connectors/azuremonitorlogs/). Used by the search playbooks to query previously seen exposures (dedup). Authorize via **OAuth** (sign in with a user account), or use **system-assigned managed identity** — in which case the Logic App's managed identity must be assigned the [Log Analytics Reader](https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles#log-analytics-reader) role on the Log Analytics workspace. |
+
+<a id="how_to_obtain_Recorded_Future_API_token"></a>
+### How to obtain Recorded Future API token
+
+You can issue a Recorded Future Identity API token yourself by visiting the Integration Center within the [Recorded Future Portal](https://app.recordedfuture.com).
+
+For questions or support, contact **support@recordedfuture.com**.
+
+
+<a id="configuration_parameters"></a>
+### Configuring search Playbooks Parameters
+
+Search playbooks are configured using Playbooks Parameters. Parameters can be found and set in the Logic App designer.
+
+<img src="../images/playbookparameters.png" alt="Logic Apps Parameters #1" width="80%"/>
+
+
+
+### Playbook parameters for Search Playbooks.
+
+- **You need to create a Microsoft EntraID Group, and provide the Object ID as a parameter to the Playbook. For more information, see [Microsoft EntraID Groups](https://learn.microsoft.com/en-us/entra/fundamentals/how-to-manage-groups) documentation.**
+- **You need to create a Log Analytics Workspace and provide the ID as a parameter to the playbook.**
+- **Recorded Future must authorize `organization_domain` to search for connected to the API Tokens. This is done during the API request process**
+
+> [!IMPORTANT]
+> Make sure to set `lookup_lookback_days` same or larger than `search_lookback_days`. Otherwise, you can encounter a situation when you get empty results on Lookup for the compromised credentials from the search.
+
+| Parameter | Description |
+|-|-|
+| **organization_domain** | Organization domain to search exposures for. |
+| **search_lookback_days** | Time range for Search / number of days before today to search (e.g. input "-14" to search the last 14 days). |
+| **active_directory_security_group_id** | Object ID of Microsoft EntraID Group for users at risk. You need to pre-create it by hand: search for "Groups" in Service search at the top of the page. For more information, see [Microsoft EntraID Groups](https://docs.microsoft.com/windows/security/identity-protection/access-control/active-directory-security-groups) documentation. |
+| **lookup_lookback_days**  | Time range for Lookup / number of days before today to search (e.g. input "-14" to search the last 14 days). **Make sure to use `lookup_lookback_days` same or larger than `search_lookback_days`. Otherwise you can encounter a situation when you get empty results on Lookup for the compromised credentials from the Search.** |
+| **active_directory_domain** | (Optional, can be left empty) - in case your Microsoft EntraID domain is different from your organization domain, this parameter will be used to transform compromised credentials to find corresponding user in your Microsoft EntraID (ex. Compromised email: leaked@mycompany.com), your Microsoft EntraID domain: `@mycompany.onmicrosoft.com`, so you set parameter `active_directory_domain = mycompany.onmicrosoft.com` (**just domain, without "@"**), and search playbooks will replace the domain from the leaked email with the provided domain from the active_directory_domain parameter, before searching for the corresponding user in your Microsoft EntraID: `leaked@mycompany.com ->  leaked@mycompany.onmicrosoft.com`. (Lookup playbook - will still use the original email to Lookup the data). |
+
+Playbook parameters for Search playbook "External use case" are the same as for "Workforce use case".
+
+<br/>
+
+Remove base playbook steps from search playbooks if the actions are not valid for your use case. Actions like set user as risky requires additional licensing from Microsoft (RFI-confirm-EntraID-risky-user).
+
+<img src="../images/BasePlaybooks.png" alt="Logic Apps Parameters #1" width="80%"/>
+
+<a id="how_to_run_playbooks"></a>
+## How to run Playbooks
+
+RFI-search-workforce-user or/and RFI-search-external-user are running on recurrence schedule. It's possible to reschedule or change interval.
+
+<img src="../images/runningPlaybooks.png" alt="Empty Lookup results" width="60%"/>
+
+<a id="suggestions_for_advanced_users"></a>
+
+## Suggestions for advanced users
+
+- You can add more advanced control of compromised Microsoft EntraID users using GraphQL API, which allows you to force a user to reset a password, etc. But it requires some additional Azure skills (secrets handling, etc).
+- As Search and Lookup data is stored in Log Analytics Custom Log - you can create / set up custom Sentinel Alerts on that data.
+- In current implementation Search request gets only 500 records per request. You can request more records using the "Results" parameter. You can create a loop and use the "Offset" parameter in Search to request all the records using pagination. It's better to process/react on compromised credentials "on the go" in the same loop cycle you retrieved them.
+
+<a id="how_to_access_log_analytics_custom_logs"></a>
+## How to access Log Analytics Custom Logs
+
+To see Log Analytics Custom Logs:
+-   From the Azure Portal, navigate to the `Log Analytics workspaces` service
+-   There, select the Log Analytic Workspace in which you have deployed the Solution
+-   There, in the left-side menu click on Logs, and expand second left side menu, and select Custom Logs
+
+## Troubleshooting
+
+If you use the `RFI-lookup-and-save-user` playbook to Lookup leaks info for an email and response lookup data is empty (for specified email and look back range) - the playbook will still save empty results to the Log Analytics Custom Log.
+
+This case is possible if you set up the Playbooks in that way that Lookup look back range (`lookup_lookback_days`) in `RFI-lookup-and-save-user` playbook is smaller than Search look back range (`search_lookback_days`) in `RFI-search-workforce-user` or `RFI-search-external-user` playbooks.
+
+In that case you will see some empty records in the corresponding Log Analytics Custom Log (see the screenshot).
+
+<details>
+<summary>Expand screenshot</summary>
+<img src="../images/empty_lookup_results.png" alt="Empty Lookup results" width="60%"/>
+</details>
+Another way to cover this case - you can add a corresponding check to RFI-lookup-and-save-user playbook and not save the results to Log Analytics if the result is empty.
+
+
+<a id="useful_documentation"></a>
+## Useful Azure documentation
+
+Microsoft Sentinel:
+- [Playbooks](https://docs.microsoft.com/azure/sentinel/automate-responses-with-playbooks)
+
+Permissions / Roles:
+- [Azure](https://docs.microsoft.com/azure/role-based-access-control/rbac-and-directory-admin-roles#azure-roles)
+- [Log Analytics](https://docs.microsoft.com/azure/role-based-access-control/built-in-roles#log-analytics-contributor)
+- [Logic Apps](https://docs.microsoft.com/azure/role-based-access-control/built-in-roles#logic-app-contributor)
+
+
+
+<a id="how_to_contact_Recorded_Future"></a>
+## How to contact Recorded Future
+
+If you are already a Recorded Future client and wish to learn more about using Recorded Future’s Microsoft integrations, including how to obtain an API Token to enable an integration contact us at **support@recordedfuture.com**.
+
+If you are not a current Recorded Future client and wish to become one, contact **sales@recordedfuture.com** to setup a discussion with one of our business development associates.

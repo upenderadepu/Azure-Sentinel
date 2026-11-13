@@ -1,0 +1,11 @@
+domain,ns_reputation_confidence,ns_reputation_label,ns_reputation_malicious_counts,ns_reputation_popular,ns_reputation_rare,ns_reputation_raw_score,ns_reputation_score,ns_reputation_total_counts,task_id,TimeGenerated,TenantId,Type,_ResourceId
+ns1.google.com,high,Very Low Risk,0,False,False,-inf,0,964,cde2772d-3fab-41f3-b65a-9ae7dca93345,2026-08-18T05:45:28.9628632Z,8e42b5a4-1350-4818-abd4-a594af7b6837,dossier_nameserver_matches_CL,
+ns2.google.com,high,Very Low Risk,0,False,False,-inf,0,964,cde2772d-3fab-41f3-b65a-9ae7dca93345,2026-08-18T05:45:28.9628632Z,8e42b5a4-1350-4818-abd4-a594af7b6837,dossier_nameserver_matches_CL,
+ns3.google.com,high,Very Low Risk,0,False,False,-inf,0,964,cde2772d-3fab-41f3-b65a-9ae7dca93345,2026-08-18T05:45:28.9628632Z,8e42b5a4-1350-4818-abd4-a594af7b6837,dossier_nameserver_matches_CL,
+ns4.google.com,high,Very Low Risk,0,False,False,-inf,0,964,cde2772d-3fab-41f3-b65a-9ae7dca93345,2026-08-18T05:45:28.9628632Z,8e42b5a4-1350-4818-abd4-a594af7b6837,dossier_nameserver_matches_CL,
+ns1.google.com,high,Very Low Risk,0,False,False,-inf,0,964,0d3ea3fe-01b1-410a-8cff-96a8a29eda52,2026-08-18T06:00:13.0454696Z,8e42b5a4-1350-4818-abd4-a594af7b6837,dossier_nameserver_matches_CL,
+ns2.google.com,high,Very Low Risk,0,False,False,-inf,0,964,0d3ea3fe-01b1-410a-8cff-96a8a29eda52,2026-08-18T06:00:13.0454696Z,8e42b5a4-1350-4818-abd4-a594af7b6837,dossier_nameserver_matches_CL,
+ns3.google.com,high,Very Low Risk,0,False,False,-inf,0,964,0d3ea3fe-01b1-410a-8cff-96a8a29eda52,2026-08-18T06:00:13.0454696Z,8e42b5a4-1350-4818-abd4-a594af7b6837,dossier_nameserver_matches_CL,
+ns4.google.com,high,Very Low Risk,0,False,False,-inf,0,964,0d3ea3fe-01b1-410a-8cff-96a8a29eda52,2026-08-18T06:00:13.0454696Z,8e42b5a4-1350-4818-abd4-a594af7b6837,dossier_nameserver_matches_CL,
+ns1.yahoo.com,high,Very Low Risk,0,True,False,-inf,0,6810,fcdcf142-1c24-4761-8570-d16d26a4f78b,2026-08-18T06:24:46.0339498Z,8e42b5a4-1350-4818-abd4-a594af7b6837,dossier_nameserver_matches_CL,
+ns2.yahoo.com,high,Very Low Risk,0,True,False,-inf,0,6810,fcdcf142-1c24-4761-8570-d16d26a4f78b,2026-08-18T06:24:46.0339498Z,8e42b5a4-1350-4818-abd4-a594af7b6837,dossier_nameserver_matches_CL,

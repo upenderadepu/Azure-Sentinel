@@ -1,0 +1,33 @@
+id: c9ccaebf-314c-446d-b3f6-314560ccb0e1
+name: AWSCloudTrail - High Volume of Enumeration Events
+description: |
+  Identifies identities executing an unusually high volume of enumeration API calls, which may indicate an attacker probing IAM permissions or mapping cloud infrastructure after compromise.
+severity: High
+requiredDataConnectors:
+  - connectorId: AWS
+    dataTypes:
+      - AWSCloudTrail
+tactics:
+  - Discovery
+relevantTechniques:
+  - T1526
+  - T1580
+  - T1087.004
+query: |
+    AWSCloudTrail
+    | where (EventName startswith "List" or EventName startswith "Describe" or EventName startswith "Get")
+    | where SourceIpAddress !has "amazonaws.com" and UserAgent has "aws-cli"
+    | extend UserIdentityUserName = iff(isnotempty(UserIdentityUserName), UserIdentityUserName, tostring(split(UserIdentityArn,'/')[-1]))
+    | summarize StartTime = min(TimeGenerated), EndTime = max(TimeGenerated), enum_events = dcount(EventName), num_regions = dcount(AWSRegion) by SourceIpAddress, UserIdentityUserName
+    | where enum_events > 3
+    | order by enum_events desc, EndTime desc
+entityMappings:
+  - entityType: Account
+    fieldMappings:
+      - identifier: FullName
+        columnName: UserIdentityUserName
+  - entityType: IP
+    fieldMappings:
+      - identifier: Address
+        columnName: SourceIpAddress
+version: 1.0.0

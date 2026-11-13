@@ -1,0 +1,25 @@
+id: 4b0d9806-7fc0-5626-96bc-5b5fb30a3d0f
+Function:
+  Title: corelight_dns_red parser for Corelight
+  Version: '2.0.0'
+  LastUpdated: '2026-08-17'
+Category: Microsoft Sentinel Parser
+FunctionName: corelight_dns_red
+FunctionAlias: corelight_dns_red
+FunctionQuery: |+
+  let dummy_table = datatable(TimeGenerated: datetime) [];
+  let corelight_dns_red = view () {
+      union isfuzzy=true Corelight_v3_dns_red_CL, dummy_table
+        | extend
+            _path=path,
+            _system_name=system_name,
+            _write_ts=write_ts
+      | extend
+          EventVendor="Corelight",
+          EventProduct="CorelightSensor",
+          EventType="dns_red",
+          ts=TimeGenerated
+  };
+  corelight_dns_red
+
+...

@@ -1,0 +1,32 @@
+id: b5b172b1-d976-4113-af1f-02f7bf7d2092
+name: AWSCloudTrail - ECR Container Image Low Severity Findings
+description: |
+  Identifies ECR container image scan results reporting low severity vulnerabilities, which may indicate security weaknesses in container images requiring review before deployment.
+severity: Low
+requiredDataConnectors:
+  - connectorId: AWS
+    dataTypes:
+      - AWSCloudTrail
+tactics:
+  - Execution
+relevantTechniques:
+  - T1204.003
+query: |
+    AWSCloudTrail
+    | where EventName == "DescribeImageScanFindings" and isempty(ErrorCode) and isempty(ErrorMessage)
+    | extend repoName = tostring(parse_json(ResponseElements).repositoryName)
+    | extend imageId = tostring(parse_json(ResponseElements).imageId.imageDigest)
+    | extend Low = toint(parse_json(ResponseElements).imageScanFindings.findingSeverityCounts.LOW)
+    | where Low > 0
+    | extend UserIdentityUserName = iff(isnotempty(UserIdentityUserName), UserIdentityUserName, tostring(split(UserIdentityArn,'/')[-1]))
+    | order by TimeGenerated desc
+entityMappings:
+  - entityType: Account
+    fieldMappings:
+      - identifier: FullName
+        columnName: UserIdentityUserName
+  - entityType: IP
+    fieldMappings:
+      - identifier: Address
+        columnName: SourceIpAddress
+version: 1.0.0

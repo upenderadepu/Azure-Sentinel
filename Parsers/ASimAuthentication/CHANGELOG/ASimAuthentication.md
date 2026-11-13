@@ -1,0 +1,132 @@
+# Changelog for ASimAuthentication.yaml
+
+## Version 0.2.30
+
+- (2026-10-27) Add the Salesforce Real-Time Event Monitoring Authentication parser. - [PR #15437](https://github.com/Azure/Azure-Sentinel/pull/15437)
+
+## Version 0.2.29
+
+- (2026-10-23) Add the CrowdStrike Falcon Data Replicator Authentication parser, including disable-watchlist and pack parameter support. - [PR #15415](https://github.com/Azure/Azure-Sentinel/pull/15415)
+
+## Version 0.2.28
+
+- (2026-10-13) Add the Okta Auth0 Authentication parser. [PR #15254](https://github.com/Azure/Azure-Sentinel/pull/15254)
+
+## Version 0.2.27
+
+- (2026-10-08) Corrected the Fortinet FortiGate, CrowdStrike Falcon Host, and Illumio SaaS Core parser disable watchlist keys - [PR #15291](https://github.com/Azure/Azure-Sentinel/pull/15291)
+
+## Version 0.2.26
+
+- (2026-10-07) Add the Zscaler ZPA Authentication parser. [PR #15241](https://github.com/Azure/Azure-Sentinel/pull/15241)
+
+## Version 0.2.25
+
+- (2026-10-05) Add the CyberArk Audit Authentication parser. - [PR #15262](https://github.com/Azure/Azure-Sentinel/pull/15262)
+
+## Version 0.2.24
+
+- (2026-09-30) Add the Salesforce Login History Authentication parser. [PR #15225](https://github.com/Azure/Azure-Sentinel/pull/15225)
+
+## Version 0.2.23
+
+- (2026-09-25) Add the Aruba Networks ClearPass Authentication parser. - [PR #15192](https://github.com/Azure/Azure-Sentinel/pull/15192)
+
+## Version 0.2.22
+
+- (2026-09-24) Add the Oracle OCI Authentication parser. - [PR #15122](https://github.com/Azure/Azure-Sentinel/pull/15122)
+
+## Version 0.2.21
+
+- (2026-09-17) Add the Wiz Cloud Authentication parser. - [PR #15016](https://github.com/Azure/Azure-Sentinel/pull/15016)
+
+## Version 0.2.20
+
+- (2026-09-14) Add the Alibaba Cloud ActionTrail Authentication parser. - [PR #15120](https://github.com/Azure/Azure-Sentinel/pull/15120)
+
+## Version 0.2.19
+
+- (2026-07-16) Add the Palo Alto Prisma Cloud Compute Authentication parser.
+
+## Version 0.2.18
+
+- (2026-07-16) Add parser Google Workspace Logins Authentication - [PR #14638](https://github.com/Azure/Azure-Sentinel/pull/14638)
+
+## Version 0.2.17
+
+- (2026-06-29) Add parser Cisco FTD/Firepower from Syslog - [PR #14581](https://github.com/Azure/Azure-Sentinel/pull/14581)
+
+## Version 0.2.16
+
+- (2026-06-03) Add pack parameter to updated Salesforce Service Cloud parser - [PR #14215](https://github.com/Azure/Azure-Sentinel/pull/14215)
+
+## Version 0.2.15
+
+- (2026-04-13) ASIM Authentication Parser for VMware ESXi - [PR #13989](https://github.com/Azure/Azure-Sentinel/pull/13989)
+
+## Version 0.2.14
+
+- (2026-04-29) Add parser Cisco DNAC events from Syslog - [PR #14135](https://github.com/Azure/Azure-Sentinel/pull/14135)
+
+## Version 0.2.13
+
+- (2026-04-09) Add parser Cisco ISE administrator events from Syslog by AMA - [PR #13909](https://github.com/Azure/Azure-Sentinel/pull/13909)
+
+## Version 0.2.12
+
+- (2026-04-08) Add initial parser for Palo Alto PAN-OS GlobalProtect authentication logs from CommonSecurityLog - [PR #14012](https://github.com/Azure/Azure-Sentinel/pull/14012)
+
+## Version 0.2.11
+
+- (2026-04-07) Add parser for VMware VCenter authentication - [PR #13929](https://github.com/Azure/Azure-Sentinel/pull/13929)
+
+## Version 0.2.10
+
+- (2026-04-06) Add parser for Cisco IOS from table Syslog - [PR #13966](https://github.com/Azure/Azure-Sentinel/pull/13966)
+
+## Version 0.2.9
+
+- (2026-04-02) Add parser for Polo Alto PAN-OS logs from CommonSecurityLog - [PR #13979](https://github.com/Azure/Azure-Sentinel/pull/13979)
+
+## Version 0.2.8
+
+- (2026-03-11) Add parser for Okta - Authentication logs from OktaSystemLogs - [PR #13801](https://github.com/Azure/Azure-Sentinel/pull/13801)
+
+## Version 0.2.7
+
+- (2026-03-10) Add initial parser for Fortinet - Fortigate logs in CommonSecurityLog - [PR #13786](https://github.com/Azure/Azure-Sentinel/pull/13786)
+
+## Version 0.2.6
+
+- (2024-12-12) authentication native parser - [PR #11545](https://github.com/Azure/Azure-Sentinel/pull/11545)
+
+## Version 0.2.4
+
+- (2024-06-19) april entity mapping updates diana p3 - [PR #10342](https://github.com/Azure/Azure-Sentinel/pull/10342)
+- (2024-04-12) Authentication parser filter update - [PR #10243](https://github.com/Azure/Azure-Sentinel/pull/10243)
+
+## Version 0.2.5
+
+- (2024-05-16) Cisco umbrella playbook changes and repackage - [PR #11603](https://github.com/Azure/Azure-Sentinel/pull/11603)
+
+## Version 0.2.3
+
+- (2023-12-22) Google Workspace Authentication - [PR #9639](https://github.com/Azure/Azure-Sentinel/pull/9639)
+
+## Version 0.2.2
+
+- (2023-09-18) Multiple ASIM Parser Changes - [PR #9032](https://github.com/Azure/Azure-Sentinel/pull/9032)
+
+## Version 0.2
+
+- (2023-08-21) ASIM Authentication Event schema parser with its sample and test data for VMware Carbon Black Cloud - [PR #8831](https://github.com/Azure/Azure-Sentinel/pull/8831)
+- (2023-07-27) Cisco ISE Authentication Schema Parser - [PR #8304](https://github.com/Azure/Azure-Sentinel/pull/8304)
+- (2022-02-21) renaming disable flag Dns Auth Web Nw - [PR #4222](https://github.com/Azure/Azure-Sentinel/pull/4222)
+
+## Version 0.2.1
+
+- (2023-07-24) Fix-Authentication-Parsers - [PR #8615](https://github.com/Azure/Azure-Sentinel/pull/8615)
+
+## Version 0.0
+
+- (2021-06-17) First commit - take 2 - [PR #2553](https://github.com/Azure/Azure-Sentinel/pull/2553)

@@ -1,0 +1,69 @@
+# Changelog for imAuditEvent.yaml
+
+## Version 0.1.14
+
+- (2026-10-30) Add Salesforce Real-Time Event Monitoring AuditEvent parser. - [PR #15514](https://github.com/Azure/Azure-Sentinel/pull/15514)
+
+## Version 0.1.13
+
+- (2026-10-23) Add the CrowdStrike Falcon Data Replicator AuditEvent filtering parser - [PR #15414](https://github.com/Azure/Azure-Sentinel/pull/15414)
+- Forward all AuditEvent filters and pack; honor its source-specific disable watchlist key.
+
+## Version 0.1.12
+
+- (2026-10-10) Forward actorusername_has_any and object_has_any to both Barracuda AuditEvent filtering parsers. - [PR #15298](https://github.com/Azure/Azure-Sentinel/pull/15298)
+
+## Version 0.1.11
+
+- (2026-10-08) Corrected the Microsoft Event parser disable watchlist key - [PR #15291](https://github.com/Azure/Azure-Sentinel/pull/15291)
+
+## Version 0.1.10
+
+- (2026-10-06) Add the Salesforce Audit Trail AuditEvent filtering parser. [PR #15248](https://github.com/Azure/Azure-Sentinel/pull/15248)
+
+## Version 0.1.9
+
+- (2026-10-05) Normalize the ASIM schema version to 0.1.0 - [PR #15265](https://github.com/Azure/Azure-Sentinel/pull/15265)
+
+## Version 0.1.8
+
+- (2026-09-24) [ASIM] AuditEvent - Oracle OCI (New Filtering Parser) - [PR #15122](https://github.com/Azure/Azure-Sentinel/pull/15122)
+- Add Oracle OCI filtering parser to imAuditEvent
+
+## Version 0.1.7
+- (2026-09-14) [ASIM] AuditEvent - Alibaba Cloud ActionTrail (New Filtering Parser) - [PR #15120](https://github.com/Azure/Azure-Sentinel/pull/15120)
+- Add Alibaba Cloud ActionTrail filtering parser to imAuditEvent
+
+## Version 0.1.6
+- (2026-03-10) [ASIM] AuditEvent - Azure Key Vault (New Parser) - [PR #13745](https://github.com/Azure/Azure-Sentinel/pull/13745)
+- Add SQL Security Audit events parser to ASimAuditEvent
+
+- (2026-03-10) [ASIM] AuditEvent - Azure Key Vault (New Parser) - [PR #13757](https://github.com/Azure/Azure-Sentinel/pull/13757)
+- Add Azure Key Vault parser to imAuditEvent
+
+## Version 0.1.5
+
+- (2026-02-17) [ASIM] AuditEvent - AWS Cloud Trail (New Parser) - [PR #13428](https://github.com/Azure/Azure-Sentinel/pull/13428)
+- Add AWSCloudTrail parser to imAuditEvent
+
+## Version 0.1.4
+
+- (2024-12-13) Audit Native Parser - [PR #11561](https://github.com/Azure/Azure-Sentinel/pull/11561)
+
+## Version 0.1.3
+
+- (2024-08-21) M2: ASIM Parsers, connector optimizations/enhancements - [PR #10994](https://github.com/Azure/Azure-Sentinel/pull/10994)
+- (2024-06-07) ASimAuditEventMicrosoftWindowsEvents.yaml-4 - [PR #10614](https://github.com/Azure/Azure-Sentinel/pull/10614)
+
+## Version 0.1.2
+
+- (2024-07-25) Added Infoblox Solution - [PR #10790](https://github.com/Azure/Azure-Sentinel/pull/10790)
+- (2024-03-08) Audit Union Parser Fix - [PR #10116](https://github.com/Azure/Azure-Sentinel/pull/10116)
+
+## Version 0.1.1
+
+- (2023-09-18) Multiple ASIM Parser Changes - [PR #9032](https://github.com/Azure/Azure-Sentinel/pull/9032)
+
+## Version 0.1
+
+- (2022-12-19) Asim/audit parsers - [PR #6928](https://github.com/Azure/Azure-Sentinel/pull/6928)

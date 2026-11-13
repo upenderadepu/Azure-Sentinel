@@ -1,0 +1,41 @@
+id: 96de3515-a65e-4edc-8b1a-90c780221bb2
+Function:
+  Title: Parser for GitHubDependabotData
+  Version: '1.0.1'
+  LastUpdated: '2026-05-04'
+Category: Microsoft Sentinel Parser
+FunctionName: GitHubDependabotData
+FunctionAlias: GitHubDependabotData
+FunctionQuery: |
+    githubscanaudit
+    | where event_s == 'dependabot_alert'
+        or (isempty(event_s) and action_s in ('create', 'dismiss', 'resolve'))
+    | extend EventType='RepositoryVulnerabilityAlert'
+    | extend alert = todynamic(alert_s),
+        organization = todynamic(organization_s),
+        repository = todynamic(repository_s),
+        sender = todynamic(sender_s) 
+    | extend alertcreatedate = alert.created_at,
+        alertaffectedrange = coalesce(alert.affected_range, alert.security_vulnerability.vulnerable_version_range),
+        alertexternalidentifier = coalesce(alert.external_identifier, alert.security_advisory.ghsa_id, tostring(alert.number)),
+        alertghsaid = coalesce(alert.ghsa_id, alert.security_advisory.ghsa_id),
+        alertseverity = coalesce(alert.severity, alert.security_advisory.severity),
+        repositoryfullname = repository.full_name,
+        repositoryOwnerlogin = repository.owner.login,
+        repositoryurl = repository.url,
+        senderlogin = sender.login,
+        sendertype = sender.type,
+        action=action_s
+    | where isnotempty(alertexternalidentifier)
+    | project-keep
+        TimeGenerated,
+        EventType,
+        action,
+        alertexternalidentifier,
+        alertghsaid,
+        alertcreatedate,
+        repositoryfullname,
+        repositoryOwnerlogin,
+        repositoryurl,
+        senderlogin,
+        sendertype

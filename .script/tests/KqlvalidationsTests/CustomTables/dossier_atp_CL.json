@@ -1,0 +1,121 @@
+{
+    "Name": "dossier_atp_CL",
+    "Properties": [
+        {
+            "Name": "task_id",
+            "Type": "string"
+        },
+        {
+            "Name": "params",
+            "Type": "dynamic"
+        },
+        {
+            "Name": "params_type",
+            "Type": "string"
+        },
+        {
+            "Name": "params_target",
+            "Type": "string"
+        },
+        {
+            "Name": "params_source",
+            "Type": "string"
+        },
+        {
+            "Name": "status",
+            "Type": "string"
+        },
+        {
+            "Name": "time_value",
+            "Type": "real"
+        },
+        {
+            "Name": "v_value",
+            "Type": "string"
+        },
+        {
+            "Name": "data",
+            "Type": "dynamic"
+        },
+        {
+            "Name": "data_record_count",
+            "Type": "real"
+        },
+        {
+            "Name": "data_attack_chain",
+            "Type": "dynamic"
+        },
+        {
+            "Name": "data_attack_chain_collection",
+            "Type": "dynamic"
+        },
+        {
+            "Name": "data_attack_chain_command_and_control",
+            "Type": "dynamic"
+        },
+        {
+            "Name": "data_attack_chain_credential_access",
+            "Type": "dynamic"
+        },
+        {
+            "Name": "data_attack_chain_defense_evasion",
+            "Type": "dynamic"
+        },
+        {
+            "Name": "data_attack_chain_discovery",
+            "Type": "string"
+        },
+        {
+            "Name": "data_attack_chain_execution",
+            "Type": "dynamic"
+        },
+        {
+            "Name": "data_attack_chain_exfiltration",
+            "Type": "dynamic"
+        },
+        {
+            "Name": "data_attack_chain_impact",
+            "Type": "string"
+        },
+        {
+            "Name": "data_attack_chain_initial_access",
+            "Type": "dynamic"
+        },
+        {
+            "Name": "data_attack_chain_lateral_movement",
+            "Type": "string"
+        },
+        {
+            "Name": "data_attack_chain_persistence",
+            "Type": "string"
+        },
+        {
+            "Name": "data_attack_chain_privilege_escalation",
+            "Type": "string"
+        },
+        {
+            "Name": "status_message_for_dossier",
+            "Type": "string"
+        },
+        {
+            "Name": "TimeGenerated",
+            "Type": "datetime"
+        },
+        {
+            "Name": "RowData",
+            "Type": "dynamic"
+        },
+        {
+            "Name": "TenantId",
+            "Type": "string"
+        },
+        {
+            "Name": "Type",
+            "Type": "string"
+        },
+        {
+            "Name": "_ResourceId",
+            "Type": "string"
+        }
+    ]
+}

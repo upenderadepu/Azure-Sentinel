@@ -1,0 +1,25 @@
+id: 792d146b-c35c-555b-a7ab-14d95b510900
+Function:
+  Title: corelight_known_services parser for Corelight
+  Version: '2.0.0'
+  LastUpdated: '2026-08-17'
+Category: Microsoft Sentinel Parser
+FunctionName: corelight_known_services
+FunctionAlias: corelight_known_services
+FunctionQuery: |+
+  let dummy_table = datatable(TimeGenerated: datetime) [];
+  let corelight_known_services = view () {
+      union isfuzzy=true Corelight_v3_known_services_CL, dummy_table
+        | extend
+            _path=path,
+            _system_name=system_name,
+            _write_ts=write_ts
+      | extend
+          EventVendor="Corelight",
+          EventProduct="CorelightSensor",
+          EventType="known_services",
+          ts=TimeGenerated
+  };
+  corelight_known_services
+
+...

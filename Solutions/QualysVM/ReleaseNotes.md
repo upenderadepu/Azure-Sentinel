@@ -1,0 +1,17 @@
+| **Version** | **Date Modified (DD-MM-YYYY)** | **Change History**                                            	|
+|-------------|--------------------------------|----------------------------------------------------------------|
+| 3.2.2       | 21-10-2026                     | Added Microsoft Defender XDR Custom Detections migrated from the **Analytic Rules** and a Defender XDR version of the **Workbook**; updated **Analytic Rule** New High Severity Vulnerability Detected Across Multiple Hosts. |
+| 3.1.1       | 22-09-2026                     | Updated the Playbooks to fix the Azure deploy button issue for GOV and corrected the parameter value for Service Endpoint. |
+| 3.1.0       | 14-09-2026                     | Updated the **QualysHostDetection Parser** to reliably parse both single-object and array detection responses from the CCF connector. |
+| 3.0.11       | 10-09-2026                     | Updated the Qualys Host Detection Parser to deduplicate repeated V3 snapshots using stable vulnerability content and lifecycle fields, preserve ingestion TimeGenerated, and expose the source timestamp as DetectionTime. Updated the CCP Data Connector to use explicit table references for Defender portal query compatibility. |
+| 3.0.10      | 22-06-2026                     | Increased **CCP Connector** request timeout to 300s (platform max), reduced query window to 10 min, added a connectivity check using the `/msp/about.php` endpoint, and clarified Truncation Limit options to reduce timeouts on large environments. |
+| 3.0.9       | 29-05-2026                     | Adding new query string parameter                              |
+| 3.0.8       | 14-05-2026                     | Bumping API version                                            |
+| 3.0.7       | 18-11-2025                     | Adding adjustable API partition limit & rate limit protection. |
+| 3.0.6       | 18-09-2025                     | Updated Analytic rules, Parsers, and Workbooks in Sentinel solution content for **CCF connector** compatibility.     |
+| 3.0.5       | 29-07-2025                     | Removed Deprecated **Data Connector**.							|  
+| 3.0.4 	  | 30-06-2025 					   | QualysVM **CCF Data Connector** moving to GA 					|
+| 3.0.3       | 27-05-2025                     | New **CCP Connector** added to the Solution.                   |
+| 3.0.2       | 08-04-2025                     | Add HostTags to **Data Connector** and **Parsers**.            |
+| 3.0.1       | 07-01-2025                     | Removed Custom Entity mappings from **Analytic Rule**.         |
+| 3.0.0       | 16-04-2024                     | Added Deploy to Azure Goverment button for Government portal in **Dataconnector**.   |

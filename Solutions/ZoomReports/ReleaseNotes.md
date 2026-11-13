@@ -1,0 +1,14 @@
+| **Version** | **Date Modified (DD-MM-YYYY)** | **Change History**                          |
+|-------------|--------------------------------|---------------------------------------------|
+| 3.0.11      | 15-06-2026                     | Deprecate Zoom Reports (using Azure Function) |
+| 3.0.10      | 29-04-2026                     | Bump version to 3.0.10 for a new publishing, same connector content as the previous one |
+| 3.0.9       | 29-04-2026                     | Update Cloud recording api polling interval to one day with one day delay to reduce duplication |
+| 3.0.8       | 27-04-2026                     | ZoomReports CCF Connector GA with updated parser |
+| 3.0.7       | 18-03-2026                     | Updated ZoomReports CCF to use a different table name and schema |
+| 3.0.6       | 13-03-2026                     | Added ZoomReports CCF Connector Public Preview |
+| 3.0.5       | 29-08-2024                     | Updated the python runtime version to 3.11  | 
+| 3.0.4       | 26-04-2024                     | Repackaged for fix on parser in maintemplate to have old parsername and parentid                    |
+| 3.0.3       | 18-04-2024                     | Repackaged for fix on parser in maintemplate                    |
+| 3.0.2       | 10-04-2024                     | Added Azure Deploy button for government portal deployments                    |
+| 3.0.1       | 04-12-2023                     | Authentication changes for zoom reports with server to server **Oauth app**     | 
+| 3.0.0       | 04-07-2023                     | Fixed broken links for **Data Connector** & Added **Workbook** in Solution content      | 

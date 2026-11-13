@@ -1,10 +1,10 @@
 import fs from "fs";
-import { runCheckOverChangedFiles } from "./utils/changedFilesValidator";
-import { ExitCode } from "./utils/exitCode";
-import * as logger from "./utils/logger";
-import { doesNotContainResourceInfo } from "./utils/workbookCheckers/workbookTemplateCheckers/containResourceInfoChecker";
-import { isFromTemplateIdNotSentinelUserWorkbook } from "./utils/workbookCheckers/workbookTemplateCheckers/fromTemplateIdChecker";
-import { WorkbookTemplate } from "./utils/workbookTemplate";
+import { runCheckOverChangedFiles } from "./utils/changedFilesValidator.js";
+import { ExitCode } from "./utils/exitCode.js";
+import * as logger from "./utils/logger.js";
+import { doesNotContainResourceInfo } from "./utils/workbookCheckers/workbookTemplateCheckers/containResourceInfoChecker.js";
+import { isFromTemplateIdNotSentinelUserWorkbook } from "./utils/workbookCheckers/workbookTemplateCheckers/fromTemplateIdChecker.js";
+import { WorkbookTemplate } from "./utils/workbookTemplate.js";
 
 const workbooksMetadataFilePath: string = "Workbooks/WorkbooksMetadata.json";
 
@@ -17,14 +17,24 @@ export async function IsValidWorkbookTemplate(filePath: string): Promise<ExitCod
     return ExitCode.SUCCESS;
   }
   
-  isFromTemplateIdNotSentinelUserWorkbook(parsedWorkbookTemplate);
-  doesNotContainResourceInfo(workbookTemplateString); // Pass the json file as string so we can perform a regex search on the content
-  
+  if(isValidWorkbookJson(parsedWorkbookTemplate))
+  {
+    isFromTemplateIdNotSentinelUserWorkbook(parsedWorkbookTemplate);
+    doesNotContainResourceInfo(workbookTemplateString); // Pass the json file as string so we can perform a regex search on the content
+  }
   return ExitCode.SUCCESS;
-} 
+}
+
+function isValidWorkbookJson(jsonFile: any) {
+  if(typeof jsonFile.$schema != "undefined" && typeof jsonFile.$schema.includes("schema/workbook.json") && typeof jsonFile.version != "undefined" && jsonFile.version === "Notebook/1.0")
+  {
+    return true;
+  }
+  return false;
+}
 
 let fileTypeSuffixes = [".json"];
-let filePathFolderPrefixes = ["Workbooks"];
+let filePathFolderPrefixes = ["Workbooks","Solutions"];
 let fileKinds = ["Added", "Modified"];
 let CheckOptions = {
   onCheckFile: (filePath: string) => {

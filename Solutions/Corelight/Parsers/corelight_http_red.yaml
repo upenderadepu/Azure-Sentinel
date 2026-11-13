@@ -1,0 +1,25 @@
+id: 45918336-c432-5f90-b5aa-727563faa5e7
+Function:
+  Title: corelight_http_red parser for Corelight
+  Version: '2.0.0'
+  LastUpdated: '2026-08-17'
+Category: Microsoft Sentinel Parser
+FunctionName: corelight_http_red
+FunctionAlias: corelight_http_red
+FunctionQuery: |+
+  let dummy_table = datatable(TimeGenerated: datetime) [];
+  let corelight_http_red = view () {
+      union isfuzzy=true Corelight_v3_http_red_CL, dummy_table
+        | extend
+            _path=path,
+            _system_name=system_name,
+            _write_ts=write_ts
+      | extend
+          EventVendor="Corelight",
+          EventProduct="CorelightSensor",
+          EventType="http_red",
+          ts=TimeGenerated
+  };
+  corelight_http_red
+
+...

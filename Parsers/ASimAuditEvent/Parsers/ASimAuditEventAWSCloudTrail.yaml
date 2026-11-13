@@ -1,0 +1,68 @@
+Parser:
+  Title: Audit Event ASIM unifying parser for AWS CloudTrail activity
+  Version: '0.2.0'
+  LastUpdated: Nov 02, 2026
+Product:
+  Name: AWS CloudTrail
+Normalization:
+  Schema: AuditEvent
+  Version: '1.0.0'
+References:
+- Title: ASIM Audit Event Schema
+  Link: https://aka.ms/ASimAuditEventDoc
+- Title: ASIM
+  Link: https://aka.ms/AboutASIM
+- Title: Amazon EC2 API actions
+  Link: https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_Operations.html
+Description: |
+  Unifies the EC2 action-family parsers for AWSCloudTrail audit events using a fuzzy
+  union.
+ParserName: ASimAuditEventAWSCloudTrail
+EquivalentBuiltInParser: _ASim_AuditEvent_AWSCloudTrail
+Parsers:
+  - _ASim_AuditEvent_AWSCloudTrailEC2Instances
+  - _ASim_AuditEvent_AWSCloudTrailEC2LaunchAndAccess
+  - _ASim_AuditEvent_AWSCloudTrailEC2CapacityAndReservations
+  - _ASim_AuditEvent_AWSCloudTrailEC2FleetAndSpot
+  - _ASim_AuditEvent_AWSCloudTrailEC2ImagesAndImportExport
+  - _ASim_AuditEvent_AWSCloudTrailEC2EBS
+  - _ASim_AuditEvent_AWSCloudTrailEC2VPCCoreAndRouting
+  - _ASim_AuditEvent_AWSCloudTrailEC2InterfacesAndAddresses
+  - _ASim_AuditEvent_AWSCloudTrailEC2SecurityAndObservability
+  - _ASim_AuditEvent_AWSCloudTrailEC2IPAM
+  - _ASim_AuditEvent_AWSCloudTrailEC2IPAMRouting
+  - _ASim_AuditEvent_AWSCloudTrailEC2TransitGateway
+  - _ASim_AuditEvent_AWSCloudTrailEC2TransitGatewayRouting
+  - _ASim_AuditEvent_AWSCloudTrailEC2PrivateConnectivity
+  - _ASim_AuditEvent_AWSCloudTrailEC2VerifiedAccess
+  - _ASim_AuditEvent_AWSCloudTrailEC2AccountAndInfrastructure
+ParserParams:
+  - Name: disabled
+    Type: bool
+    Default: false
+  - Name: pack
+    Type: bool
+    Default: false
+ParserQuery: |
+  let DisabledParsers=materialize(_GetWatchlist('ASimDisabledParsers') | where SearchKey in ('Any', 'ExcludeASimAuditEvent') | extend SourceSpecificParser=column_ifexists('SourceSpecificParser','') | distinct SourceSpecificParser);
+  let BuiltInDisabled=disabled or toscalar('ExcludeASimAuditEventBuiltIn' in (DisabledParsers) or 'ExcludeASimAuditEventAWSCloudTrail' in (DisabledParsers) or 'Any' in (DisabledParsers));
+  union isfuzzy=true
+    ASimAuditEventAWSCloudTrailEC2Instances(disabled=(BuiltInDisabled or ('ExcludeASimAuditEventAWSCloudTrailEC2Instances' in (DisabledParsers))), pack=pack),
+    ASimAuditEventAWSCloudTrailEC2LaunchAndAccess(disabled=(BuiltInDisabled or ('ExcludeASimAuditEventAWSCloudTrailEC2LaunchAndAccess' in (DisabledParsers))), pack=pack),
+    ASimAuditEventAWSCloudTrailEC2CapacityAndReservations(disabled=(BuiltInDisabled or ('ExcludeASimAuditEventAWSCloudTrailEC2CapacityAndReservations' in (DisabledParsers))), pack=pack),
+    ASimAuditEventAWSCloudTrailEC2FleetAndSpot(disabled=(BuiltInDisabled or ('ExcludeASimAuditEventAWSCloudTrailEC2FleetAndSpot' in (DisabledParsers))), pack=pack),
+    ASimAuditEventAWSCloudTrailEC2ImagesAndImportExport(disabled=(BuiltInDisabled or ('ExcludeASimAuditEventAWSCloudTrailEC2ImagesAndImportExport' in (DisabledParsers))), pack=pack),
+    ASimAuditEventAWSCloudTrailEC2EBS(disabled=(BuiltInDisabled or ('ExcludeASimAuditEventAWSCloudTrailEC2EBS' in (DisabledParsers))), pack=pack),
+    ASimAuditEventAWSCloudTrailEC2VPCCoreAndRouting(disabled=(BuiltInDisabled or ('ExcludeASimAuditEventAWSCloudTrailEC2VPCCoreAndRouting' in (DisabledParsers))), pack=pack),
+    ASimAuditEventAWSCloudTrailEC2InterfacesAndAddresses(disabled=(BuiltInDisabled or ('ExcludeASimAuditEventAWSCloudTrailEC2InterfacesAndAddresses' in (DisabledParsers))), pack=pack),
+    ASimAuditEventAWSCloudTrailEC2SecurityAndObservability(disabled=(BuiltInDisabled or ('ExcludeASimAuditEventAWSCloudTrailEC2SecurityAndObservability' in (DisabledParsers))), pack=pack),
+    ASimAuditEventAWSCloudTrailEC2IPAM(disabled=(BuiltInDisabled or ('ExcludeASimAuditEventAWSCloudTrailEC2IPAM' in (DisabledParsers))), pack=pack),
+    ASimAuditEventAWSCloudTrailEC2IPAMRouting(disabled=(BuiltInDisabled or ('ExcludeASimAuditEventAWSCloudTrailEC2IPAMRouting' in (DisabledParsers))), pack=pack),
+    ASimAuditEventAWSCloudTrailEC2TransitGateway(disabled=(BuiltInDisabled or ('ExcludeASimAuditEventAWSCloudTrailEC2TransitGateway' in (DisabledParsers))), pack=pack),
+    ASimAuditEventAWSCloudTrailEC2TransitGatewayRouting(disabled=(BuiltInDisabled or ('ExcludeASimAuditEventAWSCloudTrailEC2TransitGatewayRouting' in (DisabledParsers))), pack=pack),
+    ASimAuditEventAWSCloudTrailEC2PrivateConnectivity(disabled=(BuiltInDisabled or ('ExcludeASimAuditEventAWSCloudTrailEC2PrivateConnectivity' in (DisabledParsers))), pack=pack),
+    ASimAuditEventAWSCloudTrailEC2VerifiedAccess(disabled=(BuiltInDisabled or ('ExcludeASimAuditEventAWSCloudTrailEC2VerifiedAccess' in (DisabledParsers))), pack=pack),
+    ASimAuditEventAWSCloudTrailEC2AccountAndInfrastructure(disabled=(BuiltInDisabled or ('ExcludeASimAuditEventAWSCloudTrailEC2AccountAndInfrastructure' in (DisabledParsers))), pack=pack)
+  | extend 
+    EventVendor = "AWS",
+    EventProduct = "CloudTrail"

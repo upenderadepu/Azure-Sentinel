@@ -1,0 +1,35 @@
+id: 48bb92e2-bad4-4fd4-9684-26cb188299b7
+name: SailPointIdentityNowEventType
+description: |
+  'Created to detect failed events of particular type from SailPointIDN_Events.'
+severity: High
+status: Available
+requiredDataConnectors:
+  - connectorId: SailPointIdentityNow
+    dataTypes:
+      - SailPointISC_Events_CL
+  - connectorId: SailPointIdentityNowConnector
+    dataTypes:
+      - SailPointISC_Events_CL
+queryFrequency: 1d
+queryPeriod: 14d
+triggerOperator: gt
+triggerThreshold: 0
+tactics:
+  - InitialAccess
+relevantTechniques:
+  - T1133
+query: |
+  declare query_parameters(lbperiod:timespan = 14d, type:string = "ACCESS_ITEM");
+  SailPointISC_Events_CL
+  | where TimeGenerated > ago(lbperiod)
+  | where EventType == type
+  | where Status == "FAILED"
+  | sort by Created
+entityMappings:
+  - entityType: Account
+    fieldMappings:
+      - identifier: Name
+        columnName: TechnicalName
+version: 1.2.0
+kind: Scheduled

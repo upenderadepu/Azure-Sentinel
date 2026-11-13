@@ -1,0 +1,97 @@
+{
+    "Name": "InfobloxInsightAssets_CL",
+    "Properties": [
+        {
+            "Name": "TenantId",
+            "Type": "String"
+        },
+        {
+            "Name": "SourceSystem",
+            "Type": "String"
+        },
+        {
+            "Name": "MG",
+            "Type": "String"
+        },
+        {
+            "Name": "ManagementGroupName",
+            "Type": "String"
+        },
+        {
+            "Name": "TimeGenerated",
+            "Type": "DateTime"
+        },
+        {
+            "Name": "Computer",
+            "Type": "String"
+        },
+        {
+            "Name": "RawData",
+            "Type": "String"
+        },
+        {
+            "Name": "ip_address",
+            "Type": "Dynamic"
+        },
+        {
+            "Name": "total_events",
+            "Type": "Int"
+        },
+        {
+            "Name": "indicators",
+            "Type": "Dynamic"
+        },
+        {
+            "Name": "users",
+            "Type": "Dynamic"
+        },
+        {
+            "Name": "description",
+            "Type": "String"
+        },
+        {
+            "Name": "is_verified",
+            "Type": "Bool"
+        },
+        {
+            "Name": "is_risky",
+            "Type": "Bool"
+        },
+        {
+            "Name": "locations",
+            "Type": "Dynamic"
+        },
+        {
+            "Name": "last_detected",
+            "Type": "String"
+        },
+        {
+            "Name": "first_detected",
+            "Type": "String"
+        },
+        {
+            "Name": "mac_address",
+            "Type": "Dynamic"
+        },
+        {
+            "Name": "device_name",
+            "Type": "String"
+        },
+        {
+            "Name": "InfobloxInsightID",
+            "Type": "String"
+        },
+        {
+            "Name": "InfobloxInsightLogType",
+            "Type": "String"
+        },
+        {
+            "Name": "Type",
+            "Type": "String"
+        },
+        {
+            "Name": "_ResourceId",
+            "Type": "String"
+        }
+    ]
+}

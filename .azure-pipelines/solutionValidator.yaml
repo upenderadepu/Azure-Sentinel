@@ -1,0 +1,15 @@
+jobs:
+- job: "SolutionValidations"
+  pool:
+    vmImage: 'ubuntu-latest'
+  steps:
+  - task: UseNode@1
+    inputs:
+      version: '>=22.23.4'
+  - task: Npm@1
+    displayName: 'npm install'
+    inputs:
+      verbose: false
+      command: 'install'
+  - script: 'npm run tsc && node .script/SolutionValidations/solutionValidator.js'
+    displayName: 'Solution Validations'

@@ -1,0 +1,28 @@
+id: 014ffc5c-0ba5-49f9-989c-3833e0d1c2b8
+name: Quarantine Spam Reason trend
+description: |
+  This query visualises the amount of spam emails that are quarantined, summarized daily by the detection method
+description-detailed: |
+  This query visualises the amount of spam emails that are quarantined, summarized daily by the detection method
+  Query is also included as part of the Defender for Office 365 solution in Sentinel: https://techcommunity.microsoft.com/blog/microsoftdefenderforoffice365blog/part-2-build-custom-email-security-reports-and-dashboards-with-workbooks-in-micr/4411303
+requiredDataConnectors:
+- connectorId: MicrosoftThreatProtection
+  dataTypes:
+  - EmailEvents
+tactics:
+  - InitialAccess
+relevantTechniques:
+  - T1566
+query: |
+  let minTime = startofday(ago(30d));
+  let maxTime = startofday(now());
+  EmailEvents
+  | where Timestamp >= minTime
+  | where EmailDirection == "Inbound" and DetectionMethods has "Spam" and DeliveryLocation == "Quarantine"
+  | mv-expand Details = parse_json(DetectionMethods).Spam to typeof(string)
+  | where isnotempty(Details)
+  | where Timestamp < maxTime
+  | make-series Count = count() default = 0 on Timestamp from minTime to maxTime step 1d by Details
+  | project Count, Details, Timestamp
+  | render timechart
+version: 1.1.0

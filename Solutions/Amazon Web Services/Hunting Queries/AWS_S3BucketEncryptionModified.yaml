@@ -1,0 +1,30 @@
+id: 6eb59239-78c5-401d-acfa-5cb9b3d31cd4
+name: AWSCloudTrail - S3 Bucket Encryption Configuration Modified
+description: |
+  Identifies bucket encryption configuration changes that may indicate preparation for data exposure or denial of service attacks.
+severity: Low
+requiredDataConnectors:
+  - connectorId: AWS
+    dataTypes:
+      - AWSCloudTrail
+tactics:
+  - Impact
+relevantTechniques:
+  - T1486
+query: |
+  AWSCloudTrail
+  | where EventName in ("PutBucketEncryption","DeleteBucketEncryption") and isempty(ErrorCode) and isempty(ErrorMessage)
+  | extend encryptionConfig = tostring(parse_json(RequestParameters).ServerSideEncryptionConfiguration.Rule)
+  | where encryptionConfig contains RecipientAccountId
+  | extend UserIdentityUserName = iff(isnotempty(UserIdentityUserName), UserIdentityUserName, tostring(split(UserIdentityArn,'/')[-1]))
+  | order by TimeGenerated desc
+entityMappings:
+  - entityType: Account
+    fieldMappings:
+      - identifier: FullName
+        columnName: UserIdentityUserName
+  - entityType: IP
+    fieldMappings:
+      - identifier: Address
+        columnName: SourceIpAddress
+version: 1.0.0

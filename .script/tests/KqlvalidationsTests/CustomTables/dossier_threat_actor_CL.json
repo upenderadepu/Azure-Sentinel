@@ -1,0 +1,117 @@
+{
+    "Name": "dossier_threat_actor_CL",
+    "Properties": [
+        {
+            "Name": "task_id",
+            "Type": "string"
+        },
+        {
+            "Name": "params",
+            "Type": "dynamic"
+        },
+        {
+            "Name": "params_type",
+            "Type": "string"
+        },
+        {
+            "Name": "params_target",
+            "Type": "string"
+        },
+        {
+            "Name": "params_source",
+            "Type": "string"
+        },
+        {
+            "Name": "status",
+            "Type": "string"
+        },
+        {
+            "Name": "time_value",
+            "Type": "real"
+        },
+        {
+            "Name": "v_value",
+            "Type": "string"
+        },
+        {
+            "Name": "status_message_for_dossier",
+            "Type": "string"
+        },
+        {
+            "Name": "data",
+            "Type": "dynamic"
+        },
+        {
+            "Name": "data_actor_description",
+            "Type": "string"
+        },
+        {
+            "Name": "data_actor_id",
+            "Type": "string"
+        },
+        {
+            "Name": "data_actor_name",
+            "Type": "string"
+        },
+        {
+            "Name": "data_customer_first_dns_query",
+            "Type": "datetime"
+        },
+        {
+            "Name": "data_customer_last_dns_query",
+            "Type": "datetime"
+        },
+        {
+            "Name": "data_display_name",
+            "Type": "string"
+        },
+        {
+            "Name": "data_ikb_submitted",
+            "Type": "datetime"
+        },
+        {
+            "Name": "data_purpose",
+            "Type": "dynamic"
+        },
+        {
+            "Name": "data_related_count",
+            "Type": "real"
+        },
+        {
+            "Name": "data_reports",
+            "Type": "dynamic"
+        },
+        {
+            "Name": "data_ttp",
+            "Type": "dynamic"
+        },
+        {
+            "Name": "data_ikb_first_classified_malicious",
+            "Type": "datetime"
+        },
+        {
+            "Name": "data_external_references",
+            "Type": "dynamic"
+        },
+        {
+            "Name": "TimeGenerated",
+            "Type": "datetime"
+        },
+        {
+            "Name": "RowData",
+            "Type": "dynamic"
+        },
+        {
+            "Name": "TenantId",
+            "Type": "string"
+        },
+        {
+            "Name": "Type",
+            "Type": "string"
+        },
+        {
+            "Name": "_ResourceId",
+            "Type": "string"
+        }
+    ]
+}

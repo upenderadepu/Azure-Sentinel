@@ -1,0 +1,25 @@
+id: f55f423f-399a-517e-b058-f1ead7722587
+Function:
+  Title: corelight_generic_dns_tunnels parser for Corelight
+  Version: '2.0.0'
+  LastUpdated: '2026-08-17'
+Category: Microsoft Sentinel Parser
+FunctionName: corelight_generic_dns_tunnels
+FunctionAlias: corelight_generic_dns_tunnels
+FunctionQuery: |+
+  let dummy_table = datatable(TimeGenerated: datetime) [];
+  let corelight_generic_dns_tunnels = view () {
+      union isfuzzy=true Corelight_v3_generic_dns_tunnels_CL, dummy_table
+        | extend
+            _path=path,
+            _system_name=system_name,
+            _write_ts=write_ts
+      | extend
+          EventVendor="Corelight",
+          EventProduct="CorelightSensor",
+          EventType="generic_dns_tunnels",
+          ts=TimeGenerated
+  };
+  corelight_generic_dns_tunnels
+
+...

@@ -1,0 +1,44 @@
+id: 1b550e71-be62-4afb-9dcb-a153acae1155
+Function:
+  Title: Corelight Metrics Zeek Doctor Events
+  Version: '2.0.0'
+  LastUpdated: '2026-08-17'
+Category: Microsoft Sentinel Parser
+FunctionName: corelight_corelight_metrics_zeek_doctor
+FunctionAlias: corelight_corelight_metrics_zeek_doctor
+FunctionQuery: |
+    let dummy_table = datatable(TimeGenerated: datetime) [];
+    let corelight_corelight_metrics_zeek_doctor = view () {
+        union isfuzzy=true Corelight_v3_corelight_metrics_zeek_doctor_CL, dummy_table
+        | extend
+            EventVendor = "Corelight",
+            EventProduct = "CorelightSensor",
+            EventType = "corelight_metrics_zeek_doctor",
+            ts = TimeGenerated,
+            sensor_name = coalesce(system_name, "unknown")
+        | project
+            TimeGenerated,
+            check_tcp_scan_percent,
+            check_remote_to_remote_percent,
+            check_tcp_checksum_errors_percent,
+            check_tcp_retransmissions_percent,
+            check_tcp_byte_counts_wrong_percent,
+            system_name,
+            check_dns_half_duplex_orig_percent,
+            check_tcp_half_duplex_percent,
+            check_dns_half_duplex_resp_percent,
+            check_tcp_missed_bytes_percent,
+            check_tcp_backscatter_percent,
+            check_tcp_no_ssl_on_443_percent,
+            write_ts,
+            path,
+            check_local_to_local_percent,
+            check_tcp_no_three_way_handshake_percent,
+            check_bursty_percent,
+            EventVendor,
+            EventType,
+            ts,
+            sensor_name
+    };
+    corelight_corelight_metrics_zeek_doctor
+

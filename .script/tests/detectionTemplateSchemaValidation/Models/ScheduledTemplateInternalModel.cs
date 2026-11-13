@@ -5,23 +5,17 @@ using Microsoft.Azure.Sentinel.Analytics.Management.AnalyticsManagement.Contract
 using Microsoft.Azure.Sentinel.Analytics.Management.AnalyticsManagement.Contracts.Model.ARM.ModelValidation;
 using Microsoft.Azure.Sentinel.Analytics.Management.AnalyticsTemplatesService.Interface.ModelValidations;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace Microsoft.Azure.Sentinel.Analytics.Management.AnalyticsTemplatesService.Interface.Model
 {
     [PeriodGreaterThanOrEqualFrequency]
     [FrequencyLimitationForLongPeriodQuery]
     [NewEntityMappings]
-    public class ScheduledTemplateInternalModel : AnalyticsTemplateInternalModelBase
+    public class ScheduledTemplateInternalModel : QueryBasedTemplateInternalModel
     {
         [JsonProperty("requiredDataConnectors", Required = Required.Always)]
         public override List<DataConnectorInternalModel> RequiredDataConnectors { get; set; }
-
-        [JsonProperty("severity", Required = Required.Always)]
-        public Severity Severity { get; set; }
-
-        [JsonProperty("query", Required = Required.Always)]
-        [StringLength(10000, MinimumLength = 1)]
-        public string Query { get; set; }
 
         [JsonProperty("queryFrequency", Required = Required.Always)]
         [JsonConverter(typeof(ScheduledTemplateTimeSpanConverter))]
@@ -40,18 +34,12 @@ namespace Microsoft.Azure.Sentinel.Analytics.Management.AnalyticsTemplatesServic
         [JsonProperty("triggerThreshold", Required = Required.Always)]
         [Range(0, 10000)]
         public int TriggerThreshold { get; set; }
+        
+        [JsonProperty("eventGroupingSettings", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
+        public EventGroupingSettings EventGroupingSettings { get; set; }
 
-        [JsonProperty("entityMappings", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
-        [ValidEntityMappings(entityMappingsMinLength: 1, entityMappingsMaxLength: 5, fieldMappingsMinLength: 1, fieldMappingsMaxLength: 3)]
-        public List<EntityMapping> EntityMappings { get; set; }
-    }
-
-    public enum Severity
-    {
-        Informational = 0,
-        Low = 1,
-        Medium = 2,
-        High = 3
+        [JsonProperty("kind", Required = Required.Always)]
+        public override AlertRuleKind Kind { get; } = AlertRuleKind.Scheduled;
     }
 
     public enum AlertTriggerOperator

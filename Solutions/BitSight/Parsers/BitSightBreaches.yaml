@@ -1,0 +1,68 @@
+﻿id: 43e914e1-3b7b-4824-bb16-90e5dedad176
+Function:
+  Title: Parser for BitSightBreaches
+  Version: '1.1.0'
+  LastUpdated: '2026-05-25'
+Category: Microsoft Sentinel Parser
+FunctionName: BitSightBreaches
+FunctionAlias: BitSightBreaches
+FunctionQuery: |
+    union isfuzzy=true
+        (
+            BitsightBreaches_data_CL
+            | extend
+                    EventVendor = "BitSight",
+                    EventProduct = "Breaches",
+                    GUID = column_ifexists('guid', ''),
+                    Date = column_ifexists('date', ''),
+                    Severity = column_ifexists('severity', ''),
+                    Text = column_ifexists('text', ''),
+                    DateCreated = column_ifexists('date_created', ''),
+                    PreviwURL = column_ifexists('preview_url', ''),
+                    EventType = column_ifexists('event_type', ''),
+                    EventTypeDescription = column_ifexists('event_type_description', ''),
+                    BreachedCompanies = column_ifexists('breached_companies', ''),
+                    DependentCompanies = column_ifexists('dependent_companies', ''),
+                    Companyname = column_ifexists('company_name', ''),
+                    CompanyGUID = column_ifexists('company_guid', '')
+            | project
+                    TimeGenerated,
+                    EventVendor,
+                    EventProduct,
+                    GUID,
+                    Date,
+                    Severity,
+                    Text,
+                    DateCreated,
+                    PreviwURL,
+                    EventType,
+                    EventTypeDescription,
+                    BreachedCompanies,
+                    DependentCompanies,
+                    Companyname,
+                    CompanyGUID
+        ),
+        (
+            BitSightBreaches_CL
+            | summarize arg_max(TimeGenerated, *) by Guid, CompanyGuid
+            | extend
+                    EventVendor = "BitSight",
+                    EventProduct = "Breaches"
+            | project
+                    TimeGenerated,
+                    EventVendor,
+                    EventProduct,
+                    Guid,
+                    CompanyName,
+                    CompanyGuid,
+                    BreachDate,
+                    DateCreated,
+                    Text,
+                    PreviewUrl,
+                    EventType,
+                    EventTypeDescription,
+                    Severity,
+                    BreachedCompanies,
+                    DependentCompanies,
+                    ConnectorName
+        )

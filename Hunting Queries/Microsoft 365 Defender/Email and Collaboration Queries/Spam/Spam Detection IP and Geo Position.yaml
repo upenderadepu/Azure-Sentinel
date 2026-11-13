@@ -1,0 +1,43 @@
+id: fc2a1197-7ad5-43e3-83f1-0ecd5ada41ca
+name: Spam detection by IP and its location
+description: |
+  This query visualises total emails with Spam detections summarizing the data by email sender IP address (SenderIPv4, SenderIPv6).
+description-detailed: |
+  This query returns total emails with Spam detections summarizing the data by email sender IP address (SenderIPv4, SenderIPv6) and its geoagraphical position in Microsoft Defender for Office 365.
+  To build a graphical map please consider exporting to CSV and use tools like Power BI, Excel, or custom dashboards to plot the data on a map. 
+  Taken from the the Microsoft Defender for Office 365 Detections and Insights - Microsoft Sentinel workbook.
+  https://techcommunity.microsoft.com/blog/microsoftdefenderforoffice365blog/part-2-build-custom-email-security-reports-and-dashboards-with-workbooks-in-micr/4411303
+requiredDataConnectors:
+- connectorId: MicrosoftThreatProtection
+  dataTypes:
+  - EmailEvents
+tactics:
+  - InitialAccess
+relevantTechniques:
+  - T1566
+query: |
+  //This query visualises total emails with Spam detections summarizing the data by email sender IP address (SenderIPv4, SenderIPv6).
+  let ipv4position = EmailEvents
+  | where Timestamp > ago(30d)
+  | where OrgLevelPolicy != "Phishing simulation" and OrgLevelPolicy != "SecOps Mailbox"
+  | where ThreatTypes has "Spam" and SenderIPv4 != ""
+  | extend Key = strcat(NetworkMessageId, '-', RecipientEmailAddress)
+  | summarize arg_max(Timestamp, *) by Key
+  | summarize count() by SenderIPv4
+  | extend GeoInfo = geo_info_from_ip_address(SenderIPv4)
+  | extend Latitude = tostring(GeoInfo.latitude), Longitude = tostring(GeoInfo.longitude), Country = tostring(GeoInfo.country)
+  | project SenderIPv4, Country, Latitude, Longitude, count_;
+  let ipv6position = EmailEvents
+  | where Timestamp > ago(30d)
+  | where OrgLevelPolicy != "Phishing simulation" and OrgLevelPolicy != "SecOps Mailbox"
+  | where ThreatTypes has "Spam" and SenderIPv6 != ""
+  | extend Key = strcat(NetworkMessageId, '-', RecipientEmailAddress)
+  | summarize arg_max(Timestamp, *) by Key
+  | summarize count() by SenderIPv6
+  | extend GeoInfo = geo_info_from_ip_address(SenderIPv6)
+  | extend Latitude = tostring(GeoInfo.latitude), Longitude = tostring(GeoInfo.longitude), Country = tostring(GeoInfo.country)
+  | project SenderIPv6, Country, Latitude, Longitude, count_;
+  ipv4position
+  | union ipv6position
+  | project SenderIPv6, SenderIPv4, Country, Latitude, Longitude, count_
+version: 1.1.0

@@ -1,0 +1,25 @@
+id: 55cab45d-e74b-5e87-93b1-fc1824db80ef
+Function:
+  Title: corelight_ntlm parser for Corelight
+  Version: '2.0.0'
+  LastUpdated: '2026-08-17'
+Category: Microsoft Sentinel Parser
+FunctionName: corelight_ntlm
+FunctionAlias: corelight_ntlm
+FunctionQuery: |+
+  let dummy_table = datatable(TimeGenerated: datetime) [];
+  let corelight_ntlm = view () {
+      union isfuzzy=true Corelight_v3_ntlm_CL, dummy_table
+        | extend
+            _path=path,
+            _system_name=system_name,
+            _write_ts=write_ts
+      | extend
+          EventVendor="Corelight",
+          EventProduct="CorelightSensor",
+          EventType="ntlm",
+          ts=TimeGenerated
+  };
+  corelight_ntlm
+
+...

@@ -4,6 +4,8 @@
       "parameters": {
           "FunctionName": {
               "defaultValue": "OktaSSO",
+              "minLength": 1,
+              "maxLength": 11,
               "type": "string"
           },  
           "WorkspaceID": {
@@ -21,21 +23,30 @@
           "Uri": {
               "type": "string",
               "defaultValue": "https://<OktaDomain>/api/v1/logs?since="
-          }
+          },
+          "AppInsightsWorkspaceResourceID": {
+            "type": "string",
+            "metadata": {
+                "description": "Migrate Classic Application Insights to Log Analytic Workspace which is retiring by 29 Febraury 2024. Use 'Log Analytic Workspace-->Properties' blade having 'Resource ID' property value. This is a fully qualified resourceId which is in format '/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.OperationalInsights/workspaces/{workspaceName}'"
+            }
+        }
       },
       "variables": {
-          "FunctionName": "[concat(toLower(parameters('FunctionName')), uniqueString(resourceGroup().id))]"
+          "FunctionName": "[concat(toLower(parameters('FunctionName')), uniqueString(resourceGroup().id))]",
+          "StorageSuffix":"[environment().suffixes.storage]",
+          "LogAnaltyicsUri":"[replace(environment().portal, 'https://portal', concat('https://', toLower(parameters('WorkspaceID')), '.ods.opinsights'))]"
       },
       "resources": [
           {
               "type": "Microsoft.Insights/components",
-              "apiVersion": "2015-05-01",
+              "apiVersion": "2020-02-02",
               "name": "[variables('FunctionName')]",
               "location": "[resourceGroup().location]",
               "kind": "web",
               "properties": {
                   "Application_Type": "web",
-                  "ApplicationId": "[variables('FunctionName')]"
+                  "ApplicationId": "[variables('FunctionName')]",
+                  "WorkspaceResourceId": "[parameters('AppInsightsWorkspaceResourceID')]"
               }
           },
           {
@@ -157,11 +168,11 @@
                         },
                         {
                             "name": "AzureWebJobsStorage",
-                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', toLower(variables('FunctionName')),';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts', toLower(variables('FunctionName'))), '2019-06-01').keys[0].value, ';EndpointSuffix=core.windows.net')]"
+                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', toLower(variables('FunctionName')),';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts', toLower(variables('FunctionName'))), '2019-06-01').keys[0].value, ';EndpointSuffix=',toLower(variables('StorageSuffix')))]"
                         },
                         {
                             "name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
-                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', toLower(variables('FunctionName')),';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', toLower(variables('FunctionName'))), '2019-06-01').keys[0].value, ';EndpointSuffix=core.windows.net')]"
+                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', toLower(variables('FunctionName')),';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', toLower(variables('FunctionName'))), '2019-06-01').keys[0].value, ';EndpointSuffix=',toLower(variables('StorageSuffix')))]"
                         },
                         {
                             "name": "WEBSITE_CONTENTSHARE",
@@ -192,6 +203,10 @@
                             "value": "[parameters('Uri')]"
                         },
                         {
+                            "name": "logAnalyticsUri",
+                            "value": "[variables('LogAnaltyicsUri')]"
+                        },
+                        {
                             "name": "WEBSITE_RUN_FROM_PACKAGE",
                             "value": "https://aka.ms/sentineloktaazurefunctioncodev2"
                         }
@@ -202,19 +217,6 @@
                   "httpsOnly": true,
                   "clientAffinityEnabled": true,
                    "alwaysOn": true
-              }
-          },
-          {
-              "type": "Microsoft.Web/sites/hostNameBindings",
-              "apiVersion": "2018-11-01",
-              "name": "[concat(variables('FunctionName'), '/', variables('FunctionName'), '.azurewebsites.net')]",
-              "location": "[resourceGroup().location]",
-              "dependsOn": [
-                  "[resourceId('Microsoft.Web/sites', variables('FunctionName'))]"
-              ],
-              "properties": {
-                  "siteName": "[variables('FunctionName')]",
-                  "hostNameType": "Verified"
               }
           },
           {

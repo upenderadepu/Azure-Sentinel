@@ -1,0 +1,47 @@
+id: 132b98a5-07e9-401a-9b6f-453e52a53979
+name: SlackAudit - Suspicious file downloaded.
+description: |
+  'Detects potentialy suspicious downloads.'
+severity: Medium
+status: Available
+requiredDataConnectors:
+  - connectorId: SlackAuditAPI
+    dataTypes:
+      - SlackAudit_CL
+queryFrequency: 1h
+queryPeriod: 1h
+triggerOperator: gt
+triggerThreshold: 0
+tactics:
+  - InitialAccess
+relevantTechniques:
+  - T1189
+query: |
+  SlackAudit
+  | where DvcAction =~ 'file_downloaded'
+  | extend FileName = tostring(EntityFileName)
+  | extend fe = split(FileName, '.')
+  | extend FileExtension = iff(array_length(fe) > 1, tostring(fe[-1]), '')
+  | where FileName contains '.'
+  | where FileExtension matches regex @"^[A-Za-z]{1,4}$"
+  | project EntityFileName = FileName, SrcUserName
+  | extend AccountCustomEntity = SrcUserName
+  | extend FileCustomEntity = EntityFileName
+entityMappings:
+  - entityType: Account
+    fieldMappings:
+      - identifier: FullName
+        columnName: AccountCustomEntity
+  - entityType: File
+    fieldMappings:
+      - identifier: Name
+        columnName: FileCustomEntity
+alertDetailsOverride:
+  alertDisplayNameFormat: 'Suspicious Slack file downloaded by {{SrcUserName}}: {{EntityFileName}}'
+  alertDescriptionFormat: A Slack audit file_downloaded event matched the suspicious extension heuristic for {{EntityFileName}}
+    by {{SrcUserName}}.
+customDetails:
+  FileName: EntityFileName
+  UserName: SrcUserName
+version: 1.0.1
+kind: Scheduled

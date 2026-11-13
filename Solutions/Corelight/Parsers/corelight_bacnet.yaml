@@ -1,0 +1,25 @@
+id: 4f593b20-11ef-5873-9f60-116c0957ad90
+Function:
+  Title: corelight_bacnet parser for Corelight
+  Version: '2.0.0'
+  LastUpdated: '2026-08-17'
+Category: Microsoft Sentinel Parser
+FunctionName: corelight_bacnet
+FunctionAlias: corelight_bacnet
+FunctionQuery: |+
+  let dummy_table = datatable(TimeGenerated: datetime) [];
+  let corelight_bacnet = view () {
+      union isfuzzy=true Corelight_v3_bacnet_CL, dummy_table
+        | extend
+            _path=path,
+            _system_name=system_name,
+            _write_ts=write_ts
+      | extend
+          EventVendor="Corelight",
+          EventProduct="CorelightSensor",
+          EventType="bacnet",
+          ts=TimeGenerated
+  };
+  corelight_bacnet
+
+...

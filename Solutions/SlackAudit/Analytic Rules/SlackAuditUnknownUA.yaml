@@ -1,0 +1,42 @@
+id: 3b11f06e-4afd-4ae6-8477-c61136619ac8
+name: SlackAudit - Unknown User Agent
+description: |
+  'Detects Slack workspace activity from unknown user agents by comparing recent UserAgentOriginal values against
+  a 14d baseline of known user agents.'
+severity: Low
+status: Available
+requiredDataConnectors:
+  - connectorId: SlackAuditAPI
+    dataTypes:
+      - SlackAudit_CL
+queryFrequency: 24h
+queryPeriod: 14d
+triggerOperator: gt
+triggerThreshold: 0
+tactics: 
+  - CommandAndControl
+relevantTechniques:
+  - T1071
+  - T1071.001
+query: |
+  let lbperiod = 14d;
+  let known_UAs = SlackAudit
+  | where TimeGenerated > ago(lbperiod)
+  | where isnotempty(UserAgentOriginal)
+  | summarize makeset(UserAgentOriginal);
+  SlackAudit
+  | where UserAgentOriginal !in (known_UAs)
+  | extend AccountCustomEntity = SrcUserName
+entityMappings:
+  - entityType: Account
+    fieldMappings:
+      - identifier: FullName
+        columnName: AccountCustomEntity
+alertDetailsOverride:
+  alertDisplayNameFormat: Slack audit unknown user agent for {{AccountCustomEntity}}
+  alertDescriptionFormat: Slack activity from {{AccountCustomEntity}} used unknown user agent {{UserAgentOriginal}}
+customDetails:
+  Account: AccountCustomEntity
+  UserAgent: UserAgentOriginal
+version: 1.0.2
+kind: Scheduled

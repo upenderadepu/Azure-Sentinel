@@ -1,0 +1,49 @@
+id: d944d564-b6fa-470d-b5ab-41b341878c5e
+name: API - API Scraping
+description: |
+  '42Crunch API protection against API scraping'
+severity: High
+requiredDataConnectors:
+  - connectorId: 42CrunchAPIProtection
+    dataTypes:
+      - FortyTwoCrunchAPIProtection
+  - connectorId: FortyTwoCrunchAPIProtection
+    dataTypes:
+      - FortyTwoCrunchAPIProtection
+queryFrequency: 5m
+queryPeriod: 5m
+triggerOperator: gt
+triggerThreshold: 0
+eventGroupingSettings:
+  aggregationKind: SingleAlert
+status: Available
+tactics:
+  - Reconnaissance
+  - Collection
+relevantTechniques:
+  - T1593
+  - T1119
+query: |
+  let firstRec = FortyTwoCrunchAPIProtection
+  | where TimeGenerated >= ago(5m) 
+  | project-away NonBlockingMode, SourcePort, DestinationPort, Query, ApiId, RequestHeader, ResponseHeader, Errors, EventType, Uuid
+  | where UriPath has "/api/properties?page=" and Status == 200;
+  let rateLimitCount = (toscalar(firstRec | count));
+  let recCount = iff((rateLimitCount > 100), 1, 0);
+  firstRec | top recCount by Timestamp desc;
+customDetails:
+entityMappings:
+  - entityType: IP
+    fieldMappings:
+      - identifier: Address
+        columnName: SourceIp
+  - entityType: Host
+    fieldMappings:
+      - identifier: HostName
+        columnName: Hostname
+  - entityType: Account
+    fieldMappings:
+      - identifier: FullName
+        columnName: InstanceName
+version: 3.0.1
+kind: Scheduled

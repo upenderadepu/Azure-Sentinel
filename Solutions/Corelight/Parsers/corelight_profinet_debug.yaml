@@ -1,0 +1,25 @@
+id: b84afa34-954a-5fed-9fa8-87ecf2ca6461
+Function:
+  Title: corelight_profinet_debug parser for Corelight
+  Version: '2.0.0'
+  LastUpdated: '2026-08-17'
+Category: Microsoft Sentinel Parser
+FunctionName: corelight_profinet_debug
+FunctionAlias: corelight_profinet_debug
+FunctionQuery: |+
+  let dummy_table = datatable(TimeGenerated: datetime) [];
+  let corelight_profinet_debug = view () {
+      union isfuzzy=true Corelight_v3_profinet_debug_CL, dummy_table
+        | extend
+            _path=path,
+            _system_name=system_name,
+            _write_ts=write_ts
+      | extend
+          EventVendor="Corelight",
+          EventProduct="CorelightSensor",
+          EventType="profinet_debug",
+          ts=TimeGenerated
+  };
+  corelight_profinet_debug
+
+...

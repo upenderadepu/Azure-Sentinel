@@ -1,0 +1,211 @@
+Parser:
+  Title: Audit Event ASIM parser for Barracuda WAF
+  Version: '0.2.3'
+  LastUpdated: Oct 10, 2026
+Product:
+  Name: Barracuda WAF
+Normalization:
+  Schema: AuditEvent
+  Version: '1.0.0'
+References:
+- Title: ASIM Audit Event Schema
+  Link: https://aka.ms/ASimAuditEventDoc
+- Title: ASIM
+  Link: https://aka.ms/AboutASIM
+- Title: Logs type Description in Barracuda WAF
+  Link: https://campus.barracuda.com/product/webapplicationfirewall/doc/78810008/types-of-logs/
+Description: |
+  This ASIM parser supports normalizing Barracuda WAF logs ingested in 'barracuda_CL' table to the ASIM Audit Event schema.
+Exceptions:
+- Field: Dst
+  Warning: Missing recommended field
+  Exception: The existing mapping identifies the reporting WAF in Dvc fields and the administrator client in Src fields. It does not identify a separate destination entity to populate this alias.
+- Field: DvcAction
+  Warning: Missing recommended field
+  Exception: The supported AUDIT records describe administrator activity, not a security-device enforcement action. EventType and EventResult retain the operation and outcome.
+- Field: DvcDomain
+  Warning: Missing recommended field
+  Exception: The supported AUDIT format supplies a reporting-device name, but no separate device-domain field. The existing DvcHostname mapping is retained.
+- Field: TargetHostname
+  Warning: Missing recommended field
+  Exception: The supported AUDIT format identifies the reporting WAF, but no separate target-host identity. The WAF identity remains in the existing Dvc fields.
+- Field: TargetIpAddr
+  Warning: Missing recommended field
+  Exception: Audit objects are configuration resources, not necessarily network endpoints. The reporting-device and administrator-client IP addresses are retained in DvcIpAddr and SrcIpAddr.
+ParserName: ASimAuditEventBarracudaWAF
+EquivalentBuiltInParser: _ASim_AuditEvent_BarracudaWAF
+ParserParams:
+  - Name: disabled
+    Type: bool
+    Default: false
+ParserQuery: |
+  let barracudaSchema = datatable(
+      LogType_s: string,
+      UnitName_s: string,
+      EventName_s: string,
+      DeviceReceiptTime_s: string,
+      ChangeType_s: string,
+      CommandName_s: string,
+      Severity_s: string,
+      LoginIP_s: string,
+      NewValue_s: string,
+      HostIP_s: string,
+      host_s: string,
+      OldValue_s: string,
+      EventMessage_s: string,
+      AdminName_s: string,
+      ObjectType_s: string,
+      ObjectName_s: string,
+      TimeTaken_d: real,
+      _ResourceId: string,
+      RawData: string,
+      SourceIP: string,
+      Message: string,
+      Computer: string,
+      MG: string,
+      ManagementGroupName: string,
+      TenantId: string,
+      SourceSystem: string
+  )[];
+  let EventTypeLookup = datatable (
+      ChangeType_s: string,
+      EventType_lookup: string
+  )
+      [
+      "SET", "Set",
+      "ADD", "Create",
+      "DEL", "Delete",
+      "NONE", "Other",
+      "", "Other"
+  ];
+  let SeverityLookup = datatable (severity: int, EventSeverity: string)
+      [
+      0, "High", 
+      1, "High", 
+      2, "High", 
+      3, "Medium",
+      4, "Low",
+      5, "Low", 
+      6, "Informational",
+      7, "Informational" 
+  ];
+  let ObjectTypeLookup = datatable (ObjectType_s: string, ObjectType: string)[
+      "global", "Other",
+      "Services", "Service",
+      "web_firewall_policy", "Policy Rule",
+      "service", "Service",
+      "json_url_profile", "Other",
+      "server", "Service",
+      "header_acl", "Directory Service Object",
+      "virtual_ip_config_address", "Configuration Atom",
+      "aps_req_rewrite_policy", "Policy Rule",
+      "aps_url_acl", "Directory Service Object",
+      "websocket_security_policy", "Policy Rule",
+      "aps_ftp_acl", "Directory Service Object",
+      "user_system_ip", "Configuration Atom",
+      "syslog_server", "Service",
+      "attack_action", "Configuration Atom",
+      "global_adr", "Configuration Atom",
+      "aps_content_protection", "Other"
+  ];
+  let parser = (disabled: bool=false) {
+      let BarracudaCustom = 
+          (union isfuzzy=true
+              barracudaSchema,
+              barracuda_CL
+          | where not(disabled) 
+              and LogType_s == "AUDIT" 
+              and EventName_s !in ("LOGIN", "LOGOUT", "UNSUCCESSFUL_LOGIN", "SESSION_TIMEOUT")
+          | parse trim(@'[^\w(")]+', EventMessage_s) with * "Reason=" Reason: string
+          | extend Reason = trim('"', Reason)
+          | extend
+              EventResultDetails = Reason,
+              severity = toint(Severity_s)
+          | lookup SeverityLookup on severity
+          | lookup EventTypeLookup on ChangeType_s
+          | lookup ObjectTypeLookup on ObjectType_s
+          | extend
+              EventType = EventType_lookup,
+              EventResult = "Success", 
+              EventSchema = "AuditEvent",
+              EventSchemaVersion = "1.0.0",
+              EventVendor = "Barracuda",
+              EventProduct = "WAF",
+              EventCount = toint(1)
+          | extend
+              Dvc = UnitName_s, 
+              EventStartTime = iff(isnotempty(TimeTaken_d), unixtime_milliseconds_todatetime(tolong(DeviceReceiptTime_s) - tolong(TimeTaken_d)), unixtime_milliseconds_todatetime(tolong(DeviceReceiptTime_s))),
+              Operation = CommandName_s,
+              DvcIpAddr = HostIP_s,
+              NewValue = NewValue_s,
+              SrcIpAddr = LoginIP_s,
+              EventMessage = EventMessage_s,
+              OldValue = OldValue_s,
+              DvcHostname = host_s,
+              ActorUsername = AdminName_s,
+              Object = ObjectName_s      
+          | extend
+              Src = SrcIpAddr,
+              EventEndTime = EventStartTime,
+              ActorUsernameType = iff(isnotempty(ActorUsername), "Simple", ""),
+              ActorUserType = iff(isnotempty(ActorUsername), "Admin", ""),
+              User = ActorUsername,
+              Value = NewValue          
+          | extend
+              IpAddr = SrcIpAddr,
+              ValueType = iff(isnotempty(Value), "Other", "")
+          | extend
+              EventUid = tostring(column_ifexists("_ItemId", "")),
+              ActingApplicationEntityKey = "",
+              ActorUserAdditionalIds = dynamic([]),
+              ActorUserEntityKey = "",
+              AdditionalEntities = dynamic([]),
+              DvcEntityKey = "",
+              SrcSystemEntityKey = "",
+              TargetApplicationEntityKey = "",
+              TargetSystemEntityKey = ""
+          | project
+              ActingApplicationEntityKey,
+              ActorUserAdditionalIds,
+              ActorUserEntityKey,
+              ActorUserType,
+              ActorUsername,
+              ActorUsernameType,
+              AdditionalEntities,
+              Dvc,
+              DvcEntityKey,
+              DvcHostname,
+              DvcIpAddr,
+              EventCount,
+              EventEndTime,
+              EventMessage,
+              EventProduct,
+              EventResult,
+              EventResultDetails,
+              EventSchema,
+              EventSchemaVersion,
+              EventSeverity,
+              EventStartTime,
+              EventType,
+              EventUid,
+              EventVendor,
+              IpAddr,
+              NewValue,
+              Object,
+              ObjectType,
+              OldValue,
+              Operation,
+              Src,
+              SrcIpAddr,
+              SrcSystemEntityKey,
+              TargetApplicationEntityKey,
+              TargetSystemEntityKey,
+              TimeGenerated,
+              Type,
+              User,
+              Value,
+              ValueType
+          );
+      BarracudaCustom
+  };
+  parser(disabled=disabled)

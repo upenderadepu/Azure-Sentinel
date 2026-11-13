@@ -1,0 +1,53 @@
+{
+    "Name": "dossier_rpz_feeds_records_CL",
+    "Properties": [
+        {
+            "Name": "class",
+            "Type": "string"
+        },
+        {
+            "Name": "expiration",
+            "Type": "datetime"
+        },
+        {
+            "Name": "feed_name",
+            "Type": "string"
+        },
+        {
+            "Name": "indicator",
+            "Type": "string"
+        },
+        {
+            "Name": "property",
+            "Type": "string"
+        },
+        {
+            "Name": "threat_level",
+            "Type": "real"
+        },
+        {
+            "Name": "task_id",
+            "Type": "string"
+        },
+        {
+            "Name": "detected",
+            "Type": "datetime"
+        },
+        {
+            "Name": "TimeGenerated",
+            "Type": "datetime"
+        },
+        {
+            "Name": "TenantId",
+            "Type": "string"
+        },
+        {
+            "Name": "Type",
+            "Type": "string"
+        },
+        {
+            "Name": "_ResourceId",
+            "Type": "string"
+        }
+    ]
+}

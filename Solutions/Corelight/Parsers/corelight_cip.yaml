@@ -1,0 +1,25 @@
+id: 14f579c5-96ac-51d0-bc76-a4e9119970a3
+Function:
+  Title: corelight_cip parser for Corelight
+  Version: '2.0.0'
+  LastUpdated: '2026-08-17'
+Category: Microsoft Sentinel Parser
+FunctionName: corelight_cip
+FunctionAlias: corelight_cip
+FunctionQuery: |+
+  let dummy_table = datatable(TimeGenerated: datetime) [];
+  let corelight_cip = view () {
+      union isfuzzy=true Corelight_v3_cip_CL, dummy_table
+        | extend
+            _path=path,
+            _system_name=system_name,
+            _write_ts=write_ts
+      | extend
+          EventVendor="Corelight",
+          EventProduct="CorelightSensor",
+          EventType="cip",
+          ts=TimeGenerated
+  };
+  corelight_cip
+
+...

@@ -1,0 +1,25 @@
+id: 95dc504f-ab3d-5385-9383-ccf0d7a3dfa2
+Function:
+  Title: corelight_modbus parser for Corelight
+  Version: '2.0.0'
+  LastUpdated: '2026-08-17'
+Category: Microsoft Sentinel Parser
+FunctionName: corelight_modbus
+FunctionAlias: corelight_modbus
+FunctionQuery: |+
+  let dummy_table = datatable(TimeGenerated: datetime) [];
+  let corelight_modbus = view () {
+      union isfuzzy=true Corelight_v3_modbus_CL, dummy_table
+        | extend
+            _path=path,
+            _system_name=system_name,
+            _write_ts=write_ts
+      | extend
+          EventVendor="Corelight",
+          EventProduct="CorelightSensor",
+          EventType="modbus",
+          ts=TimeGenerated
+  };
+  corelight_modbus
+
+...

@@ -1,0 +1,287 @@
+Parser:
+  Title: Audit Event ASIM filtering unifying parser for AWS CloudTrail activity
+  Version: '0.2.0'
+  LastUpdated: Nov 04, 2026
+Product:
+  Name: AWS CloudTrail
+Normalization:
+  Schema: AuditEvent
+  Version: '1.0.0'
+References:
+- Title: ASIM Audit Event Schema
+  Link: https://aka.ms/ASimAuditEventDoc
+- Title: ASIM
+  Link: https://aka.ms/AboutASIM
+- Title: Amazon EC2 API actions
+  Link: https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_Operations.html
+Description: |
+  Filters and unifies the EC2 action-family parsers for AWSCloudTrail audit events using
+  a fuzzy union. All AuditEvent filters, disabled, and pack are forwarded to each child parser.
+ParserName: vimAuditEventAWSCloudTrail
+EquivalentBuiltInParser: _Im_AuditEvent_AWSCloudTrail
+Parsers:
+  - _Im_AuditEvent_AWSCloudTrailEC2Instances
+  - _Im_AuditEvent_AWSCloudTrailEC2LaunchAndAccess
+  - _Im_AuditEvent_AWSCloudTrailEC2CapacityAndReservations
+  - _Im_AuditEvent_AWSCloudTrailEC2FleetAndSpot
+  - _Im_AuditEvent_AWSCloudTrailEC2ImagesAndImportExport
+  - _Im_AuditEvent_AWSCloudTrailEC2EBS
+  - _Im_AuditEvent_AWSCloudTrailEC2VPCCoreAndRouting
+  - _Im_AuditEvent_AWSCloudTrailEC2InterfacesAndAddresses
+  - _Im_AuditEvent_AWSCloudTrailEC2SecurityAndObservability
+  - _Im_AuditEvent_AWSCloudTrailEC2IPAM
+  - _Im_AuditEvent_AWSCloudTrailEC2IPAMRouting
+  - _Im_AuditEvent_AWSCloudTrailEC2TransitGateway
+  - _Im_AuditEvent_AWSCloudTrailEC2TransitGatewayRouting
+  - _Im_AuditEvent_AWSCloudTrailEC2PrivateConnectivity
+  - _Im_AuditEvent_AWSCloudTrailEC2VerifiedAccess
+  - _Im_AuditEvent_AWSCloudTrailEC2AccountAndInfrastructure
+ParserParams:
+  - Name: starttime
+    Type: datetime
+    Default: datetime(null)
+  - Name: endtime
+    Type: datetime
+    Default: datetime(null)
+  - Name: srcipaddr_has_any_prefix
+    Type: dynamic
+    Default: dynamic([])
+  - Name: actorusername_has_any
+    Type: dynamic
+    Default: dynamic([])
+  - Name: operation_has_any
+    Type: dynamic
+    Default: dynamic([])
+  - Name: eventtype_in
+    Type: dynamic
+    Default: dynamic([])
+  - Name: eventresult
+    Type: string
+    Default: '*'
+  - Name: object_has_any
+    Type: dynamic
+    Default: dynamic([])
+  - Name: newvalue_has_any
+    Type: dynamic
+    Default: dynamic([])
+  - Name: disabled
+    Type: bool
+    Default: false
+  - Name: pack
+    Type: bool
+    Default: false
+ParserQuery: |
+  let DisabledParsers=materialize(_GetWatchlist('ASimDisabledParsers') | where SearchKey in ('Any', 'ExcludevimAuditEvent') | extend SourceSpecificParser=column_ifexists('SourceSpecificParser','') | distinct SourceSpecificParser);
+  let BuiltInDisabled=disabled or toscalar('ExcludevimAuditEventBuiltIn' in (DisabledParsers) or 'ExcludevimAuditEventAWSCloudTrail' in (DisabledParsers) or 'Any' in (DisabledParsers));
+  union isfuzzy=true
+  vimAuditEventAWSCloudTrailEC2AccountAndInfrastructure(
+    starttime=starttime,
+    endtime=endtime,
+    srcipaddr_has_any_prefix=srcipaddr_has_any_prefix,
+    actorusername_has_any=actorusername_has_any,
+    operation_has_any=operation_has_any,
+    eventtype_in=eventtype_in,
+    eventresult=eventresult,
+    object_has_any=object_has_any,
+    newvalue_has_any=newvalue_has_any,
+    disabled=(BuiltInDisabled or ('ExcludevimAuditEventAWSCloudTrailEC2AccountAndInfrastructure' in (DisabledParsers))),
+    pack=pack
+  ),
+  vimAuditEventAWSCloudTrailEC2CapacityAndReservations(
+    starttime=starttime,
+    endtime=endtime,
+    srcipaddr_has_any_prefix=srcipaddr_has_any_prefix,
+    actorusername_has_any=actorusername_has_any,
+    operation_has_any=operation_has_any,
+    eventtype_in=eventtype_in,
+    eventresult=eventresult,
+    object_has_any=object_has_any,
+    newvalue_has_any=newvalue_has_any,
+    disabled=(BuiltInDisabled or ('ExcludevimAuditEventAWSCloudTrailEC2CapacityAndReservations' in (DisabledParsers))),
+    pack=pack
+  ),
+  vimAuditEventAWSCloudTrailEC2EBS(
+    starttime=starttime,
+    endtime=endtime,
+    srcipaddr_has_any_prefix=srcipaddr_has_any_prefix,
+    actorusername_has_any=actorusername_has_any,
+    operation_has_any=operation_has_any,
+    eventtype_in=eventtype_in,
+    eventresult=eventresult,
+    object_has_any=object_has_any,
+    newvalue_has_any=newvalue_has_any,
+    disabled=(BuiltInDisabled or ('ExcludevimAuditEventAWSCloudTrailEC2EBS' in (DisabledParsers))),
+    pack=pack
+  ),
+  vimAuditEventAWSCloudTrailEC2FleetAndSpot(
+    starttime=starttime,
+    endtime=endtime,
+    srcipaddr_has_any_prefix=srcipaddr_has_any_prefix,
+    actorusername_has_any=actorusername_has_any,
+    operation_has_any=operation_has_any,
+    eventtype_in=eventtype_in,
+    eventresult=eventresult,
+    object_has_any=object_has_any,
+    newvalue_has_any=newvalue_has_any,
+    disabled=(BuiltInDisabled or ('ExcludevimAuditEventAWSCloudTrailEC2FleetAndSpot' in (DisabledParsers))),
+    pack=pack
+  ),
+  vimAuditEventAWSCloudTrailEC2ImagesAndImportExport(
+    starttime=starttime,
+    endtime=endtime,
+    srcipaddr_has_any_prefix=srcipaddr_has_any_prefix,
+    actorusername_has_any=actorusername_has_any,
+    operation_has_any=operation_has_any,
+    eventtype_in=eventtype_in,
+    eventresult=eventresult,
+    object_has_any=object_has_any,
+    newvalue_has_any=newvalue_has_any,
+    disabled=(BuiltInDisabled or ('ExcludevimAuditEventAWSCloudTrailEC2ImagesAndImportExport' in (DisabledParsers))),
+    pack=pack
+  ),
+  vimAuditEventAWSCloudTrailEC2Instances(
+    starttime=starttime,
+    endtime=endtime,
+    srcipaddr_has_any_prefix=srcipaddr_has_any_prefix,
+    actorusername_has_any=actorusername_has_any,
+    operation_has_any=operation_has_any,
+    eventtype_in=eventtype_in,
+    eventresult=eventresult,
+    object_has_any=object_has_any,
+    newvalue_has_any=newvalue_has_any,
+    disabled=(BuiltInDisabled or ('ExcludevimAuditEventAWSCloudTrailEC2Instances' in (DisabledParsers))),
+    pack=pack
+  ),
+  vimAuditEventAWSCloudTrailEC2InterfacesAndAddresses(
+    starttime=starttime,
+    endtime=endtime,
+    srcipaddr_has_any_prefix=srcipaddr_has_any_prefix,
+    actorusername_has_any=actorusername_has_any,
+    operation_has_any=operation_has_any,
+    eventtype_in=eventtype_in,
+    eventresult=eventresult,
+    object_has_any=object_has_any,
+    newvalue_has_any=newvalue_has_any,
+    disabled=(BuiltInDisabled or ('ExcludevimAuditEventAWSCloudTrailEC2InterfacesAndAddresses' in (DisabledParsers))),
+    pack=pack
+  ),
+  vimAuditEventAWSCloudTrailEC2IPAM(
+    starttime=starttime,
+    endtime=endtime,
+    srcipaddr_has_any_prefix=srcipaddr_has_any_prefix,
+    actorusername_has_any=actorusername_has_any,
+    operation_has_any=operation_has_any,
+    eventtype_in=eventtype_in,
+    eventresult=eventresult,
+    object_has_any=object_has_any,
+    newvalue_has_any=newvalue_has_any,
+    disabled=(BuiltInDisabled or ('ExcludevimAuditEventAWSCloudTrailEC2IPAM' in (DisabledParsers))),
+    pack=pack
+  ),
+  vimAuditEventAWSCloudTrailEC2IPAMRouting(
+    starttime=starttime,
+    endtime=endtime,
+    srcipaddr_has_any_prefix=srcipaddr_has_any_prefix,
+    actorusername_has_any=actorusername_has_any,
+    operation_has_any=operation_has_any,
+    eventtype_in=eventtype_in,
+    eventresult=eventresult,
+    object_has_any=object_has_any,
+    newvalue_has_any=newvalue_has_any,
+    disabled=(BuiltInDisabled or ('ExcludevimAuditEventAWSCloudTrailEC2IPAMRouting' in (DisabledParsers))),
+    pack=pack
+  ),
+  vimAuditEventAWSCloudTrailEC2LaunchAndAccess(
+    starttime=starttime,
+    endtime=endtime,
+    srcipaddr_has_any_prefix=srcipaddr_has_any_prefix,
+    actorusername_has_any=actorusername_has_any,
+    operation_has_any=operation_has_any,
+    eventtype_in=eventtype_in,
+    eventresult=eventresult,
+    object_has_any=object_has_any,
+    newvalue_has_any=newvalue_has_any,
+    disabled=(BuiltInDisabled or ('ExcludevimAuditEventAWSCloudTrailEC2LaunchAndAccess' in (DisabledParsers))),
+    pack=pack
+  ),
+  vimAuditEventAWSCloudTrailEC2PrivateConnectivity(
+    starttime=starttime,
+    endtime=endtime,
+    srcipaddr_has_any_prefix=srcipaddr_has_any_prefix,
+    actorusername_has_any=actorusername_has_any,
+    operation_has_any=operation_has_any,
+    eventtype_in=eventtype_in,
+    eventresult=eventresult,
+    object_has_any=object_has_any,
+    newvalue_has_any=newvalue_has_any,
+    disabled=(BuiltInDisabled or ('ExcludevimAuditEventAWSCloudTrailEC2PrivateConnectivity' in (DisabledParsers))),
+    pack=pack
+  ),
+  vimAuditEventAWSCloudTrailEC2SecurityAndObservability(
+    starttime=starttime,
+    endtime=endtime,
+    srcipaddr_has_any_prefix=srcipaddr_has_any_prefix,
+    actorusername_has_any=actorusername_has_any,
+    operation_has_any=operation_has_any,
+    eventtype_in=eventtype_in,
+    eventresult=eventresult,
+    object_has_any=object_has_any,
+    newvalue_has_any=newvalue_has_any,
+    disabled=(BuiltInDisabled or ('ExcludevimAuditEventAWSCloudTrailEC2SecurityAndObservability' in (DisabledParsers))),
+    pack=pack
+  ),
+  vimAuditEventAWSCloudTrailEC2TransitGateway(
+    starttime=starttime,
+    endtime=endtime,
+    srcipaddr_has_any_prefix=srcipaddr_has_any_prefix,
+    actorusername_has_any=actorusername_has_any,
+    operation_has_any=operation_has_any,
+    eventtype_in=eventtype_in,
+    eventresult=eventresult,
+    object_has_any=object_has_any,
+    newvalue_has_any=newvalue_has_any,
+    disabled=(BuiltInDisabled or ('ExcludevimAuditEventAWSCloudTrailEC2TransitGateway' in (DisabledParsers))),
+    pack=pack
+  ),
+  vimAuditEventAWSCloudTrailEC2TransitGatewayRouting(
+    starttime=starttime,
+    endtime=endtime,
+    srcipaddr_has_any_prefix=srcipaddr_has_any_prefix,
+    actorusername_has_any=actorusername_has_any,
+    operation_has_any=operation_has_any,
+    eventtype_in=eventtype_in,
+    eventresult=eventresult,
+    object_has_any=object_has_any,
+    newvalue_has_any=newvalue_has_any,
+    disabled=(BuiltInDisabled or ('ExcludevimAuditEventAWSCloudTrailEC2TransitGatewayRouting' in (DisabledParsers))),
+    pack=pack
+  ),
+  vimAuditEventAWSCloudTrailEC2VerifiedAccess(
+    starttime=starttime,
+    endtime=endtime,
+    srcipaddr_has_any_prefix=srcipaddr_has_any_prefix,
+    actorusername_has_any=actorusername_has_any,
+    operation_has_any=operation_has_any,
+    eventtype_in=eventtype_in,
+    eventresult=eventresult,
+    object_has_any=object_has_any,
+    newvalue_has_any=newvalue_has_any,
+    disabled=(BuiltInDisabled or ('ExcludevimAuditEventAWSCloudTrailEC2VerifiedAccess' in (DisabledParsers))),
+    pack=pack
+  ),
+  vimAuditEventAWSCloudTrailEC2VPCCoreAndRouting(
+    starttime=starttime,
+    endtime=endtime,
+    srcipaddr_has_any_prefix=srcipaddr_has_any_prefix,
+    actorusername_has_any=actorusername_has_any,
+    operation_has_any=operation_has_any,
+    eventtype_in=eventtype_in,
+    eventresult=eventresult,
+    object_has_any=object_has_any,
+    newvalue_has_any=newvalue_has_any,
+    disabled=(BuiltInDisabled or ('ExcludevimAuditEventAWSCloudTrailEC2VPCCoreAndRouting' in (DisabledParsers))),
+    pack=pack
+  )
+  | extend
+    EventVendor = "AWS",
+    EventProduct = "CloudTrail"

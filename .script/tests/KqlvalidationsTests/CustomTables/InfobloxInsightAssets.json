@@ -1,0 +1,93 @@
+{
+    "Name": "InfobloxInsightAssets",
+    "Properties": [
+        {
+            "Name": "TenantId",
+            "Type": "String"
+        },
+        {
+            "Name": "SourceSystem",
+            "Type": "String"
+        },
+        {
+            "Name": "MG",
+            "Type": "String"
+        },
+        {
+            "Name": "ManagementGroupName",
+            "Type": "String"
+        },
+        {
+            "Name": "TimeGenerated",
+            "Type": "DateTime"
+        },
+        {
+            "Name": "Computer",
+            "Type": "String"
+        },
+        {
+            "Name": "RawData",
+            "Type": "String"
+        },
+        {
+            "Name": "Type",
+            "Type": "String"
+        },
+        {
+            "Name": "InfobloxInsightID",
+            "Type": "String"
+        },
+        {
+            "Name": "InfobloxInsightLogType",
+            "Type": "String"
+        },
+        {
+            "Name": "SourceMACAddress",
+            "Type": "Dynamic"
+        },
+        {
+            "Name": "EventCount",
+            "Type": "Int"
+        },
+        {
+            "Name": "SourceIP",
+            "Type": "Dynamic"
+        },
+        {
+            "Name": "LastSeen",
+            "Type": "String"
+        },
+        {
+            "Name": "FirstSeen",
+            "Type": "String"
+        },
+        {
+            "Name": "SourceUserName",
+            "Type": "Dynamic"
+        },
+        {
+            "Name": "Location",
+            "Type": "Dynamic"
+        },
+        {
+            "Name": "DeviceName",
+            "Type": "String"
+        },
+        {
+            "Name": "Description",
+            "Type": "String"
+        },
+        {
+            "Name": "IsVerified",
+            "Type": "Bool"
+        },
+        {
+            "Name": "IsRisky",
+            "Type": "Bool"
+        },
+        {
+            "Name": "Indicators",
+            "Type": "Dynamic"
+        }
+    ]
+}

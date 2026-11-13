@@ -1,0 +1,32 @@
+id: 4fbbae0a-ce5b-4b2a-b5e6-700920561680
+name: AWSCloudTrail - ECR Container Image Medium Severity Findings
+description: |
+  Identifies ECR container image scan results reporting medium severity vulnerabilities, which may indicate security weaknesses in container images requiring prompt review and remediation.
+severity: Medium
+requiredDataConnectors:
+  - connectorId: AWS
+    dataTypes:
+      - AWSCloudTrail
+tactics:
+  - Execution
+relevantTechniques:
+  - T1204.003
+query: |
+    AWSCloudTrail
+    | where EventName == "DescribeImageScanFindings" and isempty(ErrorCode) and isempty(ErrorMessage)
+    | extend repoName = tostring(parse_json(ResponseElements).repositoryName)
+    | extend imageId = tostring(parse_json(ResponseElements).imageId.imageDigest)
+    | extend Medium = toint(parse_json(ResponseElements).imageScanFindings.findingSeverityCounts.MEDIUM)
+    | where Medium > 0
+    | extend UserIdentityUserName = iff(isnotempty(UserIdentityUserName), UserIdentityUserName, tostring(split(UserIdentityArn,'/')[-1]))
+    | order by TimeGenerated desc
+entityMappings:
+  - entityType: Account
+    fieldMappings:
+      - identifier: FullName
+        columnName: UserIdentityUserName
+  - entityType: IP
+    fieldMappings:
+      - identifier: Address
+        columnName: SourceIpAddress
+version: 1.0.0

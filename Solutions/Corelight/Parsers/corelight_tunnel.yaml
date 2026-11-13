@@ -1,0 +1,25 @@
+id: 697ba467-b83c-5084-aed8-9b2d327a02b9
+Function:
+  Title: corelight_tunnel parser for Corelight
+  Version: '2.0.0'
+  LastUpdated: '2026-08-17'
+Category: Microsoft Sentinel Parser
+FunctionName: corelight_tunnel
+FunctionAlias: corelight_tunnel
+FunctionQuery: |+
+  let dummy_table = datatable(TimeGenerated: datetime) [];
+  let corelight_tunnel = view () {
+      union isfuzzy=true Corelight_v3_tunnel_CL, dummy_table
+        | extend
+            _path=path,
+            _system_name=system_name,
+            _write_ts=write_ts
+      | extend
+          EventVendor="Corelight",
+          EventProduct="CorelightSensor",
+          EventType="tunnel",
+          ts=TimeGenerated
+  };
+  corelight_tunnel
+
+...

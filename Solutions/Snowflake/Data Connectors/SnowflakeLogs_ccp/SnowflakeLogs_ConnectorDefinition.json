@@ -1,0 +1,356 @@
+{
+  "name": "SnowflakeConnector",
+  "apiVersion": "2025-03-01",
+  "type": "Microsoft.SecurityInsights/dataConnectorDefinitions",
+  "location": "{{location}}",
+  "kind": "Customizable",
+  "properties": {
+    "connectorUiConfig": {
+      "id": "SnowflakeConnector",
+      "title": "Snowflake (via Codeless Connector Framework)",
+      "publisher": "Microsoft",
+      "descriptionMarkdown": "The Snowflake data connector provides the capability to ingest Snowflake [Login History Logs](https://docs.snowflake.com/en/sql-reference/account-usage/login_history), [Query History Logs](https://docs.snowflake.com/en/sql-reference/account-usage/query_history), [User-Grant Logs](https://docs.snowflake.com/en/sql-reference/account-usage/grants_to_users), [Role-Grant Logs](https://docs.snowflake.com/en/sql-reference/account-usage/grants_to_roles), [Load History Logs](https://docs.snowflake.com/en/sql-reference/account-usage/load_history), [Materialized View Refresh History Logs](https://docs.snowflake.com/en/sql-reference/account-usage/materialized_view_refresh_history), [Roles Logs](https://docs.snowflake.com/en/sql-reference/account-usage/roles), [Tables Logs](https://docs.snowflake.com/en/sql-reference/account-usage/tables), [Table Storage Metrics Logs](https://docs.snowflake.com/en/sql-reference/account-usage/table_storage_metrics), [Users Logs](https://docs.snowflake.com/en/sql-reference/account-usage/users) into Microsoft Sentinel using the Snowflake SQL API. Refer to [Snowflake SQL API documentation](https://docs.snowflake.com/en/developer-guide/sql-api/reference) for more information.",
+      "graphQueries": [
+        {
+          "metricName": "Total Login events received",
+          "legend": "Snowflake Login History Logs",
+          "baseQuery": "SnowflakeLoginV3_CL"
+        },
+        {
+          "metricName": "Total Query events received",
+          "legend": "Snowflake Query History Logs",
+          "baseQuery": "SnowflakeQueryV3_CL"
+        },
+        {
+          "metricName": "Total Grants to User events received",
+          "legend": "Snowflake User Grant Logs",
+          "baseQuery": "SnowflakeUserGrantV3_CL"
+        },
+        {
+          "metricName": "Total Grants to Role events received",
+          "legend": "Snowflake Role Grant Logs",
+          "baseQuery": "SnowflakeRoleGrantV3_CL"
+        },
+        {
+          "metricName": "Total Load History events received",
+          "legend": "Snowflake Load History Logs",
+          "baseQuery": "SnowflakeLoadV3_CL"
+        },
+        {
+          "metricName": "Total Materialized View Refresh History events received",
+          "legend": "Snowflake Materialized View Refresh History Logs",
+          "baseQuery": "SnowflakeMaterializedViewV3_CL"
+        },
+        {
+          "metricName": "Total Role Events received",
+          "legend": "Snowflake Roles Logs",
+          "baseQuery": "SnowflakeRolesV3_CL"
+        },
+        {
+          "metricName": "Total Table Events received",
+          "legend": "Snowflake Tables Logs",
+          "baseQuery": "SnowflakeTablesV3_CL"
+        },
+        {
+          "metricName": "Total Table Storage Metrics Events received",
+          "legend": "Snowflake Table Storage Metrics Logs",
+          "baseQuery": "SnowflakeTableStorageMetricsV3_CL"
+        },
+        {
+          "metricName": "Total Users Events received",
+          "legend": "Snowflake Users Logs",
+          "baseQuery": "SnowflakeUsersV3_CL"
+        }
+      ],
+      "sampleQueries": [
+        {
+          "description": "Get Sample Login Events of Snowflake",
+          "query": "SnowflakeLoginV3_CL | take 10"
+        },
+        {
+          "description": "Get Sample Query Events of Snowflake",
+          "query": "SnowflakeQueryV3_CL | take 10"
+        },
+        {
+          "description": "Get Sample User Grant Events of Snowflake",
+          "query": "SnowflakeUserGrantV3_CL | take 10"
+        },
+        {
+          "description": "Get Sample Role Grant Events of Snowflake",
+          "query": "SnowflakeRoleGrantV3_CL | take 10"
+        },
+        {
+          "description": "Get Sample Load History Events of Snowflake",
+          "query": "SnowflakeLoadV3_CL | take 10"
+        },
+        {
+          "description": "Get Sample Materialized View Refresh History Events of Snowflake",
+          "query": "SnowflakeMaterializedViewV3_CL | take 10"
+        },
+        {
+          "description": "Get Sample Role Events of Snowflake",
+          "query": "SnowflakeRolesV3_CL | take 10"
+        },
+        {
+          "description": "Get Sample Table Events of Snowflake",
+          "query": "SnowflakeTablesV3_CL | take 10"
+        },
+        {
+          "description": "Get Sample Table Storage Metrics Events of Snowflake",
+          "query": "SnowflakeTableStorageMetricsV3_CL | take 10"
+        },
+        {
+          "description": "Get Sample Users of Snowflake",
+          "query": "SnowflakeUsersV3_CL | take 10"
+        }
+      ],
+      "dataTypes": [
+        {
+          "name": "SnowflakeLoadV3_CL",
+          "lastDataReceivedQuery": "SnowflakeLoadV3_CL\n | where TimeGenerated > ago(12h) | summarize Time = max(TimeGenerated)\n | where isnotempty(Time)"
+        },
+        {
+          "name": "SnowflakeLoginV3_CL",
+          "lastDataReceivedQuery": "SnowflakeLoginV3_CL\n | where TimeGenerated > ago(12h) | summarize Time = max(TimeGenerated)\n | where isnotempty(Time)"
+        },
+        {
+          "name": "SnowflakeMaterializedViewV3_CL",
+          "lastDataReceivedQuery": "SnowflakeMaterializedViewV3_CL\n | where TimeGenerated > ago(12h) | summarize Time = max(TimeGenerated)\n | where isnotempty(Time)"
+        },
+        {
+          "name": "SnowflakeQueryV3_CL",
+          "lastDataReceivedQuery": "SnowflakeQueryV3_CL\n | where TimeGenerated > ago(12h) | summarize Time = max(TimeGenerated)\n | where isnotempty(Time)"
+        },
+        {
+          "name": "SnowflakeRoleGrantV3_CL",
+          "lastDataReceivedQuery": "SnowflakeRoleGrantV3_CL\n | where TimeGenerated > ago(12h) | summarize Time = max(TimeGenerated)\n | where isnotempty(Time)"
+        },
+        {
+          "name": "SnowflakeRolesV3_CL",
+          "lastDataReceivedQuery": "SnowflakeRolesV3_CL\n | where TimeGenerated > ago(12h) | summarize Time = max(TimeGenerated)\n | where isnotempty(Time)"
+        },
+        {
+          "name": "SnowflakeTablesV3_CL",
+          "lastDataReceivedQuery": "SnowflakeTablesV3_CL\n | where TimeGenerated > ago(12h) | summarize Time = max(TimeGenerated)\n | where isnotempty(Time)"
+        },
+        {
+          "name": "SnowflakeTableStorageMetricsV3_CL",
+          "lastDataReceivedQuery": "SnowflakeTableStorageMetricsV3_CL\n | where TimeGenerated > ago(12h) | summarize Time = max(TimeGenerated)\n | where isnotempty(Time)"
+        },
+        {
+          "name": "SnowflakeUserGrantV3_CL",
+          "lastDataReceivedQuery": "SnowflakeUserGrantV3_CL\n | where TimeGenerated > ago(12h) | summarize Time = max(TimeGenerated)\n | where isnotempty(Time)"
+        },
+        {
+          "name": "SnowflakeUsersV3_CL",
+          "lastDataReceivedQuery": "SnowflakeUsersV3_CL\n | where TimeGenerated > ago(12h) | summarize Time = max(TimeGenerated)\n | where isnotempty(Time)"
+        }
+      ],
+      "connectivityCriteria": [
+        {
+          "type": "HasDataConnectors"
+        }
+      ],
+      "availability": {
+        "isPreview": false,
+        "status": 1
+      },
+      "permissions": {
+        "resourceProvider": [
+          {
+            "provider": "Microsoft.OperationalInsights/workspaces",
+            "permissionsDisplayText": "Read and Write permissions are required.",
+            "providerDisplayName": "Workspace",
+            "scope": "Workspace",
+            "requiredPermissions": {
+              "write": true,
+              "read": true,
+              "delete": true,
+              "action": false
+            }
+          }
+        ]
+      },
+      "instructionSteps": [
+        {
+          "title": "Connect Snowflake to Microsoft Sentinel",
+          "instructions": [
+            {
+              "type": "InfoMessage",
+              "parameters": {
+                "text": "**Notice:** Solution version 3.2.0 and later uses the SnowflakeV3 tables (e.g., SnowflakeQueryV3_CL, SnowflakeLoginV3_CL). The parsers have been updated accordingly.",
+                "visible": true,
+                "inline": true
+              }
+            },
+            {
+              "type": "Markdown",
+              "parameters": {
+                "content": ">**NOTE:** To ensure data is presented in separate columns for each field, execute the parser using the **Snowflake()** function"
+              }
+            },
+            {
+              "type": "Markdown",
+              "parameters": {
+                "content": "To gather data from Snowflake, you need to provide the following resources"
+              }
+            },
+            {
+              "type": "Markdown",
+              "parameters": {
+                "content": "#### 1. Account Identifier \n To gather data from Snowflake, you'll need Snowflake Account Identifier."
+              }
+            },
+            {
+              "type": "Markdown",
+              "parameters": {
+                "content": "#### 2. Programmatic Access Token \n To gather data from Snowflake, you'll need the Snowflake Programmatic Access Token"
+              }
+            },
+            {
+              "type": "Markdown",
+              "parameters": {
+                "content": "For detailed instructions on retrieving the Account Identifier and Programmatic Access Token, please refer to the [Connector Tutorial](https://github.com/Azure/Azure-Sentinel/blob/master/Solutions/Snowflake/Data%20Connectors/Readme.md)."
+              }
+            },
+            {
+              "type": "DataConnectorsGrid",
+              "parameters": {
+                "mapping": [
+                  {
+                    "columnName": "Connector Alias",
+                    "columnValue": "properties.addOnAttributes.friendlyName"
+                  },
+                  {
+                    "columnName": "Account-Identifier",
+                    "columnValue": "properties.addOnAttributes.accountId"
+                  },
+                  {
+                    "columnName": "Table Name",
+                    "columnValue": "properties.addOnAttributes.dataType"
+                  }
+                ],
+                "menuItems": [
+                  "DeleteConnector"
+                ]
+              }
+            },
+            {
+              "type": "ContextPane",
+              "parameters": {
+                "isPrimary": true,
+                "label": "Add Account",
+                "title": "Add Account",
+                "subtitle": "Add Account",
+                "contextPaneType": "DataConnectorsContextPane",
+                "instructionSteps": [
+                  {
+                    "instructions": [
+                      {
+                        "type": "Textbox",
+                        "parameters": {
+                          "label": "Connection Alias",
+                          "placeholder": "Production or Sandbox",
+                          "type": "text",
+                          "name": "friendlyName",
+                          "validations": {
+                            "required": true
+                          }
+                        }
+                      },
+                      {
+                        "type": "InfoMessage",
+                        "parameters": {
+                          "text": "Enter a unique alias to identify this Snowflake connection. **Important**: Use different aliases for each account identifier. To update an existing connection, use the same alias or delete and create with the same alias. To replace a connection, delete the old one and create a new one with a new alias.",
+                          "visible": true,
+                          "inline": true
+                        }
+                      },
+                      {
+                        "type": "Dropdown",
+                        "parameters": {
+                          "label": "Data Types",
+                          "name": "selectedDataTypes",
+                          "options": [
+                            {
+                              "key": "SnowflakeLoadV3",
+                              "text": "Snowflake - Load data"
+                            },
+                            {
+                              "key": "SnowflakeLoginV3",
+                              "text": "Snowflake - Login data"
+                            },
+                            {
+                              "key": "SnowflakeMaterializedViewV3",
+                              "text": "Snowflake - Materialized View data"
+                            },
+                            {
+                              "key": "SnowflakeQueryV3",
+                              "text": "Snowflake - Query data"
+                            },
+                            {
+                              "key": "SnowflakeRoleGrantV3",
+                              "text": "Snowflake - Role Grant data"
+                            },
+                            {
+                              "key": "SnowflakeRolesV3",
+                              "text": "Snowflake - Roles data"
+                            },
+                            {
+                              "key": "SnowflakeTablesV3",
+                              "text": "Snowflake - Tables data"
+                            },
+                            {
+                              "key": "SnowflakeTableStorageMetricsV3",
+                              "text": "Snowflake - Table Storage Metrics data"
+                            },
+                            {
+                              "key": "SnowflakeUserGrantV3",
+                              "text": "Snowflake - User Grant data"
+                            },
+                            {
+                              "key": "SnowflakeUsersV3",
+                              "text": "Snowflake - Users data"
+                            }
+                          ],
+                          "placeholder": "Select data types to collect...",
+                          "isMultiSelect": true,
+                          "defaultAllSelected": true,
+                          "required": true
+                        }
+                      },
+                      {
+                        "type": "Textbox",
+                        "parameters": {
+                          "label": "Snowflake Account Identifier",
+                          "placeholder": "Enter Snowflake Account Identifier",
+                          "type": "text",
+                          "name": "accountId",
+                          "validations": {
+                            "required": true
+                          }
+                        }
+                      },
+                      {
+                        "type": "Textbox",
+                        "parameters": {
+                          "label": "Snowflake PAT",
+                          "placeholder": "Enter Snowflake PAT",
+                          "type": "password",
+                          "name": "apikey",
+                          "validations": {
+                            "required": true
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

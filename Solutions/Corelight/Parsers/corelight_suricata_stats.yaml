@@ -1,0 +1,25 @@
+id: de91a92d-9483-5aa7-896b-d5ea645e03c9
+Function:
+  Title: corelight_suricata_stats parser for Corelight
+  Version: '2.0.0'
+  LastUpdated: '2026-08-17'
+Category: Microsoft Sentinel Parser
+FunctionName: corelight_suricata_stats
+FunctionAlias: corelight_suricata_stats
+FunctionQuery: |+
+  let dummy_table = datatable(TimeGenerated: datetime) [];
+  let corelight_suricata_stats = view () {
+      union isfuzzy=true Corelight_v3_suricata_stats_CL, dummy_table
+        | extend
+            _path=path,
+            _system_name=system_name,
+            _write_ts=write_ts
+      | extend
+          EventVendor="Corelight",
+          EventProduct="CorelightSensor",
+          EventType="suricata_stats",
+          ts=TimeGenerated
+  };
+  corelight_suricata_stats
+
+...

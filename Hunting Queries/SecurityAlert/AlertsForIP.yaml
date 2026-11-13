@@ -23,10 +23,10 @@ query: |
   SecurityAlert
   | where TimeGenerated between (v_StartTime .. v_EndTime)
   // expand JSON properties
-  | extend Extprop = parsejson(Entities)
+  | extend Extprop = parse_json(Entities)
   | mv-expand Extprop
-  | extend Extprop = parsejson(Extprop)
-  | extend IpAddress = iff(Extprop["Type"] == "ip",Extprop['Address'], '') 
+  | extend Extprop = parse_json(Extprop)
+  | extend IpAddress = iff(Extprop["Type"] == "ip",Extprop['Address'], '')
   | where IpAddress == v_ipAddress
   | extend Account = Extprop['Name']
   | extend Domain = Extprop['UPNSuffix']
@@ -37,3 +37,13 @@ query: |
   };
   // change datetime value and <ipaddress> value below
   GetAllAlertsWithIp(datetime('2019-02-05T10:02:51.000'), ("<ipaddress>"))
+version: 1.0.0
+metadata:
+    source:
+        kind: Community
+    author:
+        name: Shain
+    support:
+        tier: Community
+    categories:
+        domains: [ "Security - Other" ]

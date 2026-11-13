@@ -1,0 +1,1937 @@
+{
+    "name": "GitHubAuditLogsV2_CL",
+    "apiVersion": "2021-03-01-privatepreview",
+    "type": "Microsoft.OperationalInsights/workspaces/tables",
+    "location": "{{location}}",
+    "properties": {
+        "schema": {
+            "name": "GitHubAuditLogsV2_CL",
+            "columns": [
+                {
+                    "name": "TimeGenerated",
+                    "type": "datetime"
+                },
+                {
+                    "name": "CreatedAt",
+                    "type": "real"
+                },
+                {
+                    "name": "Org",
+                    "type": "string"
+                },
+                {
+                    "name": "Action",
+                    "type": "string"
+                },
+                {
+                    "name": "Repo",
+                    "type": "string"
+                },
+                {
+                    "name": "Actor",
+                    "type": "string"
+                },
+                {
+                    "name": "User",
+                    "type": "string"
+                },
+                {
+                    "name": "Permission",
+                    "type": "string"
+                },
+                {
+                    "name": "Visibility",
+                    "type": "string"
+                },
+                {
+                    "name": "PreviousVisibility",
+                    "type": "string"
+                },
+                {
+                    "name": "OldPermission",
+                    "type": "string"
+                },
+                {
+                    "name": "Team",
+                    "type": "string"
+                },
+                {
+                    "name": "BlockedUser",
+                    "type": "string"
+                },
+                {
+                    "name": "OperationType",
+                    "type": "string"
+                },
+                {
+                    "name": "PublicRepo",
+                    "type": "boolean"
+                },
+                {
+                    "name": "OrgId",
+                    "type": "real"
+                },
+                {
+                    "name": "InviteeEmail",
+                    "type": "string"
+                },
+                {
+                    "name": "ActorIp",
+                    "type": "string"
+                },
+                {
+                    "name": "ActorId",
+                    "type": "real"
+                },
+                {
+                    "name": "ActorIsBot",
+                    "type": "boolean"
+                },
+                {
+                    "name": "BusinessId",
+                    "type": "real"
+                },
+                {
+                    "name": "RepoId",
+                    "type": "real"
+                },
+                {
+                    "name": "UserAgent",
+                    "type": "string"
+                },
+                {
+                    "name": "UserId",
+                    "type": "real"
+                },
+                {
+                    "name": "Email",
+                    "type": "string"
+                },
+                {
+                    "name": "RepositorySecurityConfigurationFailureReason",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "RepositorySecurityConfigurationState",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "SecurityConfigurationName",
+                    "type": "string"
+                },
+                {
+                    "name": "OauthApplication",
+                    "type": "string"
+                },
+                {
+                    "name": "OauthApplicationUrl",
+                    "type": "string"
+                },
+                {
+                    "name": "OauthApplicationState",
+                    "type": "string"
+                },
+                {
+                    "name": "Reason",
+                    "type": "string"
+                },
+                {
+                    "name": "MembershipType",
+                    "type": "string"
+                },
+                {
+                    "name": "UserCanInviteCollaborators",
+                    "type": "boolean"
+                },
+                {
+                    "name": "CanCreateRepositories",
+                    "type": "boolean"
+                },
+                {
+                    "name": "CountryCode",
+                    "type": "string"
+                },
+                {
+                    "name": "SecurityConfigurationId",
+                    "type": "real"
+                },
+                {
+                    "name": "InvitationId",
+                    "type": "real"
+                },
+                {
+                    "name": "Topic",
+                    "type": "string"
+                },
+                {
+                    "name": "DocumentId",
+                    "type": "string"
+                },
+                {
+                    "name": "Business",
+                    "type": "string"
+                },
+                {
+                    "name": "RequestCategory",
+                    "type": "string"
+                },
+                {
+                    "name": "OauthApplicationId",
+                    "type": "real"
+                },
+                {
+                    "name": "OldRepoPermission",
+                    "type": "string"
+                },
+                {
+                    "name": "NewRepoPermission",
+                    "type": "string"
+                },
+                {
+                    "name": "RepositoriesRemovedNames",
+                    "type": "string"
+                },
+                {
+                    "name": "Active",
+                    "type": "boolean"
+                },
+                {
+                    "name": "ActiveWas",
+                    "type": "boolean"
+                },
+                {
+                    "name": "Data",
+                    "type": "string"
+                },
+                {
+                    "name": "Config",
+                    "type": "string"
+                },
+                {
+                    "name": "ConfigWas",
+                    "type": "string"
+                },
+                {
+                    "name": "ContentType",
+                    "type": "string"
+                },
+                {
+                    "name": "DeployKeyFingerprint",
+                    "type": "string"
+                },
+                {
+                    "name": "Emoji",
+                    "type": "string"
+                },
+                {
+                    "name": "Events",
+                    "type": "string"
+                },
+                {
+                    "name": "EventsWere",
+                    "type": "string"
+                },
+                {
+                    "name": "Explanation",
+                    "type": "string"
+                },
+                {
+                    "name": "Fingerprint",
+                    "type": "string"
+                },
+                {
+                    "name": "HookId",
+                    "type": "real"
+                },
+                {
+                    "name": "LimitedAvailability",
+                    "type": "boolean"
+                },
+                {
+                    "name": "Message",
+                    "type": "string"
+                },
+                {
+                    "name": "Name",
+                    "type": "string"
+                },
+                {
+                    "name": "OldUser",
+                    "type": "string"
+                },
+                {
+                    "name": "OpensshPublicKey",
+                    "type": "string"
+                },
+                {
+                    "name": "ReadOnly",
+                    "type": "boolean"
+                },
+                {
+                    "name": "TargetLogin",
+                    "type": "string"
+                },
+                {
+                    "name": "TransportProtocol",
+                    "type": "real"
+                },
+                {
+                    "name": "TransportProtocolName",
+                    "type": "string"
+                },
+                {
+                    "name": "StartedAt",
+                    "type": "datetime"
+                },
+                {
+                    "name": "CompletedAt",
+                    "type": "datetime"
+                },
+                {
+                    "name": "Conclusion",
+                    "type": "string"
+                },
+                {
+                    "name": "Event",
+                    "type": "string"
+                },
+                {
+                    "name": "HeadBranch",
+                    "type": "string"
+                },
+                {
+                    "name": "HeadSha",
+                    "type": "string"
+                },
+                {
+                    "name": "RunAttempt",
+                    "type": "real"
+                },
+                {
+                    "name": "RunNumber",
+                    "type": "real"
+                },
+                {
+                    "name": "TriggerId",
+                    "type": "real"
+                },
+                {
+                    "name": "WorkflowId",
+                    "type": "real"
+                },
+                {
+                    "name": "WorkflowRunId",
+                    "type": "real"
+                },
+                {
+                    "name": "EnvironmentName",
+                    "type": "string"
+                },
+                {
+                    "name": "IsHostedRunner",
+                    "type": "boolean"
+                },
+                {
+                    "name": "JobName",
+                    "type": "string"
+                },
+                {
+                    "name": "JobWorkflowRef",
+                    "type": "string"
+                },
+                {
+                    "name": "RunnerGroupId",
+                    "type": "real"
+                },
+                {
+                    "name": "RunnerGroupName",
+                    "type": "string"
+                },
+                {
+                    "name": "RunnerId",
+                    "type": "real"
+                },
+                {
+                    "name": "RunnerLabels",
+                    "type": "string"
+                },
+                {
+                    "name": "RunnerName",
+                    "type": "string"
+                },
+                {
+                    "name": "SecretsPassed",
+                    "type": "string"
+                },
+                {
+                    "name": "HashedToken",
+                    "type": "string"
+                },
+                {
+                    "name": "ProgrammaticAccessType",
+                    "type": "string"
+                },
+                {
+                    "name": "RequestAccessSecurityHeader",
+                    "type": "string"
+                },
+                {
+                    "name": "TokenId",
+                    "type": "real"
+                },
+                {
+                    "name": "PullRequestId",
+                    "type": "real"
+                },
+                {
+                    "name": "PullRequestTitle",
+                    "type": "string"
+                },
+                {
+                    "name": "PullRequestUrl",
+                    "type": "string"
+                },
+                {
+                    "name": "OldRolePermissions",
+                    "type": "string"
+                },
+                {
+                    "name": "RolePermissions",
+                    "type": "string"
+                },
+                {
+                    "name": "RequestId",
+                    "type": "string"
+                },
+                {
+                    "name": "BaseRole",
+                    "type": "string"
+                },
+                {
+                    "name": "CustomPattern",
+                    "type": "string"
+                },
+                {
+                    "name": "Source",
+                    "type": "string"
+                },
+                {
+                    "name": "ActivityType",
+                    "type": "string"
+                },
+                {
+                    "name": "GhsaId",
+                    "type": "string"
+                },
+                {
+                    "name": "Recipient",
+                    "type": "string"
+                },
+                {
+                    "name": "RunnerOwnerType",
+                    "type": "string"
+                },
+                {
+                    "name": "OrganizationRoleId",
+                    "type": "real"
+                },
+                {
+                    "name": "OrganizationRoleName",
+                    "type": "string"
+                },
+                {
+                    "name": "Owner",
+                    "type": "string"
+                },
+                {
+                    "name": "OldTokenExpiration",
+                    "type": "real"
+                },
+                {
+                    "name": "ExemptAdministrators",
+                    "type": "boolean"
+                },
+                {
+                    "name": "TokenExpiration",
+                    "type": "real"
+                },
+                {
+                    "name": "Policy",
+                    "type": "string"
+                },
+                {
+                    "name": "ApplicationClientId",
+                    "type": "string"
+                },
+                {
+                    "name": "Integration",
+                    "type": "string"
+                },
+                {
+                    "name": "RepositoriesRemoved",
+                    "type": "string"
+                },
+                {
+                    "name": "RepositorySelection",
+                    "type": "string"
+                },
+                {
+                    "name": "NewProjectBaseRole",
+                    "type": "string"
+                },
+                {
+                    "name": "OldProjectBaseRole",
+                    "type": "string"
+                },
+                {
+                    "name": "ProjectId",
+                    "type": "real"
+                },
+                {
+                    "name": "ProjectNumber",
+                    "type": "real"
+                },
+                {
+                    "name": "PublicProject",
+                    "type": "boolean"
+                },
+                {
+                    "name": "RulesetBypassActors",
+                    "type": "string"
+                },
+                {
+                    "name": "RulesetConditions",
+                    "type": "string"
+                },
+                {
+                    "name": "RulesetEnforcement",
+                    "type": "string"
+                },
+                {
+                    "name": "RulesetId",
+                    "type": "real"
+                },
+                {
+                    "name": "RulesetName",
+                    "type": "string"
+                },
+                {
+                    "name": "RulesetRules",
+                    "type": "string"
+                },
+                {
+                    "name": "RulesetSourceType",
+                    "type": "string"
+                },
+                {
+                    "name": "RulesetRulesDeleted",
+                    "type": "string"
+                },
+                {
+                    "name": "RulesetConditionsUpdated",
+                    "type": "string"
+                },
+                {
+                    "name": "AdminEnforced",
+                    "type": "boolean"
+                },
+                {
+                    "name": "AllowDeletionsEnforcementLevel",
+                    "type": "real"
+                },
+                {
+                    "name": "AllowForcePushesEnforcementLevel",
+                    "type": "real"
+                },
+                {
+                    "name": "AuthorizedActorNames",
+                    "type": "string"
+                },
+                {
+                    "name": "CreateProtected",
+                    "type": "boolean"
+                },
+                {
+                    "name": "DismissStaleReviewsOnPush",
+                    "type": "boolean"
+                },
+                {
+                    "name": "EnforcementLevel",
+                    "type": "string"
+                },
+                {
+                    "name": "IgnoreApprovalsFromContributors",
+                    "type": "boolean"
+                },
+                {
+                    "name": "LinearHistoryRequirementEnforcementLevel",
+                    "type": "real"
+                },
+                {
+                    "name": "LockAllowsFetchAndMerge",
+                    "type": "boolean"
+                },
+                {
+                    "name": "LockBranchEnforcementLevel",
+                    "type": "real"
+                },
+                {
+                    "name": "MergeQueueEnforcementLevel",
+                    "type": "real"
+                },
+                {
+                    "name": "PullRequestReviewsEnforcementLevel",
+                    "type": "real"
+                },
+                {
+                    "name": "RequireCodeOwnerReview",
+                    "type": "boolean"
+                },
+                {
+                    "name": "RequireLastPushApproval",
+                    "type": "boolean"
+                },
+                {
+                    "name": "RequiredApprovingReviewCount",
+                    "type": "real"
+                },
+                {
+                    "name": "RequiredDeploymentsEnforcementLevel",
+                    "type": "real"
+                },
+                {
+                    "name": "RequiredReviewThreadResolutionEnforcementLevel",
+                    "type": "real"
+                },
+                {
+                    "name": "RequiredStatusChecksEnforcementLevel",
+                    "type": "real"
+                },
+                {
+                    "name": "SignatureRequirementEnforcementLevel",
+                    "type": "real"
+                },
+                {
+                    "name": "StrictRequiredStatusChecksPolicy",
+                    "type": "boolean"
+                },
+                {
+                    "name": "AllowedValues",
+                    "type": "string"
+                },
+                {
+                    "name": "DefaultValue",
+                    "type": "string"
+                },
+                {
+                    "name": "DefinitionId",
+                    "type": "real"
+                },
+                {
+                    "name": "Description",
+                    "type": "string"
+                },
+                {
+                    "name": "PropertyName",
+                    "type": "string"
+                },
+                {
+                    "name": "ValueType",
+                    "type": "string"
+                },
+                {
+                    "name": "ValuesEditableBy",
+                    "type": "string"
+                },
+                {
+                    "name": "OldValuesEditableBy",
+                    "type": "string"
+                },
+                {
+                    "name": "OldDefaultValue",
+                    "type": "string"
+                },
+                {
+                    "name": "OldRequired",
+                    "type": "boolean"
+                },
+                {
+                    "name": "Required",
+                    "type": "boolean"
+                },
+                {
+                    "name": "Enablement",
+                    "type": "string"
+                },
+                {
+                    "name": "OwnerType",
+                    "type": "string"
+                },
+                {
+                    "name": "CommitId",
+                    "type": "string"
+                },
+                {
+                    "name": "RuleSuiteId",
+                    "type": "real"
+                },
+                {
+                    "name": "Referrer",
+                    "type": "string"
+                },
+                {
+                    "name": "Reasons",
+                    "type": "string"
+                },
+                {
+                    "name": "OverriddenCodes",
+                    "type": "string"
+                },
+                {
+                    "name": "After",
+                    "type": "string"
+                },
+                {
+                    "name": "Before",
+                    "type": "string"
+                },
+                {
+                    "name": "Branch",
+                    "type": "string"
+                },
+                {
+                    "name": "IssueTypeName",
+                    "type": "string"
+                },
+                {
+                    "name": "OldDescription",
+                    "type": "string"
+                },
+                {
+                    "name": "OldEnabled",
+                    "type": "boolean"
+                },
+                {
+                    "name": "OldIssueTypeName",
+                    "type": "string"
+                },
+                {
+                    "name": "NewAccess",
+                    "type": "string"
+                },
+                {
+                    "name": "OldAccess",
+                    "type": "string"
+                },
+                {
+                    "name": "UpdatedAllowedTypes",
+                    "type": "boolean"
+                },
+                {
+                    "name": "NewPolicy",
+                    "type": "string"
+                },
+                {
+                    "name": "NewRepoRunnersPolicy",
+                    "type": "string"
+                },
+                {
+                    "name": "OldRepoRunnersPolicy",
+                    "type": "string"
+                },
+                {
+                    "name": "Limit",
+                    "type": "real"
+                },
+                {
+                    "name": "RunnerGroupRestrictedToWorkflows",
+                    "type": "boolean"
+                },
+                {
+                    "name": "RunnerGroupSelectedWorkflowRefs",
+                    "type": "string"
+                },
+                {
+                    "name": "RunnerGroupAllowPublic",
+                    "type": "boolean"
+                },
+                {
+                    "name": "IpAllowListEntry",
+                    "type": "string"
+                },
+                {
+                    "name": "TwoFactorMethod",
+                    "type": "string"
+                },
+                {
+                    "name": "AlertNumbers",
+                    "type": "string"
+                },
+                {
+                    "name": "CommitOid",
+                    "type": "string"
+                },
+                {
+                    "name": "Ref",
+                    "type": "string"
+                },
+                {
+                    "name": "DefaultForNewPrivateRepos",
+                    "type": "boolean"
+                },
+                {
+                    "name": "DefaultForNewPublicRepos",
+                    "type": "boolean"
+                },
+                {
+                    "name": "DomainName",
+                    "type": "string"
+                },
+                {
+                    "name": "Key",
+                    "type": "string"
+                },
+                {
+                    "name": "SecurityConfigurationCodeScanning",
+                    "type": "string"
+                },
+                {
+                    "name": "SecurityConfigurationCodeSecuritySkuEnabled",
+                    "type": "boolean"
+                },
+                {
+                    "name": "SecurityConfigurationCreatedAt",
+                    "type": "datetime"
+                },
+                {
+                    "name": "SecurityConfigurationDependabotAlerts",
+                    "type": "string"
+                },
+                {
+                    "name": "SecurityConfigurationDependabotSecurityUpdates",
+                    "type": "string"
+                },
+                {
+                    "name": "SecurityConfigurationDependencyGraph",
+                    "type": "string"
+                },
+                {
+                    "name": "SecurityConfigurationDependencyGraphAutosubmitAction",
+                    "type": "string"
+                },
+                {
+                    "name": "SecurityConfigurationDescription",
+                    "type": "string"
+                },
+                {
+                    "name": "SecurityConfigurationEnableGhas",
+                    "type": "boolean"
+                },
+                {
+                    "name": "SecurityConfigurationPrivateVulnerabilityReporting",
+                    "type": "string"
+                },
+                {
+                    "name": "SecurityConfigurationSecretProtectionSkuEnabled",
+                    "type": "boolean"
+                },
+                {
+                    "name": "SecurityConfigurationSecretScanning",
+                    "type": "string"
+                },
+                {
+                    "name": "SecurityConfigurationSecretScanningDelegatedBypass",
+                    "type": "string"
+                },
+                {
+                    "name": "SecurityConfigurationSecretScanningGenericSecrets",
+                    "type": "string"
+                },
+                {
+                    "name": "SecurityConfigurationSecretScanningNonProviderPatterns",
+                    "type": "string"
+                },
+                {
+                    "name": "SecurityConfigurationSecretScanningPushProtection",
+                    "type": "string"
+                },
+                {
+                    "name": "SecurityConfigurationSecretScanningValidityChecks",
+                    "type": "string"
+                },
+                {
+                    "name": "SecurityConfigurationUpdatedAt",
+                    "type": "datetime"
+                },
+                {
+                    "name": "ThreatModel",
+                    "type": "string"
+                },
+                {
+                    "name": "QuerySuite",
+                    "type": "string"
+                },
+                {
+                    "name": "VulnerabilityAlertRuleActionsAlertActionsAutoDismiss",
+                    "type": "string"
+                },
+                {
+                    "name": "VulnerabilityAlertRuleActionsVersion",
+                    "type": "real"
+                },
+                {
+                    "name": "VulnerabilityAlertRuleConditionsCwe",
+                    "type": "string"
+                },
+                {
+                    "name": "VulnerabilityAlertRuleConditionsEcosystem",
+                    "type": "string"
+                },
+                {
+                    "name": "VulnerabilityAlertRuleConditionsScope",
+                    "type": "string"
+                },
+                {
+                    "name": "VulnerabilityAlertRuleId",
+                    "type": "real"
+                },
+                {
+                    "name": "VulnerabilityAlertRuleName",
+                    "type": "string"
+                },
+                {
+                    "name": "DismissalApproverId",
+                    "type": "real"
+                },
+                {
+                    "name": "SsoUrl",
+                    "type": "string"
+                },
+                {
+                    "name": "Issuer",
+                    "type": "string"
+                },
+                {
+                    "name": "ExternalIdentityUsername",
+                    "type": "string"
+                },
+                {
+                    "name": "ExternalIdentityNameid",
+                    "type": "string"
+                },
+                {
+                    "name": "AuditLogStreamResult",
+                    "type": "string"
+                },
+                {
+                    "name": "AuditLogStreamSinkDetails",
+                    "type": "string"
+                },
+                {
+                    "name": "AuditLogStreamId",
+                    "type": "real"
+                },
+                {
+                    "name": "AuditLogStreamSink",
+                    "type": "string"
+                },
+                {
+                    "name": "ActorLocation",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "RepositoryPublic",
+                    "type": "boolean"
+                },
+                {
+                    "name": "public_repo",
+                    "type": "boolean"
+                },
+                {
+                    "name": "access_level",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "actions_cache_id",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "actions_cache_key",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "actions_cache_scope",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "actions_cache_version",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "ActorIsAgent",
+                    "type": "boolean"
+                },
+                {
+                    "name": "AgentSessionId",
+                    "type": "string"
+                },
+                {
+                    "name": "alert_enabled",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "alert_id",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "alert_number",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "alert_recipient_user_ids",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "allowed",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "allowlist_description",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "allowlist_id",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "allowlist_name",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "api_request_body",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "application_id",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "application_name",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "application_type",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "approvers",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "approvers_was",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "assignment_type",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "audit_log_stream_enabled",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "authorized_actors",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "authorized_actors_only",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "block_local_servers",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "calling_workflow_refs",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "calling_workflow_shas",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "can_admins_bypass",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "cancelled_at",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "category",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "check_response_timeout_minutes",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "check_run_id",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "cname",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "collaborator",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "collaborator_type",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "color",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "comment",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "comment_id",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "compliant_pull_request_ids",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "context",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "count",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "current_plan",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "current_validity",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "current_value",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "custom_instructions",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "custom_pattern_name",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "custom_pattern_scope",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "default_branch",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "deleted_at",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "deleted_by",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "deleted_by_id",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "deleted_content",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "devcontainer_path",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "dismiss_comment",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "dismiss_reason",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "dismissal_request_id",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "domain",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "ecosystem",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "editor",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "editor_id",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "enabled",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "end",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "end_date",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "enforcement",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "enterprise_role_id",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "enterprise_role_name",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "enterprise_team",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "enterprise_team_id",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "entries",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "environment_id",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "event_name",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "excluded_paths",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "external_group",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "external_group_id",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "external_id",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "failover_network_enabled",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "failover_network_settings_ids",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "filename",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "from_business",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "imposer_repo",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "initiated_from",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "integration_installation_id",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "invitee",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "inviter",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "is_republished",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "languages",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "machine_type",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "managed_hashed_token",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "managed_oauth_access_id",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "managed_oauth_scopes",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "managed_token_id",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "managed_token_scopes",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "manager",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "marketplace_listing",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "max_entries_to_build",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "max_entries_to_merge",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "mcp_policy",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "merge_method",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "merging_strategy",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "min_entries_to_merge",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "min_entries_to_merge_wait_minutes",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "multi_repo",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "name_was",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "network_configuration_id",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "network_settings_ids",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "new_branch",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "new_config",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "new_emu_repo_runners_policy",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "new_nwo",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "new_repo_base_role",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "new_value",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "number",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "OauthApplicationName",
+                    "type": "string"
+                },
+                {
+                    "name": "oauth_credential_type",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "old_alert_enabled",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "old_allowed_values",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "old_allowlist_name",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "old_base_role",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "old_block_local_servers",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "old_branch",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "old_cname",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "old_color",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "old_emu_repo_runners_policy",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "old_login",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "old_mcp_policy",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "old_message",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "old_name",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "old_plan",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "old_policy",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "old_project_role",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "old_repo_base_role",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "old_settings",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "old_value",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "old_value_type",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "organization_names",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "organization_upgrade",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "origin_repository",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "owner_id",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "package",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "patreon_email",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "patreon_username",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "plan",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "prevent_self_review",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "previous_settings_ids",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "previous_validity",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "previous_value",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "primary_category",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "project_kind",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "project_name",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "project_role",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "publicly_leaked",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "push_protection_bypass_reason",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "push_protection_setting",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "query",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "query_phrase",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "QueryString",
+                    "type": "string"
+                },
+                {
+                    "name": "remove_existing_unaffiliated_users",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "repo_was",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "report_result",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "repositories",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "repositories_added",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "repositories_added_names",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "Repository",
+                    "type": "string"
+                },
+                {
+                    "name": "RepositoryId",
+                    "type": "real"
+                },
+                {
+                    "name": "RequestMethod",
+                    "type": "string"
+                },
+                {
+                    "name": "request_reviewer",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "request_reviewer_comment",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "request_reviewer_id",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "requested_at",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "requester",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "requester_id",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "rerun_type",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "resolution",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "resource_id",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "resource_type",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "review_id",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "reviewer",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "reviewer_id",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "reviewer_type",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "Route",
+                    "type": "string"
+                },
+                {
+                    "name": "ruleset_bypass_actors_added",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "ruleset_bypass_actors_deleted",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "ruleset_bypass_actors_updated",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "ruleset_conditions_added",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "ruleset_conditions_deleted",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "ruleset_ids",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "ruleset_old_enforcement",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "ruleset_old_name",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "ruleset_rules_added",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "ruleset_rules_updated",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "scheduled_plan",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "scim_group_id",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "scim_user_id",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "seat_assignment",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "seats_plan_type",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "seats_plan_type_was",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "secondary_category",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "secret_type",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "secret_type_display_name",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "secret_type_provider",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "secret_types",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "secrets_updated",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "selected_service",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "server_id",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "server_name",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "source_slug",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "source_version",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "sponsors_listing_id",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "ssl_verify",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "start",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "start_date",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "state",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "status",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "StatusCode",
+                    "type": "real"
+                },
+                {
+                    "name": "target_version",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "team_type",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "to_business",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "token_expires_at",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "TokenScopes",
+                    "type": "string"
+                },
+                {
+                    "name": "tool",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "transfer_from",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "transfer_from_id",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "transfer_from_type",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "transfer_to",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "transfer_to_id",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "transfer_to_type",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "type_slug",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "updated_access_policy",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "updated_github_owned_allowed",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "updated_patterns",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "updated_verified_allowed",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "url",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "UrlPath",
+                    "type": "string"
+                },
+                {
+                    "name": "user_content_id",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "user_content_type",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "user_programmatic_access_id",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "user_programmatic_access_name",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "user_programmatic_access_request_id",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "users_removed_count",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "uuid",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "value",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "version",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "version_count",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "violations",
+                    "type": "dynamic"
+                },
+                {
+                    "name": "AdditionalFields",
+                    "type": "dynamic"
+                }
+            ]
+        }
+    }
+}

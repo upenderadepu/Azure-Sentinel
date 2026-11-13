@@ -1,0 +1,25 @@
+id: 617e706c-6965-5d9c-84ed-a22598514333
+Function:
+  Title: corelight_stun_nat parser for Corelight
+  Version: '2.0.0'
+  LastUpdated: '2026-08-17'
+Category: Microsoft Sentinel Parser
+FunctionName: corelight_stun_nat
+FunctionAlias: corelight_stun_nat
+FunctionQuery: |+
+  let dummy_table = datatable(TimeGenerated: datetime) [];
+  let corelight_stun_nat = view () {
+      union isfuzzy=true Corelight_v3_stun_nat_CL, dummy_table
+        | extend
+            _path=path,
+            _system_name=system_name,
+            _write_ts=write_ts
+      | extend
+          EventVendor="Corelight",
+          EventProduct="CorelightSensor",
+          EventType="stun_nat",
+          ts=TimeGenerated
+  };
+  corelight_stun_nat
+
+...

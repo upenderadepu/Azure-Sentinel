@@ -1,0 +1,25 @@
+id: f17b6481-e26d-5a84-8708-344c3994914f
+Function:
+  Title: corelight_log4shell parser for Corelight
+  Version: '2.0.0'
+  LastUpdated: '2026-08-17'
+Category: Microsoft Sentinel Parser
+FunctionName: corelight_log4shell
+FunctionAlias: corelight_log4shell
+FunctionQuery: |+
+  let dummy_table = datatable(TimeGenerated: datetime) [];
+  let corelight_log4shell = view () {
+      union isfuzzy=true Corelight_v3_log4shell_CL, dummy_table
+        | extend
+            _path=path,
+            _system_name=system_name,
+            _write_ts=write_ts
+      | extend
+          EventVendor="Corelight",
+          EventProduct="CorelightSensor",
+          EventType="log4shell",
+          ts=TimeGenerated
+  };
+  corelight_log4shell
+
+...

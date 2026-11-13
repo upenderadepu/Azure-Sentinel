@@ -1,0 +1,51 @@
+id: 2c59e609-e0a0-4e8e-adc5-ab4224be8a36
+name: API - Anomaly Detection
+description: |
+  '42Crunch API protection anomaly detection'
+severity: Low
+requiredDataConnectors:
+  - connectorId: 42CrunchAPIProtection
+    dataTypes:
+      - FortyTwoCrunchAPIProtection
+  - connectorId: FortyTwoCrunchAPIProtection
+    dataTypes:
+      - FortyTwoCrunchAPIProtection
+queryFrequency: 5m
+queryPeriod: 5m
+triggerOperator: gt
+triggerThreshold: 0
+eventGroupingSettings:
+  aggregationKind: SingleAlert
+status: Available
+tactics:
+  - Reconnaissance
+relevantTechniques:
+  - T1593
+  - T1589
+query: |
+  let infoRec = FortyTwoCrunchAPIProtection
+  | where TimeGenerated >= ago(5m) 
+  | project-away NonBlockingMode, SourcePort, DestinationPort, Query, ApiId, RequestHeader, ResponseHeader, Errors, EventType, Uuid
+  | where UriPath has "/api/users/info" and Status == 200;
+  let timestamp = toscalar(infoRec | top 1 by Timestamp desc | summarize by Timestamp);
+  let activityRec = FortyTwoCrunchAPIProtection
+    | where Timestamp < timestamp and TimeGenerated >= ago(5m)
+    | project-away NonBlockingMode, SourcePort, DestinationPort, Query, ApiId, RequestHeader, ResponseHeader, Errors, EventType, Uuid
+    | where UriPath has "/api/users/activity" and Status == 200;
+  activityRec
+customDetails:
+entityMappings:
+  - entityType: IP
+    fieldMappings:
+      - identifier: Address
+        columnName: SourceIp
+  - entityType: Host
+    fieldMappings:
+      - identifier: HostName
+        columnName: Hostname
+  - entityType: Account
+    fieldMappings:
+      - identifier: FullName
+        columnName: InstanceName
+version: 3.0.1
+kind: Scheduled

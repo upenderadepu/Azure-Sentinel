@@ -1,0 +1,29 @@
+id: 80f357a6-6bb4-4b2b-a88c-265fccafc794
+name: Zero-day Phish Detections Trend
+description: |
+  This query visualises total emails with Phish detections over time summarizing the data daily by Phish detection technologies/controls used for detecting unknown-unique phish
+description-detailed: |
+  This query visualises total emails with Phish detections over time summarizing the data daily by Phish detection technologies/controls used for detecting unknown-unique phish by URL or Attachment Detonation
+  Query is also included as part of the Defender for Office 365 solution in Sentinel: https://techcommunity.microsoft.com/blog/microsoftdefenderforoffice365blog/part-2-build-custom-email-security-reports-and-dashboards-with-workbooks-in-micr/4411303
+requiredDataConnectors:
+- connectorId: MicrosoftThreatProtection
+  dataTypes:
+  - EmailEvents
+tactics:
+  - InitialAccess
+relevantTechniques:
+  - T1566
+query: |
+  let TimeStart = startofday(ago(30d));
+  let TimeEnd = startofday(now());
+  EmailEvents
+  | where Timestamp >= TimeStart
+  | where OrgLevelPolicy != "Phishing simulation" and OrgLevelPolicy != "SecOps Mailbox"
+  | extend Key = strcat(NetworkMessageId, "-", RecipientEmailAddress)
+  | summarize arg_max(Timestamp, *) by Key
+  | where DetectionMethods has "Phish"
+  | mv-expand PhishMethod = parse_json(DetectionMethods).Phish to typeof(string)
+  | where PhishMethod in ('File detonation', 'URL detonation')
+  | make-series Count = count() default = 0 on Timestamp from TimeStart to TimeEnd step 1d by PhishMethod
+  | render timechart
+version: 1.1.0

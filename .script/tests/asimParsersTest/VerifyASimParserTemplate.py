@@ -1,0 +1,521 @@
+# VerifyASimParserTemplate.py
+#
+# Validates the YAML template of modified ASIM query-time parsers (both ASim and vim variants).
+# For each modified parser, the following checks are performed against the parser
+# YAML and its corresponding union parser YAML:
+#
+# 1.  EventProduct  - ParserQuery must set EventProduct (exempt for _Native parsers)
+# 2.  EventVendor   - ParserQuery must set EventVendor (exempt for _Native parsers)
+# 3.  ParserName in union parser  - ParserName must appear in the union parser's ParserQuery
+# 4.  EquivalentBuiltInParser in union parser - must appear in the union parser's Parsers list
+# 5.  Parser.Title   - must be present
+# 6.  Parser.Version - must be present and in X.X.X format
+# 7.  Parser.LastUpdated - must be present and in "Mon DD, YYYY" format (e.g. Jun 29, 2024)
+# 8.  Normalization.Schema - must match a known ASIM schema name from SCHEMA_INFO
+# 9.  Normalization.Version - must use X.X.X format and match the expected schema version
+# 10. References - must include schema-specific and ASIM doc reference links with correct titles/URLs
+# 11. ParserName format - must match ^[a-zA-Z][a-zA-Z0-9_]+$ and start with <FileType><Schema>
+# 12. EquivalentBuiltInParser format - must match _<FileType>_<Schema>_... (e.g. _ASim_Dns_MyProduct)
+# 13. Sample data file - must resolve using the same legacy/source-specific rules as ingestion (ASim only)
+# 14. vim ParserParams - must match the schema union parser parameters
+#     (pack is optional; eventresultdetails_has_any is also optional for WebSession)
+#
+# ParentParser optionally names an immediate parent in the same schema directory.
+# Missing, null, or empty values default to ASim<Schema> or im<Schema>.
+# Every parent chain must reach that schema unifier with both membership checks intact.
+#
+# Parsers listed in ExclusionListForASimTests.csv are allowed to fail without blocking the workflow.
+
+import importlib.util
+import sys
+import os
+
+# Get the directory of this script
+script_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Remove the script's directory from sys.path to avoid importing local malicious modules
+if script_dir in sys.path:
+    sys.path.remove(script_dir)
+
+spec = importlib.util.spec_from_file_location(
+    'asim_parser_file_utils', os.path.join(script_dir, 'asim_parser_file_utils.py')
+)
+parser_file_utils = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(parser_file_utils)
+extract_schema_name = parser_file_utils.extract_schema_name
+is_empty_parser = parser_file_utils.is_empty_parser
+is_union_parser = parser_file_utils.is_union_parser
+filter_query_time_parser_files = parser_file_utils.filter_query_time_parser_files
+resolve_sample_data_path = parser_file_utils.resolve_sample_data_path
+
+import yaml
+import re
+import subprocess
+import csv
+from datetime import datetime
+from urllib.parse import urlparse
+
+# Constants
+SENTINEL_REPO_RAW_URL = f'https://raw.githubusercontent.com/Azure/Azure-Sentinel'
+SAMPLE_DATA_PATH = 'Sample Data/ASIM/'
+parser_exclusion_file_path = '.script/tests/asimParsersTest/ExclusionListForASimTests.csv'
+# Sentinel Repo URL
+SentinelRepoUrl = f"https://github.com/Azure/Azure-Sentinel.git"
+SCHEMA_INFO = [
+    {"SchemaName": "AlertEvent", "SchemaVersion": "1.0.0", "SchemaTitle":"ASIM Alert Event Schema", "SchemaLink": "https://aka.ms/ASimAlertEventDoc"},
+    {"SchemaName": "AgentEvent", "SchemaVersion": "1.0.0", "SchemaTitle":"ASIM Agent Event Schema", "SchemaLink": "https://aka.ms/ASimAgentEventDoc"},
+    {"SchemaName": "AssetEntity", "SchemaVersion": "1.0.0", "SchemaTitle":"ASIM Asset Entity Schema", "SchemaLink": "https://aka.ms/ASimAssetEntityDoc"},
+    {"SchemaName": "AuditEvent", "SchemaVersion": "1.0.0", "SchemaTitle":"ASIM Audit Event Schema", "SchemaLink": "https://aka.ms/ASimAuditEventDoc"},
+    {"SchemaName": "Authentication", "SchemaVersion": "1.0.0","SchemaTitle":"ASIM Authentication Schema","SchemaLink":"https://aka.ms/ASimAuthenticationDoc"},
+    {"SchemaName": "Dns", "SchemaVersion": "1.0.0", "SchemaTitle":"ASIM Dns Schema","SchemaLink":"https://aka.ms/ASimDnsDoc"},
+    {"SchemaName": "DhcpEvent", "SchemaVersion": "1.0.0", "SchemaTitle":"ASIM Dhcp Schema","SchemaLink":"https://aka.ms/ASimDhcpEventDoc"},
+    {"SchemaName": "EmailEvent", "SchemaVersion": "1.0.0", "SchemaTitle":"ASIM Email Event Schema", "SchemaLink": "https://aka.ms/ASimEmailEventDoc"},
+    {"SchemaName": "FileEvent", "SchemaVersion": "1.0.0", "SchemaTitle":"ASIM File Schema","SchemaLink":"https://aka.ms/ASimFileEventDoc"},
+    {"SchemaName": "NetworkSession", "SchemaVersion": "1.0.0", "SchemaTitle":"ASIM Network Session Schema","SchemaLink":"https://aka.ms/ASimNetworkSessionDoc"},
+    {"SchemaName": "ProcessEvent", "SchemaVersion": "1.0.0", "SchemaTitle":"ASIM Process Schema","SchemaLink":"https://aka.ms/ASimProcessEventDoc"},
+    {"SchemaName": "RegistryEvent", "SchemaVersion": "1.0.0", "SchemaTitle":"ASIM Registry Schema","SchemaLink":"https://aka.ms/ASimRegistryEventDoc"},
+    {"SchemaName": "UserManagement", "SchemaVersion": "1.0.0", "SchemaTitle":"ASIM User Management Schema","SchemaLink":"https://aka.ms/ASimUserManagementDoc"},
+    {"SchemaName": "WebSession", "SchemaVersion": "1.0.0", "SchemaTitle":"ASIM Web Session Schema","SchemaLink":"https://aka.ms/ASimWebSessionDoc"}
+    # Add more schemas as needed
+]
+# Global array to store results
+results = []
+# Global variable to store if test failed
+failed = 0
+
+# ANSI escape sequences for colors
+GREEN = '\033[92m'
+YELLOW = '\033[93m'
+RED = '\033[91m'
+RESET = '\033[0m'  # Reset to default color
+
+OPTIONAL_VIM_PARSER_PARAMS = {'pack'}
+VIM_CONTROL_PARAMS = {'disabled'}
+
+def run():
+    """Main function to execute the script logic."""
+    current_directory = os.path.dirname(os.path.abspath(__file__))
+    repo_root = os.path.normpath(os.path.join(current_directory, '..', '..', '..'))
+    modified_files = get_modified_files(current_directory)
+    sample_data_path = os.path.join(repo_root, SAMPLE_DATA_PATH)
+    parser_yaml_files = filter_query_time_parser_files(modified_files)
+    has_failures = False
+    print(f"{GREEN}Following files were found to be modified:{RESET}")
+    for file in parser_yaml_files:
+        print(f"{YELLOW}{file}{RESET}")
+    
+    for parser in parser_yaml_files:
+        
+        schema_name = extract_schema_name(parser)
+        parser_filename = os.path.basename(parser)
+        if is_union_parser(parser_filename, schema_name) or is_empty_parser(parser_filename):
+            print(f"{YELLOW}Skipping '{parser}' as this is a union or empty parser file. This file won't be tested.{RESET}")
+            continue
+        # Skip vim parser file if the corresponding ASim parser file is not present
+        elif parser.split('/')[-1].startswith('vim'):
+             # Check if ASim parser file is present in the changed files list. If not present, replace vim with ASim.
+             # This could the case where only vim parser file is being updated and ASim parser file is not updated.
+             # But we should be testing both ASim and vim parser files.
+             if parser.replace('vim', 'ASim') not in parser_yaml_files:
+                 parser = parser.replace('vim', 'ASim')
+             else :
+                 # Skip the vim parser file as the corresponding ASim parser file is present and vim files will be tested with ASim files in upcoming steps.
+                 continue 
+        asim_parser_path = os.path.join(repo_root, parser)
+        vim_parser_path = os.path.join(
+            os.path.dirname(asim_parser_path),
+            os.path.basename(asim_parser_path).replace('ASim', 'vim', 1)
+        )
+        for file_type, parser_path in (("ASim", asim_parser_path), ("vim", vim_parser_path)):
+            print(f'{YELLOW}Parser file path: {parser_path}{RESET}')
+            parser_document = read_local_yaml(parser_path)
+            check_parser_found(parser_document, parser_path)
+            try:
+                parent, parent_path = get_parent_parser(
+                    parser_document, parser_path, schema_name, file_type
+                )
+            except ValueError as error:
+                print(f"::error::{parser_path}: {error}")
+                has_failures = True
+                continue
+            print(f'{YELLOW}Union parser file path: {parent_path}{RESET}')
+            print_test_header(parser_document.get('EquivalentBuiltInParser'))
+            results = extract_and_check_properties(
+                parser_document, parent, file_type, sample_data_path
+            )
+            print_results_table(results)
+            if check_test_failures(results, parser_document):
+                has_failures = True
+
+    if has_failures:
+        exit(1)
+
+def extract_and_check_properties(Parser_file, Union_Parser__file, FileType, ASIMSampleDataURL):
+    """
+    Validates the template properties of an ASIM parser YAML file.
+
+    Checks performed:
+    - EventProduct and EventVendor are mapped in ParserQuery (or parser is _Native)
+    - ParserName is referenced in the union parser's ParserQuery
+    - EquivalentBuiltInParser is listed in the union parser's Parsers array
+    - Parser.Title is present
+    - Parser.Version is present and in X.X.X format
+    - Parser.LastUpdated is present and in 'Mon DD, YYYY' format
+    - Normalization.Schema matches a known ASIM schema name
+    - Normalization.Version uses X.X.X format and matches the expected schema version
+    - References include correct schema-specific and ASIM doc links
+    - ParserName matches ^[a-zA-Z][a-zA-Z0-9_]+$ and starts with <FileType><Schema>
+    - EquivalentBuiltInParser follows _<FileType>_<Schema>_... format
+    - Sample data CSV resolves locally using the ingestion selection rules (ASim parsers only)
+    - vim ParserParams match the parameters supported by the schema union parser
+
+    Args:
+        Parser_file (dict): Parsed YAML content of the parser file.
+        Union_Parser__file (dict): Parsed YAML content of the union parser file.
+        FileType (str): Parser type - 'ASim' or 'vim'.
+        ASIMSampleDataURL (str): Local path to the sample data directory.
+
+    Returns:
+        list: A list of (value, description, result) tuples where result is 'Pass' or 'Fail'.
+    """
+    results = []
+    parser_name = Parser_file.get('ParserName')
+    equivalent_built_in_parser = Parser_file.get('EquivalentBuiltInParser')
+    parser = Parser_file.get('Parser', {})
+    title = parser.get('Title')
+    version = parser.get('Version')
+    last_updated = parser.get('LastUpdated')
+    normalization = Parser_file.get('Normalization', {})
+    schema = normalization.get('Schema')
+    schemaVersion = normalization.get('Version')
+    references = Parser_file.get('References', [])
+
+    if FileType == 'vim':
+        results.append(validate_vim_parser_params(Parser_file, Union_Parser__file))
+
+    # ParserQuery property is the KQL query extracted from the YAML file
+    parser_query = Parser_file.get('ParserQuery', '')
+
+    # Use a regular expression to find 'EventProduct' in the KQL query
+    match = re.search(r'EventProduct\s*=\s*[\'"]([^\'"]+)[\'"]', parser_query)
+
+    # If 'EventProduct' was found in the KQL query, extract its value
+    if match:
+        event_product = match.group(1)
+        results.append((event_product, '"EventProduct" field is mapped in parser', 'Pass'))
+    # if equivalent_built_in_parser end with Native, then use 'EventProduct' as SchemaName + 'NativeTable'
+    elif equivalent_built_in_parser.endswith('_Native'):
+        event_product = 'NativeTable'
+        results.append((event_product, '"EventProduct" field is not required since this is a native table parser. Static value will be used for "EventProduct".', 'Pass'))
+    # If 'EventProduct' was not found in the KQL query, add to results
+    else:
+        results.append((f'{RED}EventProduct{RESET}', f'{RED}"EventProduct" field not mapped in parser. Please map it in parser query.{RESET}', f'{RED}Fail{RESET}'))
+
+    # Use a regular expression to find 'EventVendor' in the KQL query
+    match = re.search(r'EventVendor\s*=\s*[\'"]([^\'"]+)[\'"]', parser_query)
+
+    # If 'EventVendor' was found in the KQL query, extract its value
+    if match:
+        event_vendor = match.group(1)
+        results.append((event_vendor, '"EventVendor" field is mapped in parser', 'Pass'))
+    # if equivalent_built_in_parser end with Native, then use 'EventVendor' as 'Microsoft'
+    elif equivalent_built_in_parser.endswith('_Native'):
+        event_vendor = 'Microsoft'
+        results.append((event_vendor, '"EventVendor" field is not required since this is a native table parser. Static value will be used for "EventVendor".', 'Pass'))
+    # If 'EventVendor' was not found in the KQL query, add to results
+    else:
+        results.append((f'{RED}EventVendor{RESET}', f'{RED}"EventVendor" field not mapped in parser. Please map it in parser query.{RESET}', f'{RED}Fail{RESET}'))
+
+    # Check if parser_name exists in another_yaml_file's 'ParserQuery'
+    if parser_name:
+        if parser_name in Union_Parser__file.get('ParserQuery', ''):
+            results.append((parser_name, 'Parser entry exists in union parser under "ParserQuery" property', 'Pass'))
+        else:
+            results.append(( f'{RED}' + parser_name + f'{RESET}', f'{RED}Parser entry not found in union parser under "ParserQuery" property{RESET}', f'{RED}Fail{RESET}'))
+
+    # Check if equivalent_built_in_parser exists in another_yaml_file's 'Parsers'
+    if equivalent_built_in_parser:
+        if equivalent_built_in_parser in Union_Parser__file.get('Parsers', []):
+            results.append((equivalent_built_in_parser, 'Parser entry exists in union parser under "Parsers" property', 'Pass'))
+        else:
+            results.append((f'{RED}' + str(equivalent_built_in_parser) + f'{RESET}', f'{RED}Parser entry not found in union parser under "Parsers" property{RESET}', f'{RED}Fail{RESET}'))
+
+    # Check if title exists in yaml_file's 'Parser'->'Title'       
+    if title:
+        results.append((title, 'This value exists in Title property', 'Pass'))
+    else:
+        results.append((f'{RED}Title{RESET}', f'{RED}Title not found in parser YAML{RESET}', f'{RED}Fail{RESET}'))
+    # Check if version exists in yaml_file's 'Parser'->'Version' and matches the format X.X.X
+    if version:
+        if re.match(r'^\d+\.\d+\.\d+$', version):
+            results.append((version, 'This value exist in the parser version property', 'Pass'))
+        else:
+            results.append((f'{RED}' + str(version) + f'{RESET}', f'{RED}The parser version should be in a three-digit format, e.g., 0.1.0{RESET}', f'{RED}Fail{RESET}'))
+    else:
+        results.append((f'{RED}Version{RESET}', 'f{RED}Parser version not found in parser YAML{RESET}', f'{RED}Fail{RESET}'))
+
+    # Check if last_updated exists in yaml_file's 'Parser'->'LastUpdated' and matches the format MMM DD YY
+    if last_updated:
+        try:
+            datetime.strptime(last_updated, '%b %d, %Y')
+            results.append((last_updated, 'This value exist in LastUpdated property', 'Pass'))
+        except ValueError:
+            results.append((f'{RED}' + str(last_updated) + f'{RESET}', f'{RED}"LastUpdated" property exists but is not correct format. The expected format is, for example, "Jun 29, 2024"{RESET}', f'{RED}Fail{RESET}'))
+    else:
+        results.append((f'{RED}LastUpdated{RESET}', f'{RED}LastUpdated not found in parser YAML{RESET}', f'{RED}Fail{RESET}'))
+    
+    # Check if schema exists in yaml_file's 'Normalization'->'Schema' and matches with our SchemaInfo
+    if schema:
+        for info in SCHEMA_INFO:
+            if info['SchemaName'] == schema:
+                results.append((schema, f'ASIM schema name "{schema}" is correct', 'Pass'))
+                break
+        else:
+            results.append((f'{RED}' + str(schema) + f'{RESET}', f'{RED}ASIM schema name "{schema}" is incorrect. Please re-check Schema name{RESET}.', f'{RED}Fail{RESET}'))
+    else:
+        results.append((f'{RED}Schema{RESET}', f'{RED}ASIM schema name {info['SchemaName']} not found in parser YAML{RESET}', f'{RED}Fail{RESET}'))
+    
+    # Check if Schema Version exists, matches the X.X.X format, and matches our SchemaInfo
+    if schemaVersion:
+        if not re.match(r'^\d+\.\d+\.\d+$', schemaVersion):
+            results.append((f'{RED}' + str(schemaVersion) + f'{RESET}', f'{RED}The ASIM schema version should be in a three-digit format, e.g., 0.1.0{RESET}', f'{RED}Fail{RESET}'))
+        else:
+            for info in SCHEMA_INFO:
+                if schema == info.get('SchemaName'):
+                    if info['SchemaVersion'] == schemaVersion and info['SchemaName'] == schema:
+                        results.append((schemaVersion, f'ASIM schema {info.get('SchemaName')} version is correct', 'Pass'))
+                        break
+                    else:
+                        results.append((f'{RED}' + str(schemaVersion) + f'{RESET}', f'{RED}ASIM schema "{schema}" version "{schemaVersion}" is incorrect. The correct version for ASIM schema "{schema}" is "{info['SchemaVersion']}"{RESET}', f'{RED}Fail{RESET}'))
+    else:
+        results.append((f'{RED}Version{RESET}', f'{RED}ASIM schema {schema} version not found in parser YAML{RESET}', f'{RED}Fail{RESET}'))
+
+    # Check if references exist in yaml_file's 'References'
+    if references:
+        for ref in references:
+            title = ref.get('Title')
+            link = ref.get('Link')
+
+            for info in SCHEMA_INFO:
+                titleSchemaInfo = info.get('SchemaTitle')
+                linkSchemaInfo = info.get('SchemaLink')
+                if schema == info.get('SchemaName'):
+                    if title == titleSchemaInfo and link == linkSchemaInfo:
+                        results.append((title, 'Schema specific reference link matching', 'Pass'))
+                    elif title == 'ASIM' and link == 'https://aka.ms/AboutASIM':
+                        results.append((title, 'ASim doc reference link matching', 'Pass'))
+                    elif title != 'ASIM' and title != titleSchemaInfo:
+                        results.append((title, 'Product specific reference title exist. Please access URL manually to confirm it is a valid link', 'Pass'))
+                    else:
+                        results.append((f'{RED}' + str(title) + f'{RESET}', f'{RED}Reference title or link not matching. Please use title as "{titleSchemaInfo}" and link as "{linkSchemaInfo}"{RESET}', f'{RED}Fail{RESET}'))
+    else:
+        results.append((f'{RED}References{RESET}', f'{RED}References{RESET}', f'{RED}Fail{RESET}'))
+
+    # Check ParserName characters and the schema-specific prefix.
+    if parser_name:
+        if re.fullmatch(r'^[a-zA-Z][a-zA-Z0-9_]+$', parser_name) and re.match(rf'{FileType}{schema}', parser_name):
+            results.append((parser_name, 'ParserName is in correct format', 'Pass'))
+        else:
+            results.append((f'{RED}' + str(parser_name) + f'{RESET}', f'{RED}ParserName must match ^[a-zA-Z][a-zA-Z0-9_]+$ and start with {FileType}{schema}{RESET}', f'{RED}Fail{RESET}'))
+    else:
+        results.append((f'{RED}ParserName{RESET}', f'{RED}ParserName not found{RESET}', f'{RED}Fail{RESET}'))
+
+    # Check if EquivalentBuiltInParser exists in yaml_file and matches the format _ASIM_<Schema><ProductName>
+    FileType = "Im" if FileType == "vim" else FileType
+    if equivalent_built_in_parser:
+        if re.match(rf'_{FileType}_{schema}_', equivalent_built_in_parser):
+            results.append((equivalent_built_in_parser, 'EquivalentBuiltInParser is in correct format', 'Pass'))
+        else:
+            results.append((f'{RED}' + str(equivalent_built_in_parser) + f'{RESET}', f'{RED}EquivalentBuiltInParser is not in correct format. The correct format is "_{FileType}_{schema}_ProductName"{RESET}', f'{RED}Fail{RESET}'))
+    else:
+        results.append((f'{RED}EquivalentBuiltInParser{RESET}', f'{RED}"EquivalentBuiltInParser" property not found in parser{RESET}', f'{RED}Fail{RESET}'))
+    
+    # Check if sample data files exists or not (Only applicable for ASim FileType)
+    
+    if FileType == "ASim":
+        try:
+            sample_path = resolve_sample_data_path(
+                ASIMSampleDataURL, event_vendor, event_product, schema, parser_query
+            )
+        except (FileNotFoundError, ValueError) as error:
+            results.append((
+                f'{RED}Sample data file resolution failed{RESET}',
+                f'{RED}Sample data file resolution failed: {error}{RESET}',
+                f'{RED}Fail{RESET}',
+            ))
+        else:
+            results.append((sample_path.name, 'Sample data file exists', 'Pass'))
+    return results
+
+def validate_vim_parser_params(parser_file, union_parser_file):
+    parser_params = {
+        parameter.get('Name')
+        for parameter in parser_file.get('ParserParams', [])
+        if isinstance(parameter, dict)
+    }
+    supported_params = {
+        parameter.get('Name')
+        for parameter in union_parser_file.get('ParserParams', [])
+        if isinstance(parameter, dict)
+    }
+    parser_params.discard(None)
+    supported_params.discard(None)
+
+    optional_params = OPTIONAL_VIM_PARSER_PARAMS.copy()
+    # Temporary exception for WebSession.
+    # TODO: Remove eventresultdetails_has_any from the WebSession vim YAML and remove this exception.
+    if parser_file.get('Normalization', {}).get('Schema') == 'WebSession':
+        optional_params.add('eventresultdetails_has_any')
+
+    missing_params = supported_params - optional_params - parser_params
+    unsupported_params = parser_params - supported_params - VIM_CONTROL_PARAMS
+
+    if not missing_params and not unsupported_params:
+        return (
+            ', '.join(sorted(parser_params)),
+            'ParserParams match the parameters supported by the schema union parser',
+            'Pass'
+        )
+
+    differences = []
+    if missing_params:
+        differences.append(f'missing: {", ".join(sorted(missing_params))}')
+    if unsupported_params:
+        differences.append(f'unsupported: {", ".join(sorted(unsupported_params))}')
+
+    return (
+        f'{RED}{", ".join(differences)}{RESET}',
+        f'{RED}ParserParams must match the schema union parser parameters; optional: {", ".join(sorted(optional_params))}{RESET}',
+        f'{RED}Fail{RESET}'
+    )
+
+def get_modified_files(current_directory):
+
+    # Add upstream remote if not already present
+    git_remote_command = "git remote"
+    remote_result = subprocess.run(git_remote_command, shell=True, text=True, capture_output=True, check=True)
+    if 'upstream' not in remote_result.stdout.split():
+        git_add_upstream_command = f"git remote add upstream '{SentinelRepoUrl}'"
+        subprocess.run(git_add_upstream_command, shell=True, text=True, capture_output=True, check=True)
+    # Fetch from upstream
+    git_fetch_upstream_command = "git fetch upstream"
+    subprocess.run(git_fetch_upstream_command, shell=True, text=True, capture_output=True, check=True)
+    cmd = f"git diff --name-only upstream/master {current_directory}/../../../Parsers/"
+    try:
+        return subprocess.check_output(cmd, shell=True).decode().split("\n")
+    except subprocess.CalledProcessError as e:
+        print(f"::error::Error occurred while executing the command: {e}")
+        return []
+
+def get_current_commit_number():
+    cmd = "git rev-parse HEAD"
+    try:
+        return subprocess.check_output(cmd, shell=True, text=True).strip()
+    except subprocess.CalledProcessError as e:
+        print(f"::error::Error occurred while executing the command: {e}")
+        return None
+
+def read_local_yaml(filepath):
+    try:
+        with open(filepath, 'r', encoding='utf-8') as f:
+            return yaml.safe_load(f.read())
+    except FileNotFoundError:
+        print(f"::error::YAML file not found at {filepath}")
+        return None
+    except Exception as e:
+        print(f"::error::An error occurred while reading YAML file at {filepath}: {e}")
+        return None
+
+def print_test_header(parser_name):
+    print("***********************************")
+    print(f"{GREEN}Performing tests for Parser: {parser_name}{RESET}")
+    print("***********************************")
+
+def print_results_table(results):
+    from tabulate import tabulate
+
+    table = [[index + 1] + list(result) for index, result in enumerate(results)]
+    print(tabulate(table, headers=['S.No', 'Test Value', 'Test Name', 'Result'], tablefmt="grid"))
+
+def check_test_failures(results, parser):
+    if any(result[-1] == f'{RED}Fail{RESET}' for result in results):
+        print("::error::Some tests failed for Parser. Please check the results above.")
+        exclusion_list = read_exclusion_list_from_csv()
+        if parser.get('EquivalentBuiltInParser') in exclusion_list:
+            print(f"::warning::The parser {parser.get('EquivalentBuiltInParser')} is listed in the exclusions file, so this workflow run will not fail because of it. To allow this parser to trigger a workflow failure, please remove its name from the exclusions list file located at: {parser_exclusion_file_path}")
+            return False
+        else:
+            return True
+    else:
+        print(f"{GREEN}All tests successfully passed for this parser.{RESET}")
+        return False
+
+def check_parser_found(asim_parser, parser_path):
+    if asim_parser is None:
+        print(f"::error::Parser file not found at: {parser_path}")
+        exit(1) # Uncomment this line to fail the workflow if parser file not found.
+    
+    return True
+
+def get_parent_parser(parser, parser_path, schema_name, file_type):
+    root_name = f'{"ASim" if file_type == "ASim" else "im"}{schema_name}'
+    prefix = "ASim" if file_type == "ASim" else "(?:vim|im)"
+    current = parser
+    visited = {parser.get('ParserName')}
+    immediate_parent = None
+
+    while True:
+        parent_name = current.get('ParentParser')
+        if parent_name is None:
+            parent_name = root_name
+        elif not isinstance(parent_name, str):
+            raise ValueError("ParentParser must be a parser name string or null.")
+        else:
+            parent_name = parent_name.strip() or root_name
+        if not re.fullmatch(rf'{prefix}{re.escape(schema_name)}[a-zA-Z0-9_]*', parent_name):
+            raise ValueError(f"Invalid ParentParser '{parent_name}' for {file_type}{schema_name}.")
+        if parent_name in visited:
+            raise ValueError(f"ParentParser cycle detected at '{parent_name}'.")
+        visited.add(parent_name)
+        parent_path = os.path.join(os.path.dirname(parser_path), f'{parent_name}.yaml')
+        parent = read_local_yaml(parent_path)
+        if not isinstance(parent, dict) or parent.get('ParserName') != parent_name:
+            raise ValueError(f"ParentParser '{parent_name}' is missing or has a mismatched ParserName.")
+        if parent.get('Normalization', {}).get('Schema') != schema_name:
+            raise ValueError(f"ParentParser '{parent_name}' must use schema '{schema_name}'.")
+        if immediate_parent is None and not parser.get('ParentParser'):
+            # Leave legacy membership failures to the existing exclusion-aware checks.
+            return parent, parent_path
+        child_name = current.get('ParserName')
+        built_in = current.get('EquivalentBuiltInParser')
+        if (
+            not child_name
+            or not re.search(
+                rf'(?<![a-zA-Z0-9_]){re.escape(child_name)}(?![a-zA-Z0-9_])',
+                parent.get('ParserQuery', '')
+            )
+            or not built_in
+            or built_in not in parent.get('Parsers', [])
+        ):
+            raise ValueError(
+                f"Parser '{child_name}' must be registered in ParentParser "
+                f"'{parent_name}' under both ParserQuery and Parsers."
+            )
+        if immediate_parent is None:
+            immediate_parent = (parent, parent_path)
+        if parent_name == root_name:
+            return immediate_parent
+        current = parent
+
+# Function to read Exclusion list for ASim Parser test from a CSV file
+def read_exclusion_list_from_csv():
+    exclusion_list = []
+    with open(parser_exclusion_file_path, newline='') as csvfile:
+        reader = csv.reader(csvfile)
+        for row in reader:
+            exclusion_list.append(row[0])
+    return exclusion_list
+
+# Script starts here
+if __name__ == "__main__":
+    run()

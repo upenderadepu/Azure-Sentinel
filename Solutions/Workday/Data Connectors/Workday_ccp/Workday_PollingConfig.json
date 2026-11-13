@@ -1,0 +1,70 @@
+{
+  "type": "Microsoft.SecurityInsights/dataConnectors",
+  "apiVersion": "2022-10-01-preview",
+  "name": "[[concat('parameters('workspace')', '/Microsoft.SecurityInsights/','ASimAuditEventLogs' , uniqueString(parameters('friendlyName')) )]",
+  "location": "{{location}}",
+  "kind": "RestApiPoller",
+  "properties": {
+    "auth": {
+      "type": "OAuth2",
+      "ClientId": "[[parameters('clientId')]",
+      "ClientSecret": "[[parameters('clientSecret')]",
+      "GrantType": "authorization_code",
+      "TokenEndpoint": "[[parameters('tokenEndpoint')]",
+      "AuthorizationCode": "[[parameters('authorizationCode')]",
+      "RedirectUri": "[[parameters('redirectUri')]",
+      "AuthorizationEndpoint": "[[parameters('authorizationEndpoint')]",
+      "TokenEndpointHeaders": {
+        "Accept": "application/json",
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
+      "AuthorizationEndpointQueryParameters": {
+        "redirect": "n"
+      }
+    },
+    "request": {
+      "apiEndpoint": "[[parameters('apiEndpoint')]",
+      "httpMethod": "GET",
+      "rateLimitQPS": 10,
+      "queryWindowInMin": "[[int(parameters('queryWindow')[0])]",
+      "retryCount": 3,
+      "timeoutInSeconds": 30,
+      "headers": {
+        "Accept": "application/json"
+      },
+      "queryParameters": {
+        "type": "userActivity",
+        "from": "{_QueryWindowStartTime}",
+        "to": "{_QueryWindowEndTime}",
+        "instancesReturned": "10"
+      },
+      "startTimeAttributeName": "from",
+      "endTimeAttributeName": "to"
+    },
+    "response": {
+      "eventsJsonPaths": [
+        "$.data"
+      ],
+      "format": "json"
+    },
+    "paging": {
+      "pagingType": "Offset",
+      "offsetParaName": "offset",
+      "pageSize": "[[int(parameters('recordsPerRequest')[0])]",
+      "pageSizeParameterName": "limit"
+    },
+    "connectorDefinitionName": "WorkdayCCPDefinition",
+    "dataType": "ASimAuditEventLogs",
+    "dcrConfig": {
+      "streamName": "Custom-Workday_CL",
+      "dataCollectionEndpoint": "{{dataCollectionEndpoint}}",
+      "dataCollectionRuleImmutableId": "{{dataCollectionRuleImmutableId}}"
+    },
+    "addOnAttributes": {
+      "friendlyName": "[[parameters('friendlyName')]",
+      "tenantHost": "[[first(split(replace(replace(parameters('apiEndpoint'),'https://',''),'http://',''),'/'))]",
+      "apiEndpoint": "[[parameters('apiEndpoint')]",
+      "dataType": "WorkdayUserActivity"
+    }
+  }
+}

@@ -1,0 +1,28 @@
+id: b8f46142-cebc-435d-9943-2ed74e1eaba7
+name: Cisco Duo - Fraud authentications
+description: |
+  'Query searches for fraud authentication events.'
+severity: Medium
+requiredDataConnectors:
+  - connectorId: CiscoDuoAuthConnectorDefinition
+    dataTypes:
+      - DuoAuthentication_CL
+tactics:
+  - InitialAccess
+relevantTechniques:
+  - T1078
+query: |
+  DuoAuthentication_CL
+  | where TimeGenerated > ago(24h)
+  | where Result =~ 'fraud'
+  | project TimeGenerated, UserName, AccessDeviceIp
+  | extend AccountCustomEntity = UserName, IPCustomEntity = AccessDeviceIp
+entityMappings:
+  - entityType: Account
+    fieldMappings:
+      - identifier: Name
+        columnName: AccountCustomEntity
+  - entityType: IP
+    fieldMappings:
+      - identifier: Address
+        columnName: IPCustomEntity

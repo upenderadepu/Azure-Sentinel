@@ -1,0 +1,11 @@
+| **Version** | **Date Modified (DD-MM-YYYY)** | **Change History**                                                                       |
+|-------------|--------------------------------|------------------------------------------------------------------------------------------|
+| 3.2.2       | 25-10-2026                     | Added Defender XDR **Custom Detections** and **XDR Workbooks** for Sentinel to Defender XDR migration. |
+| 3.0.7       | 07-10-2026                     | Fixed false positives in Abnormal Port to Protocol and SeveralDenyActionsRegistered rules when using AZFWNetworkRule table             |
+| 3.0.6       | 06-05-2026                     | Updated **Analytical Rules** and **Hunting Queries** to Quality improvements.            |
+| 3.0.5       | 13-02-2026                     | Updated **Analytic Rule** to cover missing TTPs. Extended detection for FQDN and Destination IP across multiple sources and added new **Analytic Rule** for improved TI destination coverage.                                           |
+| 3.0.4       | 12-02-2024                     | Updated **Analytical Rule**	                                          |
+| 3.0.3       | 17-01-2024                     | Updated Azure Firewall **Data Connector**  to support resource specific logs.            |
+| 3.0.2       | 15-12-2023                     | Updated query  in  **Analytical Rule** (Port Scan)                                       |
+| 3.0.1       | 21-11-2023                     | Modified text as there is rebranding from Azure Active Directory to Microsoft Entra ID.                | 
+| 3.0.0       | 20-07-2023                     | Updated **Workbook** template to remove unused variables.                                | 

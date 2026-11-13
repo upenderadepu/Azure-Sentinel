@@ -1,0 +1,17 @@
+{
+  "publisherId": "redcanary1586203186957",
+  "offerId": "microsoft-sentinel-solution-redcanary",
+  "firstPublishDate": "2022-03-04",
+  "lastPublishDate": "2026-05-29",
+  "providers": ["Red Canary"],
+  "categories": {
+    "domains" : ["Security - Threat Protection"],
+    "verticals": []
+  },
+  "support": {
+    "name": "Red Canary",
+    "email": "microsoft@redcanary.com",
+    "tier": "Partner",
+    "link": "https://www.redcanary.com"
+  }
+}

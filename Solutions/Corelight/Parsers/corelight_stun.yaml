@@ -1,0 +1,25 @@
+id: 32057657-3019-5188-b875-b86b898b5136
+Function:
+  Title: corelight_stun parser for Corelight
+  Version: '2.0.0'
+  LastUpdated: '2026-08-17'
+Category: Microsoft Sentinel Parser
+FunctionName: corelight_stun
+FunctionAlias: corelight_stun
+FunctionQuery: |+
+  let dummy_table = datatable(TimeGenerated: datetime) [];
+  let corelight_stun = view () {
+      union isfuzzy=true Corelight_v3_stun_CL, dummy_table
+        | extend
+            _path=path,
+            _system_name=system_name,
+            _write_ts=write_ts
+      | extend
+          EventVendor="Corelight",
+          EventProduct="CorelightSensor",
+          EventType="stun",
+          ts=TimeGenerated
+  };
+  corelight_stun
+
+...

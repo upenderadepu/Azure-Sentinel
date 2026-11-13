@@ -1,0 +1,35 @@
+id: 175b79ef-0fc3-4b27-b92a-89b2db6c85c2
+name: SailPointIdentityNowFailedEventsBasedOnTime
+description: |
+  'Detects failed events based on created time.'
+severity: High
+status: Available
+requiredDataConnectors:
+  - connectorId: SailPointIdentityNow
+    dataTypes:
+      - SailPointISC_Events_CL
+  - connectorId: SailPointIdentityNowConnector
+    dataTypes:
+      - SailPointISC_Events_CL
+queryFrequency: 1d
+queryPeriod: 14d
+triggerOperator: gt
+triggerThreshold: 0
+tactics:
+  - InitialAccess
+relevantTechniques:
+  - T1133
+query: |
+  declare query_parameters(lbperiod:timespan = 14d, createdTime:string = "2020-08-19T20:34:38.676Z");
+    SailPointISC_Events_CL
+    | where TimeGenerated > ago(lbperiod)
+    | where Status == "FAILED"
+    | where Created >= todatetime(createdTime)
+    | sort by Created
+entityMappings:
+  - entityType: Account
+    fieldMappings:
+      - identifier: Name
+        columnName: TechnicalName
+version: 1.2.0
+kind: Scheduled

@@ -1,0 +1,25 @@
+id: ba15db4e-2703-51a9-94f1-2221cc45e70b
+Function:
+  Title: corelight_ntp parser for Corelight
+  Version: '2.0.0'
+  LastUpdated: '2026-08-17'
+Category: Microsoft Sentinel Parser
+FunctionName: corelight_ntp
+FunctionAlias: corelight_ntp
+FunctionQuery: |+
+  let dummy_table = datatable(TimeGenerated: datetime) [];
+  let corelight_ntp = view () {
+      union isfuzzy=true Corelight_v3_ntp_CL, dummy_table
+        | extend
+            _path=path,
+            _system_name=system_name,
+            _write_ts=write_ts
+      | extend
+          EventVendor="Corelight",
+          EventProduct="CorelightSensor",
+          EventType="ntp",
+          ts=TimeGenerated
+  };
+  corelight_ntp
+
+...

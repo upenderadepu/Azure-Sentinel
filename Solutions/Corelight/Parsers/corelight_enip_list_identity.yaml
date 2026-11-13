@@ -1,0 +1,25 @@
+id: 5f85566b-d602-552d-bee2-e1309b649df0
+Function:
+  Title: corelight_enip_list_identity parser for Corelight
+  Version: '2.0.0'
+  LastUpdated: '2026-08-17'
+Category: Microsoft Sentinel Parser
+FunctionName: corelight_enip_list_identity
+FunctionAlias: corelight_enip_list_identity
+FunctionQuery: |+
+  let dummy_table = datatable(TimeGenerated: datetime) [];
+  let corelight_enip_list_identity = view () {
+      union isfuzzy=true Corelight_v3_enip_list_identity_CL, dummy_table
+        | extend
+            _path=path,
+            _system_name=system_name,
+            _write_ts=write_ts
+      | extend
+          EventVendor="Corelight",
+          EventProduct="CorelightSensor",
+          EventType="enip_list_identity",
+          ts=TimeGenerated
+  };
+  corelight_enip_list_identity
+
+...

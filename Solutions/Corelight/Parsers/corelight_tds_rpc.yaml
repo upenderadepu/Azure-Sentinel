@@ -1,0 +1,25 @@
+id: 74b82a3d-4bd3-5399-a921-cd9afdcde208
+Function:
+  Title: corelight_tds_rpc parser for Corelight
+  Version: '2.0.0'
+  LastUpdated: '2026-08-17'
+Category: Microsoft Sentinel Parser
+FunctionName: corelight_tds_rpc
+FunctionAlias: corelight_tds_rpc
+FunctionQuery: |+
+  let dummy_table = datatable(TimeGenerated: datetime) [];
+  let corelight_tds_rpc = view () {
+      union isfuzzy=true Corelight_v3_tds_rpc_CL, dummy_table
+        | extend
+            _path=path,
+            _system_name=system_name,
+            _write_ts=write_ts
+      | extend
+          EventVendor="Corelight",
+          EventProduct="CorelightSensor",
+          EventType="tds_rpc",
+          ts=TimeGenerated
+  };
+  corelight_tds_rpc
+
+...

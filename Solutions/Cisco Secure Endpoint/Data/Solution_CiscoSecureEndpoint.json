@@ -1,0 +1,61 @@
+{
+  "Name": "Cisco Secure Endpoint",
+  "Author": "Microsoft - support@microsoft.com",
+  "Logo": "<img src=\"https://raw.githubusercontent.com/Azure/Azure-Sentinel/master/Logos/cisco-logo-72px.svg\" width=\"75px\" height=\"75px\">",
+  "Description": "The Cisco Secure Endpoint (formerly AMP for Endpoints) data connector provides the capability to ingest Cisco Secure Endpoint [audit logs](https://developer.cisco.com/docs/secure-endpoint/auditlog/) and [events](https://developer.cisco.com/docs/secure-endpoint/v1-api-reference-event/) into Microsoft Sentinel.\n\n**Underlying Microsoft Technologies used:**\n\nThis solution takes a dependency on the following technologies, and some of these dependencies either may be in [Preview](https://azure.microsoft.com/support/legal/preview-supplemental-terms/) state or might result in additional ingestion or operational costs:\n\n • [Microsoft Sentinel Codeless Connector Framework](https://aka.ms/Sentinel-CCP_Platform)",
+  "Workbooks": [
+    "Workbooks/Cisco Secure Endpoint Overview.json"
+  ],
+  "XDR Workbooks": [
+    "XDR Workbooks/Cisco Secure Endpoint Overview.json"
+  ],
+  "Parsers": [
+    "Parsers/CiscoSecureEndpoint.yaml"
+  ],
+  "Hunting Queries": [
+    "Hunting Queries/CiscoSEInfectedHosts.yaml",
+    "Hunting Queries/CiscoSEInfectedUsers.yaml",
+    "Hunting Queries/CiscoSELoginsToConsole.yaml",
+    "Hunting Queries/CiscoSEMaliciousFiles.yaml",
+    "Hunting Queries/CiscoSEModifiedAgent.yaml",
+    "Hunting Queries/CiscoSERareFilesScanned.yaml",
+    "Hunting Queries/CiscoSEScannedFiles.yaml",
+    "Hunting Queries/CiscoSESuspiciousPSDownloads.yaml",
+    "Hunting Queries/CiscoSEUncommonApplicationBehavior.yaml",
+    "Hunting Queries/CiscoSEVulnerableApplications.yaml"
+  ],
+  "Data Connectors": [
+    "Data Connectors/CiscoSecureEndpointLogs_ccp/CiscoSecureEndpointLogs_ConnectorDefinition.json"
+  ],
+  "Analytic Rules": [
+    "Analytic Rules/CiscoEndpointHighAlert.yaml",
+    "Analytic Rules/CiscoSEC2Connection.yaml",
+    "Analytic Rules/CiscoSEDropperActivity.yaml",
+    "Analytic Rules/CiscoSEGenIoC.yaml",
+    "Analytic Rules/CiscoSEMalwareExecution.yaml",
+    "Analytic Rules/CiscoSEMalwareOutbreak.yaml",
+    "Analytic Rules/CiscoSEMultipleMalwareOnHost.yaml",
+    "Analytic Rules/CiscoSEPolicyUpdateFailure.yaml",
+    "Analytic Rules/CiscoSERansomwareActivityOnHost copy.yaml",
+    "Analytic Rules/CiscoSEUnexpectedBinary.yaml",
+    "Analytic Rules/CiscoSEWebshell.yaml"
+  ],
+  "XDR Detections": [
+    "XDR Detections/CiscoEndpointHighAlert.yaml",
+    "XDR Detections/CiscoSEC2Connection.yaml",
+    "XDR Detections/CiscoSEDropperActivity.yaml",
+    "XDR Detections/CiscoSEGenIoC.yaml",
+    "XDR Detections/CiscoSEMalwareExecution.yaml",
+    "XDR Detections/CiscoSEMalwareOutbreak.yaml",
+    "XDR Detections/CiscoSEMultipleMalwareOnHost.yaml",
+    "XDR Detections/CiscoSEPolicyUpdateFailure.yaml",
+    "XDR Detections/CiscoSERansomwareActivityOnHost copy.yaml",
+    "XDR Detections/CiscoSEUnexpectedBinary.yaml",
+    "XDR Detections/CiscoSEWebshell.yaml"
+  ],
+  "BasePath": "C:\\GitHub\\Azure-Sentinel\\Solutions\\Cisco Secure Endpoint",
+  "Metadata": "SolutionMetadata.json",
+  "TemplateSpec": true,
+  "Is1PConnector": false,
+  "Version": "3.2.2"
+}

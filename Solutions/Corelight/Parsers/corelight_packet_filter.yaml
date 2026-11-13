@@ -1,0 +1,25 @@
+id: 366918b3-21a6-52b0-87d1-bb8cad46f6a5
+Function:
+  Title: corelight_packet_filter parser for Corelight
+  Version: '2.0.0'
+  LastUpdated: '2026-08-17'
+Category: Microsoft Sentinel Parser
+FunctionName: corelight_packet_filter
+FunctionAlias: corelight_packet_filter
+FunctionQuery: |+
+  let dummy_table = datatable(TimeGenerated: datetime) [];
+  let corelight_packet_filter = view () {
+      union isfuzzy=true Corelight_v3_packet_filter_CL, dummy_table
+        | extend
+            _path=path,
+            _system_name=system_name,
+            _write_ts=write_ts
+      | extend
+          EventVendor="Corelight",
+          EventProduct="CorelightSensor",
+          EventType="packet_filter",
+          ts=TimeGenerated
+  };
+  corelight_packet_filter
+
+...

@@ -1,0 +1,66 @@
+﻿id: ce09d0fb-6816-496d-822e-198a56187a30
+Function:
+  Title: Parser for BitSightAlerts
+  Version: '1.1.0'
+  LastUpdated: '2026-05-25'
+Category: Microsoft Sentinel Parser
+FunctionName: BitSightAlerts
+FunctionAlias: BitSightAlerts
+FunctionQuery: |
+    union isfuzzy=true
+        (
+            BitsightAlerts_data_CL
+            | extend
+                    EventVendor = "BitSight",
+                    EventProduct = "Alert",
+                    GUID = column_ifexists('guid', ''),
+                    AlertType = column_ifexists('alert_type', ''),
+                    AlertDate = column_ifexists('alert_date', ''),
+                    StartDate = column_ifexists('start_date', ''),
+                    CompanyName = column_ifexists('company_name', ''),
+                    CompanyGUID = column_ifexists('company_guid', ''),
+                    CompanyURL = column_ifexists('company_url', ''),
+                    FolderGUID = column_ifexists('folder_guid', ''),
+                    FolderName = column_ifexists('folder_name', ''),
+                    Severity = column_ifexists('severity', ''),
+                    Trigger = column_ifexists('trigger', '')
+            | project
+                    TimeGenerated,
+                    EventVendor,
+                    EventProduct,
+                    GUID,
+                    AlertType,
+                    AlertDate,
+                    StartDate,
+                    CompanyName,
+                    CompanyGUID,
+                    CompanyURL,
+                    FolderGUID,
+                    FolderName,
+                    Severity,
+                    Trigger
+        ),
+        (
+            BitSightAlerts_CL
+            | extend
+                    EventVendor = "BitSight",
+                    EventProduct = "Alert"
+            | project
+                    TimeGenerated,
+                    EventVendor,
+                    EventProduct,
+                    Guid,
+                    AlertType,
+                    AlertDate,
+                    StartDate,
+                    CompanyName,
+                    CompanyGuid,
+                    CompanyUrl,
+                    FolderGuid,
+                    FolderName,
+                    Severity,
+                    Trigger,
+                    AlertSetName,
+                    AlertSetGuid,
+                    ConnectorName
+        )

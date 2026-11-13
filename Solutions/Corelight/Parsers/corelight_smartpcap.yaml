@@ -1,0 +1,25 @@
+id: 4d7f543d-3f45-5a3d-b3e2-d65fad1b8448
+Function:
+  Title: corelight_smartpcap parser for Corelight
+  Version: '2.0.0'
+  LastUpdated: '2026-08-17'
+Category: Microsoft Sentinel Parser
+FunctionName: corelight_smartpcap
+FunctionAlias: corelight_smartpcap
+FunctionQuery: |+
+  let dummy_table = datatable(TimeGenerated: datetime) [];
+  let corelight_smartpcap = view () {
+      union isfuzzy=true Corelight_v3_smartpcap_CL, dummy_table
+        | extend
+            _path=path,
+            _system_name=system_name,
+            _write_ts=write_ts
+      | extend
+          EventVendor="Corelight",
+          EventProduct="CorelightSensor",
+          EventType="smartpcap",
+          ts=TimeGenerated
+  };
+  corelight_smartpcap
+
+...

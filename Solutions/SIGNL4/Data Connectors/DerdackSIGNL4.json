@@ -1,0 +1,75 @@
+{
+    "id": "DerdackSIGNL4",
+    "title": "Derdack SIGNL4",
+    "publisher": "Derdack",
+    "descriptionMarkdown": "When critical systems fail or security incidents happen, SIGNL4 bridges the ‘last mile’ to your staff, engineers, IT admins and workers in the field. It adds real-time mobile alerting to your services, systems, and processes in no time. SIGNL4 notifies through persistent mobile push, SMS text and voice calls with acknowledgement, tracking and escalation. Integrated duty and shift scheduling ensure the right people are alerted at the right time.\n\n[Learn more >](https://www.signl4.com)",
+    "graphQueries": [
+        {
+            "metricName": "Total data received",
+            "legend": "SIGNL4_CL",
+            "baseQuery": "SecurityIncident"
+        }
+    ],
+    "sampleQueries": [
+        {
+            "description" : "Get SIGNL4 alert and status information.",
+            "query": "SecurityIncident\n | where Labels contains \"SIGNL4\""
+        }
+    ],
+    "dataTypes": [
+        {
+            "name": "SIGNL4_CL",
+            "lastDataReceivedQuery": "SecurityIncident\n | where Labels contains \"SIGNL4\" | summarize Time = max(TimeGenerated) | where isnotempty(Time)"
+        }
+    ],
+    "connectivityCriterias": [
+        {
+            "type": "IsConnectedQuery",
+            "value": [
+                "SecurityIncident\n | where Labels contains \"SIGNL4\""
+            ]
+        }
+    ],
+    "availability": {
+        "status": 1,
+        "isPreview": false
+    },
+    "permissions": {
+        "resourceProvider": [
+            {
+                "provider": "Microsoft.OperationalInsights/workspaces",
+                "permissionsDisplayText": "read and write permissions are required.",
+                "providerDisplayName": "Workspace",
+                "scope": "Workspace",
+                "requiredPermissions": {
+                    "write": true,
+                    "read": true,
+                    "delete": true
+                }
+            },
+            {
+                "provider": "Microsoft.OperationalInsights/workspaces/sharedKeys",
+                "permissionsDisplayText": "read permissions to shared keys for the workspace are required. [See the documentation to learn more about workspace keys](https://docs.microsoft.com/azure/azure-monitor/platform/agent-windows#obtain-workspace-id-and-key).",
+                "providerDisplayName": "Keys",
+                "scope": "Workspace",
+                "requiredPermissions": {
+                    "action": true
+                }
+            }
+        ]
+    },
+    "instructionSteps": [
+        { 
+            "title": "", 
+            "description": ">**NOTE:** This legacy data connector includes a basic Azure Logic Apps playbook template for Microsoft Sentinel. The playbook runs when a new Microsoft Sentinel incident is created. You can extend the workflow by adding a SIGNL4 action in Azure Logic Apps to create a new alert in SIGNL4.",
+            "instructions": [ 
+            ]    
+        },
+        {
+            "title": "",
+            "description": ">**SIGNL4 Connector:** The recommended way to integrate SIGNL4 with Microsoft Sentinel is to use the Microsoft Sentinel connector app in SIGNL4. For full setup instructions, see [**Integrate SIGNL4 with Microsoft Sentinel**](https://docs.signl4.com/integrations/microsoft-sentinel/microsoft-sentinel.html).",
+            "instructions": [
+            ]
+        }
+	]
+}

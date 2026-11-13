@@ -1,0 +1,25 @@
+id: 0cc16bc1-01b6-5660-9278-91caac453e21
+Function:
+  Title: corelight_pe parser for Corelight
+  Version: '2.0.0'
+  LastUpdated: '2026-08-17'
+Category: Microsoft Sentinel Parser
+FunctionName: corelight_pe
+FunctionAlias: corelight_pe
+FunctionQuery: |+
+  let dummy_table = datatable(TimeGenerated: datetime) [];
+  let corelight_pe = view () {
+      union isfuzzy=true Corelight_v3_pe_CL, dummy_table
+        | extend
+            _path=path,
+            _system_name=system_name,
+            _write_ts=write_ts
+      | extend
+          EventVendor="Corelight",
+          EventProduct="CorelightSensor",
+          EventType="pe",
+          ts=TimeGenerated
+  };
+  corelight_pe
+
+...

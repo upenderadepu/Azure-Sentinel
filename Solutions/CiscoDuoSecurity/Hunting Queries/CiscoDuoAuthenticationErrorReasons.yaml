@@ -1,0 +1,24 @@
+id: 5653900e-4b21-408d-84da-e4db3da891bb
+name: Cisco Duo - Authentication error reasons
+description: |
+  'Query searches for authentication error reasons.'
+severity: Medium
+requiredDataConnectors:
+  - connectorId: CiscoDuoAuthConnectorDefinition
+    dataTypes:
+      - DuoAuthentication_CL
+tactics:
+  - InitialAccess
+relevantTechniques:
+  - T1078
+query: |
+  DuoAuthentication_CL
+  | where TimeGenerated > ago(24h)
+  | where Result in~ ('denied', 'failure')
+  | summarize count() by Reason, UserName
+  | extend AccountCustomEntity = UserName
+entityMappings:
+  - entityType: Account
+    fieldMappings:
+      - identifier: Name
+        columnName: AccountCustomEntity

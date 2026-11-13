@@ -1,0 +1,507 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/0.1.2-preview/CreateUIDefinition.MultiVm.json#",
+  "handler": "Microsoft.Azure.CreateUIDef",
+  "version": "0.1.2-preview",
+  "parameters": {
+    "config": {
+      "isWizard": false,
+      "basics": {
+        "description": "<img src=\"https://raw.githubusercontent.com/Azure/Azure-Sentinel/master/Solutions/SlackAudit/Data%20Connectors/Logo/slacklogo.svg\" width=\"75px\" height=\"75px\">\n\n**Note:** Please refer to the following before installing the solution: \n\n• Review the solution [Release Notes](https://github.com/Azure/Azure-Sentinel/tree/master/Solutions/SlackAudit/ReleaseNotes.md)\n\n • There may be [known issues](https://aka.ms/sentinelsolutionsknownissues) pertaining to this Solution, please refer to them before installing.\n\nThe [Slack](https://slack.com/intl/en-in/) Audit solution provides the capability to ingest [Slack Audit Records](https://api.slack.com/admins/audit-logs) events into Microsoft Sentinel through the REST API. Refer to [API documentation](https://api.slack.com/admins/audit-logs-call) for more information.\r\n \r\n **Underlying Microsoft Technologies used:** \r\n \r\n This solution takes a dependency on the following technologies, and some of these dependencies either may be in [Preview](https://azure.microsoft.com/support/legal/preview-supplemental-terms/) state or might result in additional ingestion or operational costs:\r\n \r\n  • [Microsoft Sentinel Codeless Connector Framework](https://aka.ms/Sentinel-CCP_Platform)\n\n**Data Connectors:** 1, **Parsers:** 1, **Workbooks:** 1, **Analytic Rules:** 9, **XDR Detections:** 9, **Hunting Queries:** 10, **XDR Workbooks:** 1\n\n[Learn more about Microsoft Sentinel](https://aka.ms/azuresentinel) | [Learn more about Solutions](https://aka.ms/azuresentinelsolutionsdoc)",
+        "subscription": {
+          "resourceProviders": [
+            "Microsoft.OperationsManagement/solutions",
+            "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "Microsoft.Insights/workbooks",
+            "Microsoft.Logic/workflows"
+          ]
+        },
+        "location": {
+          "metadata": {
+            "hidden": "Hiding location, we get it from the log analytics workspace"
+          },
+          "visible": false
+        },
+        "resourceGroup": {
+          "allowExisting": true
+        }
+      }
+    },
+    "basics": [
+      {
+        "name": "getLAWorkspace",
+        "type": "Microsoft.Solutions.ArmApiControl",
+        "toolTip": "This filters by workspaces that exist in the Resource Group selected",
+        "condition": "[greater(length(resourceGroup().name),0)]",
+        "request": {
+          "method": "GET",
+          "path": "[concat(subscription().id,'/providers/Microsoft.OperationalInsights/workspaces?api-version=2020-08-01')]"
+        }
+      },
+      {
+        "name": "workspace",
+        "type": "Microsoft.Common.DropDown",
+        "label": "Workspace",
+        "placeholder": "Select a workspace",
+        "toolTip": "This dropdown will list only workspace that exists in the Resource Group selected",
+        "constraints": {
+          "allowedValues": "[map(filter(basics('getLAWorkspace').value, (filter) => contains(toLower(filter.id), toLower(resourceGroup().name))), (item) => parse(concat('{\"label\":\"', item.name, '\",\"value\":\"', item.name, '\"}')))]",
+          "required": true
+        },
+        "visible": true
+      }
+    ],
+    "steps": [
+      {
+        "name": "contentSelection",
+        "label": "Content selection",
+        "elements": [
+          {
+            "name": "DeployAnalyticsRule",
+            "type": "Microsoft.Common.CheckBox",
+            "label": "DeployAnalyticsRule",
+            "defaultValue": true,
+            "toolTip": "Deploy the Microsoft Sentinel analytic rules carried by this solution (ContentKind AnalyticsRule and its AnalyticsRuleTemplate registration face)."
+          },
+          {
+            "name": "DeployWorkbook",
+            "type": "Microsoft.Common.CheckBox",
+            "label": "DeployWorkbook",
+            "defaultValue": true,
+            "toolTip": "Deploy the Microsoft Sentinel workbook content and its Content Hub registration carried by this solution (ContentKind Workbook and WorkbookTemplate)."
+          },
+          {
+            "name": "DeployDefenderWorkbook",
+            "type": "Microsoft.Common.CheckBox",
+            "label": "DeployDefenderWorkbook",
+            "defaultValue": false,
+            "toolTip": "Deploy Defender Workbooks and their Content Hub registrations independently of Microsoft Sentinel DeployWorkbook. Candidate provider contract requires approved lab installation, readback and update verification."
+          },
+          {
+            "name": "DeployDataConnector",
+            "type": "Microsoft.Common.CheckBox",
+            "label": "DeployDataConnector",
+            "defaultValue": true,
+            "toolTip": "Deploy the data connectors carried by this solution, together with their metadata and catalog entries (ContentKind DataConnector, ResourceDataConnector and DataType)."
+          },
+          {
+            "name": "DeployCustomDetection",
+            "type": "Microsoft.Common.CheckBox",
+            "label": "DeployCustomDetection",
+            "defaultValue": false,
+            "toolTip": "Deploy the XDR-native custom detection resources and their Content Hub registrations (ContentKind CustomDetection and CustomDetectionTemplate). Independent of DeployAnalyticsRule: both kinds can be selected together. Existing analytic-rule instances are not disabled or removed. CD enabled or disabled status is controlled separately from this deployment switch."
+          },
+          {
+            "name": "DeployHuntingQuery",
+            "type": "Microsoft.Common.CheckBox",
+            "label": "DeployHuntingQuery",
+            "defaultValue": true,
+            "toolTip": "Deploy the Microsoft Sentinel hunting queries carried by this solution."
+          },
+          {
+            "name": "DeployParser",
+            "type": "Microsoft.Common.CheckBox",
+            "label": "DeployParser",
+            "defaultValue": true,
+            "toolTip": "Deploy the parsers and their registrations carried by this solution."
+          }
+        ]
+      },
+      {
+        "name": "dataconnectors",
+        "label": "Data Connectors",
+        "bladeTitle": "Data Connectors",
+        "elements": [
+          {
+            "name": "dataconnectors1-text",
+            "type": "Microsoft.Common.TextBlock",
+            "options": {
+              "text": "This Solution installs the data connector for SlackAudit (via Codeless Connector Framework). You can get SlackAudit (via Codeless Connector Framework) data in your Microsoft Sentinel workspace. After installing the solution, configure and enable this data connector by following guidance in Manage solution view."
+            }
+          },
+          {
+            "name": "dataconnectors-link1",
+            "type": "Microsoft.Common.TextBlock",
+            "options": {
+              "link": {
+                "label": "Learn more about connecting data sources",
+                "uri": "https://docs.microsoft.com/azure/sentinel/connect-data-sources"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "workbooks",
+        "label": "Workbooks",
+        "subLabel": {
+          "preValidation": "Configure the workbooks",
+          "postValidation": "Done"
+        },
+        "bladeTitle": "Workbooks",
+        "elements": [
+          {
+            "name": "workbooks-text",
+            "type": "Microsoft.Common.TextBlock",
+            "options": {
+              "text": "This solution installs workbook(s) to help you gain insights into the telemetry collected in Microsoft Sentinel. After installing the solution, start using the workbook in Manage solution view."
+            }
+          },
+          {
+            "name": "workbooks-link",
+            "type": "Microsoft.Common.TextBlock",
+            "options": {
+              "link": {
+                "label": "Learn more",
+                "uri": "https://docs.microsoft.com/azure/sentinel/tutorial-monitor-your-data"
+              }
+            }
+          },
+          {
+            "name": "workbook1",
+            "type": "Microsoft.Common.Section",
+            "label": "SlackAudit",
+            "elements": [
+              {
+                "name": "workbook1-text",
+                "type": "Microsoft.Common.TextBlock",
+                "options": {
+                  "text": "Sets the time name for analysis"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "analytics",
+        "label": "Analytics",
+        "subLabel": {
+          "preValidation": "Configure the analytics",
+          "postValidation": "Done"
+        },
+        "bladeTitle": "Analytics",
+        "elements": [
+          {
+            "name": "analytics-text",
+            "type": "Microsoft.Common.TextBlock",
+            "options": {
+              "text": "This solution installs the following analytic rule templates. After installing the solution, create and enable analytic rules in Manage solution view."
+            }
+          },
+          {
+            "name": "analytics-link",
+            "type": "Microsoft.Common.TextBlock",
+            "options": {
+              "link": {
+                "label": "Learn more",
+                "uri": "https://docs.microsoft.com/azure/sentinel/tutorial-detect-threats-custom?WT.mc_id=Portal-Microsoft_Azure_CreateUIDef"
+              }
+            }
+          },
+          {
+            "name": "analytic1",
+            "type": "Microsoft.Common.Section",
+            "label": "SlackAudit - Empty User Agent",
+            "elements": [
+              {
+                "name": "analytic1-text",
+                "type": "Microsoft.Common.TextBlock",
+                "options": {
+                  "text": "This query shows connections to the Slack Workspace with empty User Agent."
+                }
+              }
+            ]
+          },
+          {
+            "name": "analytic2",
+            "type": "Microsoft.Common.Section",
+            "label": "SlackAudit - Multiple archived files uploaded in short period of time",
+            "elements": [
+              {
+                "name": "analytic2-text",
+                "type": "Microsoft.Common.TextBlock",
+                "options": {
+                  "text": "This query helps to detect when a user uploads multiple archived files in short period of time."
+                }
+              }
+            ]
+          },
+          {
+            "name": "analytic3",
+            "type": "Microsoft.Common.Section",
+            "label": "SlackAudit - Multiple failed logins for user",
+            "elements": [
+              {
+                "name": "analytic3-text",
+                "type": "Microsoft.Common.TextBlock",
+                "options": {
+                  "text": "Identifies multiple failed Slack logins for a user account within a short time window, which may indicate password\nguessing or brute-force activity."
+                }
+              }
+            ]
+          },
+          {
+            "name": "analytic4",
+            "type": "Microsoft.Common.Section",
+            "label": "SlackAudit - Public link created for file which can contain sensitive information.",
+            "elements": [
+              {
+                "name": "analytic4-text",
+                "type": "Microsoft.Common.TextBlock",
+                "options": {
+                  "text": "Detects public links created for files that may contain sensitive data such as passwords, authentication tokens,\nsecret keys, or private configuration files. Tune exclusions using the SlackAuditSensitiveFile_Allowlist_File and SlackAuditSensitiveFile_Allowlist_Account\nwatchlists when known benign files or accounts generate expected public-link activity."
+                }
+              }
+            ]
+          },
+          {
+            "name": "analytic5",
+            "type": "Microsoft.Common.Section",
+            "label": "SlackAudit - Suspicious file downloaded.",
+            "elements": [
+              {
+                "name": "analytic5-text",
+                "type": "Microsoft.Common.TextBlock",
+                "options": {
+                  "text": "Detects potentialy suspicious downloads."
+                }
+              }
+            ]
+          },
+          {
+            "name": "analytic6",
+            "type": "Microsoft.Common.Section",
+            "label": "SlackAudit - Unknown User Agent",
+            "elements": [
+              {
+                "name": "analytic6-text",
+                "type": "Microsoft.Common.TextBlock",
+                "options": {
+                  "text": "Detects Slack workspace activity from unknown user agents by comparing recent UserAgentOriginal values against\na 14d baseline of known user agents."
+                }
+              }
+            ]
+          },
+          {
+            "name": "analytic7",
+            "type": "Microsoft.Common.Section",
+            "label": "SlackAudit - User role changed to admin or owner",
+            "elements": [
+              {
+                "name": "analytic7-text",
+                "type": "Microsoft.Common.TextBlock",
+                "options": {
+                  "text": "This query detects Slack audit events where a user role is changed to admin or owner, indicating potential privilege\nescalation or persistence activity. It monitors role change actions in Slack audit logs and maps the affected user as the\nprimary account entity for investigation."
+                }
+              }
+            ]
+          },
+          {
+            "name": "analytic8",
+            "type": "Microsoft.Common.Section",
+            "label": "SlackAudit - User email linked to account changed.",
+            "elements": [
+              {
+                "name": "analytic8-text",
+                "type": "Microsoft.Common.TextBlock",
+                "options": {
+                  "text": "Detects when user email linked to account changes."
+                }
+              }
+            ]
+          },
+          {
+            "name": "analytic9",
+            "type": "Microsoft.Common.Section",
+            "label": "SlackAudit - User login after deactivated.",
+            "elements": [
+              {
+                "name": "analytic9-text",
+                "type": "Microsoft.Common.TextBlock",
+                "options": {
+                  "text": "Detects when a Slack user account was deactivated and the same user identity later authenticated again within\nthe detection window, which may indicate account reactivation, unauthorized access, or use of a deactivated account. Analyst\ntriage should review the deactivation time, subsequent login time, EntityUserEmail, and EntityUserId to determine whether\nthe login was expected. This rule uses the SlackAuditAPI connector and SlackAudit_CL data type."
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "huntingqueries",
+        "label": "Hunting Queries",
+        "bladeTitle": "Hunting Queries",
+        "elements": [
+          {
+            "name": "huntingqueries-text",
+            "type": "Microsoft.Common.TextBlock",
+            "options": {
+              "text": "This solution installs the following hunting queries. After installing the solution, run these hunting queries to hunt for threats in Manage solution view. "
+            }
+          },
+          {
+            "name": "huntingqueries-link",
+            "type": "Microsoft.Common.TextBlock",
+            "options": {
+              "link": {
+                "label": "Learn more",
+                "uri": "https://docs.microsoft.com/azure/sentinel/hunting"
+              }
+            }
+          },
+          {
+            "name": "huntingquery1",
+            "type": "Microsoft.Common.Section",
+            "label": "SlackAudit - Applications installed",
+            "elements": [
+              {
+                "name": "huntingquery1-text",
+                "type": "Microsoft.Common.TextBlock",
+                "options": {
+                  "text": "This hunt searches for Slack application installation events to identify potentially unauthorized or suspicious app installs by users. This hunting query depends on SlackAuditAPI data connector (SlackAudit_CL Parser or Table)"
+                }
+              }
+            ]
+          },
+          {
+            "name": "huntingquery2",
+            "type": "Microsoft.Common.Section",
+            "label": "SlackAudit - Deactivated users",
+            "elements": [
+              {
+                "name": "huntingquery2-text",
+                "type": "Microsoft.Common.TextBlock",
+                "options": {
+                  "text": "This hunt searches for Slack user deactivation events to surface potential administrative abuse, insider activity, or account compromise response actions. This hunting query depends on SlackAuditAPI data connector (SlackAudit_CL Parser or Table)"
+                }
+              }
+            ]
+          },
+          {
+            "name": "huntingquery3",
+            "type": "Microsoft.Common.Section",
+            "label": "SlackAudit - Downloaded files stats",
+            "elements": [
+              {
+                "name": "huntingquery3-text",
+                "type": "Microsoft.Common.TextBlock",
+                "options": {
+                  "text": "This hunt highlights Slack users with the highest file-download volume over the last 24 hours to help identify unusual collection or staging activity. This hunting query depends on SlackAuditAPI data connector (SlackAudit_CL Parser or Table)"
+                }
+              }
+            ]
+          },
+          {
+            "name": "huntingquery4",
+            "type": "Microsoft.Common.Section",
+            "label": "SlackAudit - Failed logins with unknown username",
+            "elements": [
+              {
+                "name": "huntingquery4-text",
+                "type": "Microsoft.Common.TextBlock",
+                "options": {
+                  "text": "This query identifies Slack failed login attempts where the username has not been observed in successful login activity during the baseline period. This hunting query depends on SlackAuditAPI data connector (SlackAudit_CL Parser or Table)"
+                }
+              }
+            ]
+          },
+          {
+            "name": "huntingquery5",
+            "type": "Microsoft.Common.Section",
+            "label": "SlackAudit - New User created",
+            "elements": [
+              {
+                "name": "huntingquery5-text",
+                "type": "Microsoft.Common.TextBlock",
+                "options": {
+                  "text": "This query hunts for newly created Slack users to help identify unauthorized or suspicious account provisioning activity. This hunting query depends on SlackAuditAPI data connector (SlackAudit_CL Parser or Table)"
+                }
+              }
+            ]
+          },
+          {
+            "name": "huntingquery6",
+            "type": "Microsoft.Common.Section",
+            "label": "SlackAudit - Suspicious files downloaded",
+            "elements": [
+              {
+                "name": "huntingquery6-text",
+                "type": "Microsoft.Common.TextBlock",
+                "options": {
+                  "text": "This query searches for potentially suspicious file downloads in Slack audit data by flagging downloaded filenames that contain multiple dot-separated segments and an unusually short non-numeric middle token. This hunting query depends on SlackAuditAPI data connector (SlackAudit_CL Parser or Table)"
+                }
+              }
+            ]
+          },
+          {
+            "name": "huntingquery7",
+            "type": "Microsoft.Common.Section",
+            "label": "SlackAudit - Uploaded files stats",
+            "elements": [
+              {
+                "name": "huntingquery7-text",
+                "type": "Microsoft.Common.TextBlock",
+                "options": {
+                  "text": "This query shows top users by uploads over time. This hunting query depends on SlackAuditAPI data connector (SlackAudit_CL Parser or Table)"
+                }
+              }
+            ]
+          },
+          {
+            "name": "huntingquery8",
+            "type": "Microsoft.Common.Section",
+            "label": "SlackAudit - User logins by IP",
+            "elements": [
+              {
+                "name": "huntingquery8-text",
+                "type": "Microsoft.Common.TextBlock",
+                "options": {
+                  "text": "This hunt surfaces Slack user login activity by source IP to identify unusual account access patterns and credential abuse. This hunting query depends on SlackAuditAPI data connector (SlackAudit_CL Parser or Table)"
+                }
+              }
+            ]
+          },
+          {
+            "name": "huntingquery9",
+            "type": "Microsoft.Common.Section",
+            "label": "SlackAudit - User Permission Changed",
+            "elements": [
+              {
+                "name": "huntingquery9-text",
+                "type": "Microsoft.Common.TextBlock",
+                "options": {
+                  "text": "Query searches for user permissions changes events. This hunting query depends on SlackAuditAPI data connector (SlackAudit_CL Parser or Table)"
+                }
+              }
+            ]
+          },
+          {
+            "name": "huntingquery10",
+            "type": "Microsoft.Common.Section",
+            "label": "SlackAudit - Users joined channels without invites",
+            "elements": [
+              {
+                "name": "huntingquery10-text",
+                "type": "Microsoft.Common.TextBlock",
+                "options": {
+                  "text": "Query searches for users which joined Slack channels without invites to identify potentially unauthorized channel access or suspicious collaboration activity. This hunting query depends on SlackAuditAPI data connector (SlackAudit_CL Parser or Table)"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "outputs": {
+      "workspace-location": "[first(map(filter(basics('getLAWorkspace').value, (filter) => and(contains(toLower(filter.id), toLower(resourceGroup().name)),equals(filter.name,basics('workspace')))), (item) => item.location))]",
+      "location": "[location()]",
+      "workspace": "[basics('workspace')]",
+      "DeployAnalyticsRule": "[steps('contentSelection').DeployAnalyticsRule]",
+      "DeployWorkbook": "[steps('contentSelection').DeployWorkbook]",
+      "DeployDefenderWorkbook": "[steps('contentSelection').DeployDefenderWorkbook]",
+      "DeployDataConnector": "[steps('contentSelection').DeployDataConnector]",
+      "DeployCustomDetection": "[steps('contentSelection').DeployCustomDetection]",
+      "DeployHuntingQuery": "[steps('contentSelection').DeployHuntingQuery]",
+      "DeployParser": "[steps('contentSelection').DeployParser]"
+    }
+  }
+}

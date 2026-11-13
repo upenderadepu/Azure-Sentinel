@@ -1,0 +1,19 @@
+| **Version** | **Date Modified (DD-MM-YYYY)** | **Change History**                                                  |
+|-------------|--------------------------------|---------------------------------------------------------------------|
+| 3.2.2       | 03-11-2026                     | Added Microsoft Defender XDR Custom Detections and Defender XDR Workbook (`SAPBTPActivity.json`), and repackaged the solution using V3.1 tooling. |
+| 3.2.1       | 21-10-2026                     | Improved the AVL vulnerability rule to alert on name-matched interactive XSUAA logins to apps with high or critical findings; same-space audit activity is separate context only. Lowered severity to Medium, aggregated findings per app, extended the lookback to 14 days for weekly scans, added account and vulnerability context, and used ingestion time to break equal finding timestamps where available. |
+| 3.2.0       | 28-09-2026                     | Added SAP BTP AVL connector for SAP Application Vulnerability Report Service findings (`SAPBTPAVL_CL`). Added an analytic rule for critical vulnerability findings in custom apps, with incident grouping per app and subaccount. Added an "Application Vulnerabilities" workbook tab and a vulnerability posture KPI on the Overview tab. |
+| 3.1.1       | 22-07-2026                     |New analytic rule: detect unaudited custom apps with login-only activity. Renamed analytic rules with `SAP BTP` prefix for improved discoverability.|
+| 3.1.0       | 08-06-2026                     |Reworked BTP Cloud Integration artifact deployment rule to use audit.configuration events with richer artifact, actor, and tenant context|
+| 3.0.12      | 29-12-2025                     |Updated grid view UI with new subaccount onboarding properties|
+| 3.0.11      | 29-12-2025                     |Added queryWindowDelayInMin for SAP log delays and included the SAP CIS analytic rules.|
+| 3.0.10      | 03-10-2025                     |Resolves data connector duplicate handle pagination errors|
+| 3.0.9       | 02-09-2025                     |Connector UI fix|
+| 3.0.8       | 03-12-2024                     |Removal of Function App data connector|
+| 3.0.7       | 24-07-2024                     |Updated BAS malware rule after changes in source message format|
+| 3.0.6       | 23-07-2024                     |Resolves ContentTemplateNotFound error for CCP|
+| 3.0.5       | 15-07-2024                     |Remove data source mappings for deprecated function app connector|
+| 3.0.4       | 11-07-2024                     |Move codeless connector to GA and deprecated function app connector|
+| 3.0.3       | 21-06-2024                     |Fixes issue with data connector TokenEndpoint query parameter|
+| 3.0.2       | 21-03-2024                     |Fix data connector version mismatch|
+| 3.0.1       | 19-03-2024                     |Add data connector based on CCP with support for multiple subaccounts|

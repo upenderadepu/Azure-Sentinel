@@ -1,11 +1,31 @@
 # Lines starting with '#' are comments.
 # Each line is a file pattern followed by one or more owners,
-# the last matching pattern has the most precendence.
+# Global owners need to be listed first, example - * @account1 @account2
+# After global, order is important, the last matching pattern per folder has the most precedence
 
-# Core team members
-* @liemilyg @mgladi @orco365 @shalinoid @KobyKoren @lizamash @shainw @ianhelle @timbMSFT @juliango2100 @dicolanl @Amitbergman @sagamzu @YaronFruchtmann @preetikr @Yaniv-Shasha @sarah-yo @nazang @ehudk-msft @oshvartz @Liatlishams @NoamLandress @laithhisham
+# All up code owners - this should be limited to a select few - if specific code owner is needed, add to the specific folders below
+
+* @Azure/sentinel-repo-admins
 
 # This is copied from here: https://help.github.com/en/github/creating-cloning-and-archiving-repositories/about-code-owners
 
-/Playbooks/   @dicolanl @KobyKoren @Yaniv-Shasha @sarah-yo
-/Workbooks/   @Amitbergman @Liatlishams
+/.github/skills/ @Azure/sentinel-repo-admins @Azure/sentinel-repo-reviewers @Azure/sentinel-repo-parser-reviewers @Azure/sentinel-repo-tools-reviewers
+/.script/ @Azure/sentinel-repo-admins @Azure/sentinel-repo-reviewers
+/.script/tests/asimParsersTest/ @Azure/sentinel-repo-admins @Azure/sentinel-repo-reviewers @Azure/sentinel-repo-parser-reviewers
+/.script/tests/KqlvalidationsTests/ @Azure/sentinel-repo-admins @Azure/sentinel-repo-reviewers @Azure/sentinel-repo-parser-reviewers
+/ASIM/ @Azure/sentinel-repo-admins @Azure/sentinel-repo-reviewers @Azure/sentinel-repo-parser-reviewers
+/DataConnectors/ @Azure/sentinel-repo-connectors-reviewers @Azure/sentinel-repo-admins @Azure/sentinel-repo-reviewers
+/Detections/ @Azure/sentinel-repo-hunt-detection-reviewers @Azure/sentinel-repo-admins @Azure/sentinel-repo-reviewers
+/Hunting\ Queries/ @Azure/sentinel-repo-hunt-detection-reviewers @Azure/sentinel-repo-admins @Azure/sentinel-repo-reviewers
+/Notebooks/ @Azure/sentinel-repo-books-reviewers @Azure/sentinel-repo-admins @Azure/sentinel-repo-reviewers
+/Parsers/ @Azure/sentinel-repo-tools-reviewers @Azure/sentinel-repo-parser-reviewers @Azure/sentinel-repo-admins @Azure/sentinel-repo-reviewers
+/Playbooks/ @Azure/sentinel-repo-books-reviewers @Azure/sentinel-repo-admins @Azure/sentinel-repo-reviewers
+/Workbooks/ @Azure/sentinel-repo-books-reviewers @Azure/sentinel-repo-admins @Azure/sentinel-repo-reviewers
+/Sample\ Data/ @Azure/sentinel-repo-admins @Azure/sentinel-repo-reviewers @Azure/sentinel-repo-parser-reviewers
+/Solutions/HoneyTokens/ @haneuvir
+/Solutions/SAP/ @udidekel
+/Tools/ @Azure/sentinel-repo-tools-reviewers @Azure/sentinel-repo-admins
+/Tools/Microsoft-Sentinel-Training-Lab/ @kapetanios55 @Azure/sentinel-repo-admins @Azure/sentinel-repo-reviewers
+/Solutions/ @Azure/sentinel-repo-solution-reviewers @Azure/sentinel-repo-admins @Azure/sentinel-repo-reviewers
+
+

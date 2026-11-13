@@ -1,0 +1,14 @@
+| **Version** | **Date Modified (DD-MM-YYYY)** | **Change History**                          |
+|-------------|--------------------------------|---------------------------------------------|
+| 3.5.5       | 26-10-2026                     | Added support of DSPM & IR Violation events collection as part of Azure function app based dta connector, Added analytic rules and playbooks rleated DSPM & IR Violation and quarntine.
+| 3.5.4       | 12-10-2026                     | Updated Events Data table schema for CCF Connector.
+| 3.5.3       | 03-09-2026                     | Added RubrikCCFConnector to ingest Anomaly, Ransomware, ThreatHunt and other events data along with audit logs via webhook. |
+| 3.5.2       | 16-07-2026                     | Added RubrikSecurityCloud CCF (Codeless Connector Framework) Data Connector for ingesting Rubrik Protection Status data into Microsoft Sentinel. Enables backup compliance monitoring, ransomware recovery assessment, and incident correlation with protection status for Azure VMs. Update python package version to resolve vulnerability |
+| 3.5.1       | 05-11-2025                     | Updated API Host Name default value in playbooks and custom connector |
+| 3.5.0       | 25-07-2025                     | Added RubrikTurboThreatHunt and RubrikAdvanceThreatHunt playbooks. RubrikThreatMonitoring and RubrikCriticalAnomaly Analytic Rules also added.
+| 3.4.0       | 07-04-2025                     | Added RubrikUpdateAnomalyStatusViaIncident and RubrikUpdateAnomalyStatus playbook. Enhanced RubrikAnomalyAnalysis playbook. Added User-Agent in every API call of each playbook. Removed policy creation resources from data connector Arm template.
+| 3.3.0       | 19-11-2024                     | Added one new Playbook(RubrikWorkloadAnalysis) and updated the RubrikWebhookEvents Data Connector to add a new Orchestrator for Rubrik Events.
+| 3.2.1       | 11-11-2024                     | Fixed the issue of Custom Connector id parameter in RubrikRansomwareDiscoveryAndVmRecovery playbook. |
+| 3.2.0       | 24-02-2024                     | Added 3 new Playbooks(RubrikFileObjectContextAnalysis, RubrikUserIntelligenceAnalysis, RubrikRetrieveUserIntelligenceInformation) for FileObject and User, fixed clusterLocation issue of Collect_IOC_Scan_Data adaptive card in RubrikRansomwareDiscoveryAndVmRecovery playbook and updated python packages to fix vulnerability CVE-2023-50782 of cryptography module. Enhanced Anomaly Analysis playbook and added RubrikAnomalyGenerateDownloadableLink playbook. |
+| 3.1.0       | 20-10-2023                     | Updated the **DataConnector** code by implementing Durable Function App. |
+| 3.0.0       | 14-07-2023                     | Updated the title in such a way that user can identify the adaptive card based on incident. |

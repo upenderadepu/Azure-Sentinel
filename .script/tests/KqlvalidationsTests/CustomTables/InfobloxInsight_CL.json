@@ -1,0 +1,141 @@
+{
+    "Name": "InfobloxInsight_CL",
+    "Properties": [
+        {
+            "Name": "TenantId",
+            "Type": "String"
+        },
+        {
+            "Name": "SourceSystem",
+            "Type": "String"
+        },
+        {
+            "Name": "MG",
+            "Type": "String"
+        },
+        {
+            "Name": "ManagementGroupName",
+            "Type": "String"
+        },
+        {
+            "Name": "TimeGenerated",
+            "Type": "DateTime"
+        },
+        {
+            "Name": "Computer",
+            "Type": "String"
+        },
+        {
+            "Name": "RawData",
+            "Type": "String"
+        },
+        {
+            "Name": "total_events",
+            "Type": "Int"
+        },
+        {
+            "Name": "total_assets",
+            "Type": "Int"
+        },
+        {
+            "Name": "insight_id",
+            "Type": "String"
+        },
+        {
+            "Name": "name",
+            "Type": "String"
+        },
+        {
+            "Name": "description",
+            "Type": "String"
+        },
+        {
+            "Name": "severity",
+            "Type": "String"
+        },
+        {
+            "Name": "date_created",
+            "Type": "String"
+        },
+        {
+            "Name": "evaluation_start_date",
+            "Type": "String"
+        },
+        {
+            "Name": "evaluation_end_date",
+            "Type": "String"
+        },
+        {
+            "Name": "total_indicators",
+            "Type": "Int"
+        },
+        {
+            "Name": "total_users",
+            "Type": "Int"
+        },
+        {
+            "Name": "status",
+            "Type": "String"
+        },
+        {
+            "Name": "expiring_in_days",
+            "Type": "Int"
+        },
+        {
+            "Name": "threat_properties",
+            "Type": "Dynamic"
+        },
+        {
+            "Name": "time_saved_seconds",
+            "Type": "Int"
+        },
+        {
+            "Name": "total_verified_assets",
+            "Type": "Int"
+        },
+        {
+            "Name": "total_unverified_assets",
+            "Type": "Int"
+        },
+        {
+            "Name": "top_indicators",
+            "Type": "Dynamic"
+        },
+        {
+            "Name": "top_assets",
+            "Type": "Dynamic"
+        },
+        {
+            "Name": "threat_actors",
+            "Type": "Dynamic"
+        },
+        {
+            "Name": "overview",
+            "Type": "Dynamic"
+        },
+        {
+            "Name": "key_recommendations",
+            "Type": "Dynamic"
+        },
+        {
+            "Name": "InsightDetail",
+            "Type": "Bool"
+        },
+        {
+            "Name": "DataObservedVia",
+            "Type": "String"
+        },
+        {
+            "Name": "InfobloxInsightLogType",
+            "Type": "String"
+        },
+        {
+            "Name": "Type",
+            "Type": "String"
+        },
+        {
+            "Name": "_ResourceId",
+            "Type": "String"
+        }
+    ]
+}

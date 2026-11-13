@@ -1,0 +1,52 @@
+id: a5e2df87-f0c9-4540-8715-96e71b608986
+name: Infoblox - IQ for TD Detected Insights - API Source
+description: |
+  'Infoblox IQ for TD Insight detected in logs sourced via REST API. Customize scheduling, responses and more. This rule depends on a parser based on a Kusto Function to work as expected called [**InfobloxInsight**](https://github.com/Azure/Azure-Sentinel/blob/master/Solutions/Infoblox/Parsers/InfobloxInsight.yaml).'
+severity: Medium
+status: Available
+requiredDataConnectors:
+  - connectorId: InfobloxSOCInsightsDataConnector_API
+    dataTypes: 
+      - InfobloxInsight
+queryFrequency: 1d
+queryPeriod: 1d
+triggerOperator: gt
+triggerThreshold: 0
+tactics:
+  - Impact
+relevantTechniques:
+  - T1498
+  - T1565
+query: |
+  InfobloxInsight
+  | summarize arg_max(TimeGenerated, *) by InfobloxInsightID
+  | where DataObservedVia != "CDC" and InsightDetail != true
+  | extend ThreatProperties = strcat_array(ThreatProperties, ", ")
+entityMappings:
+  - entityType: Malware
+    fieldMappings:
+      - identifier: Name
+        columnName: Name
+      - identifier: Category
+        columnName: ThreatProperties
+customDetails:
+  InfobloxInsightID: InfobloxInsightID
+  Severity: Priority
+  Status: Status
+  FirstSeen: FirstSeen
+  EvaluationStartDate: EvaluationStartDate
+  EvaluationEndDate: EvaluationEndDate
+  TotalHits: EventsCount
+  TotalAssets: TotalAssets
+  TotalIndicators: TotalIndicators
+  ThreatActor: ThreatActor
+eventGroupingSettings:
+  aggregationKind: AlertPerResult
+alertDetailsOverride:
+  alertDisplayNameFormat: 'Infoblox - IQ for TD Insight - {{Name}}'
+  alertDescriptionFormat: 'Observed via API. {{Description}} Observation: {{FirstSeen}}'
+  alertSeverityColumnName: IncidentSeverity
+incidentConfiguration:
+  createIncident: true
+version: 1.1.0
+kind: Scheduled

@@ -2,7 +2,7 @@
 
 To make it easy to build and validate data connectors user experience, we have data connector json templates available for partners to use, validate and submit. This guide provides information on how to fill out the json templates.
 
-The underlying json structure of any of the data connector template is the same, hence this connector template guidance is generalized for CEF, REST or Syslog data connector types in Azure Sentinel. There will be specific recommendations provided for different types as needed.
+The underlying json structure of any of the data connector template is the same, hence this connector template guidance is generalized for CEF, REST or Syslog data connector types in Microsoft Sentinel. There will be specific recommendations provided for different types as needed.
 
 # How to use the json template?
 
@@ -13,7 +13,7 @@ Download the json template based on the data connector type and rename it to as 
 The following nomenclatures appear in the json templates. Note these accordingly to represent your data connector and fill these values accordingly in the template.
 
 1. **PROVIDER NAME** – The name of the vendor who is building the data connector. For e.g. Microsoft, Symantec, Barracuda, etc.
-2. **APPLIANCE NAME** – The name of the specific product whose logs or data is being sent to Azure Sentinel via this data connector.  For e.g. CloudGen Firewall (from Barracuda), Security Analytics (from Citrix), etc.
+2. **APPLIANCE NAME** – The name of the specific product whose logs or data is being sent to Microsoft Sentinel via this data connector.  For e.g. CloudGen Firewall (from Barracuda), Security Analytics (from Citrix), etc.
 3. **DATATYPE\_NAME** – The name of the default table where the data / logs will be sent to. The location changes for each type of data connector. While naming these:
   1. Do **not** have spaces in the data type names.
   2. Represent both provider, appliance name and type of data [optionally] as a short name in the data type name. The goal is to be able to disambiguate different data types if there&#39;s going to be separate data types for different appliances from the same provider for different log types (like alerts, events, raw logs, network logs, etc.)
@@ -89,7 +89,8 @@ A data connector can have multiple data types and these can be represented by co
 3. **permissions** – Represents the required permissions needed for the data connector to be enabled or connected. For e.g. write permissions to the workspace is needed for connector to be enabled, etc. These appear in the connector UX in the prerequisites section. This property value need **not** be updated and can remain as-is.
 4. **instructionSteps** – These are the specific instructions to connect to the data connector.
   * For CEF and Syslog, leverage the existing text as-is and add anything custom as needed.
-  * For REST API, either provide a link to your website/documentation that outlines the onboarding guidance to send data to Azure Sentinel **or** provide detailed guidance for customers to send data to Azure Sentinel.<p>
+  * For REST API, either provide a link to your website/documentation that outlines the onboarding guidance to send data to Microsoft Sentinel **or** provide detailed guidance for customers to send data to Microsoft Sentinel.
+  * If Connector is dependent on Kusto Function (Parser), **additionalRequirementBanner** and **instruction step** about Parser need to be added in Connector. <p>
   
 # What is the format for redirection/Short links?
 1. Redirection link for **Parser** - https://aka.ms/sentinel-[connectorid]-parser
@@ -99,3 +100,89 @@ A data connector can have multiple data types and these can be represented by co
 
 
 Expand and add multiple instructions as needed by adding more title and description elements in this block.
+
+## Storage Blob CCF V2 template
+
+Use `Connector_StorageBlob_CCF_templateV2.json` for Storage Blob connectors that
+authenticate with the first-party application using `ManagedServicePrincipal`.
+Keep the first-party application ID in the service-principal control; the
+tenant-local principal selected by that control receives the collector's blob
+and queue role assignments. Replace the solution, table, stream, and other
+authoring placeholders before deploying.
+
+### Multiple connections
+
+The connector page uses `DataConnectorsGrid` to display
+`properties.addOnAttributes.friendlyName`, with `DeleteConnector` as the row
+action. An **Add Connection** `ContextPane` of type `DataConnectorsContextPane`
+contains the connection form in its own `instructionSteps`; it replaces the
+single-connection toggle.
+
+The required `friendlyName` parameter is the connection alias. The workspace
+resource ID, connector definition, and alias determine a stable suffix used for
+the connector, metadata, notification/dead-letter queues, event subscription,
+and data-flow deployment. Use a different alias for each connection and keep it
+unchanged on retries. This isolates connections even when they use the same
+storage account or different containers/folders within it. Overlapping source
+filters can cause duplicate ingestion.
+
+The connector request includes `StorageAccountSubscriptionId` and
+`StorageAccountResourceGroupName` as well as its queue URLs, allowing the storage
+account to be in a different subscription or resource group from the workspace.
+The connector waits for the storage-side deployment to finish before creation.
+
+### Managed-identity Event Grid delivery
+
+The Event Grid system topic has a system-assigned identity. When supplying an
+existing topic name, the deployment reads the topic, validates that its source
+is the selected storage account, and preserves its location, source, topic
+type, tags, attached user-assigned identities, and existing system-assigned
+principal while enabling system-assigned identity.
+
+There can be only one system topic per storage account. If a topic already
+exists, including one created by an earlier connection, supply its exact name.
+Leave the field empty only to create a topic; the generated topic name is
+stable per storage account. Connections share the topic but have separate
+event subscriptions and queues.
+
+The `eventGridRbacMode` parameter supports:
+
+- `CreateRoleAssignment` (default): grant **Storage Queue Data Message Sender**
+  (`c6a89b2d-59bc-44d0-9896-0f6e12d7b80a`) to the topic's system-assigned
+  identity at **storage-account scope**, then create the event subscription.
+- `UseExistingRoleAssignment`: skip creating that sender grant. Use this only
+  when the same system-assigned principal already has the required
+  storage-account permission; permissions are not discovered or repaired.
+
+Both modes configure `deliveryWithResourceIdentity` with `SystemAssigned` and
+`EventGridSchema`. The event subscription waits for topic preparation and, in
+Create mode, the sender-role deployment. It retains the container/folder
+`Microsoft.Storage.BlobCreated` filter.
+
+The Event Grid identity only sends queue messages. The separate first-party
+collector retains **Storage Blob Data Contributor** on the selected container
+and **Storage Queue Data Contributor** on each connection's queues. Collector
+role-assignment names remain derived from normalized scope, tenant-local
+principal ID, and role-definition ID. Deployments remain incremental; changing
+an alias creates new connection resources rather than renaming or removing
+previous ones.
+
+The deployer needs resource deployment permissions and role-assignment write
+permissions at the relevant storage scope. Register `Microsoft.EventGrid` in
+the storage subscription. RBAC propagation may take up to ten minutes: for a
+managed-identity authorization error, wait and retry with the same values
+instead of recreating the topic or its identity.
+
+This template does not change storage networking or Network Security Perimeter
+configuration. Configure any required network access separately; see
+[Enable network security](https://learn.microsoft.com/azure/sentinel/enable-storage-network-security).
+
+## Next steps
+
+Currently in preview, you can also publish your data connector as a Microsoft Sentinel solution. 
+
+Microsoft Sentinel solutions provide an in-product experience for central discoverability, single-step deployment, and enablement of end-to-end product and/or domain and/or vertical scenarios in Microsoft Sentinel. For example, use solutions to deliver your data connector packaged with related analytics rules, workbooks, playbooks, and more. 
+
+**Tip**: If your solution is being published to the content hub, also open a PR to have it listed in our [content hub catalog](https://docs.microsoft.com/azure/sentinel/sentinel-solutions-catalog). On the docs page, click Edit to open your PR.
+
+For more information, see the [Microsoft Sentinel solution overview](https://docs.microsoft.com/azure/sentinel/sentinel-solutions) and our [Guide to Building Microsoft Sentinel Solutions](https://github.com/Azure/Azure-Sentinel/tree/master/Solutions#readme).

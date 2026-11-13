@@ -1,0 +1,38 @@
+id: f05271b6-26a5-49cf-ad73-4a202fba6eb6
+name: Cisco Duo - New access device
+description: |
+  'Detects new access device.'
+severity: Medium
+status: Available
+requiredDataConnectors:
+  - connectorId: CiscoDuoAuthConnectorDefinition
+    dataTypes:
+      - DuoAuthentication_CL
+queryFrequency: 1h
+queryPeriod: 14d
+triggerOperator: gt
+triggerThreshold: 0
+tactics:
+  - InitialAccess
+relevantTechniques:
+  - T1078
+query: |
+  DuoAuthentication_CL
+  | where Result =~ 'success'
+  | where isnotempty(AccessDeviceIp)
+  | summarize dvc_ip = make_set(AccessDeviceIp) by UserName
+  | join (DuoAuthentication_CL
+          | where Result =~ 'success') on UserName
+  | where dvc_ip !has AccessDeviceIp
+  | extend IPCustomEntity = AccessDeviceIp, AccountCustomEntity = UserName
+entityMappings:
+  - entityType: IP
+    fieldMappings:
+      - identifier: Address
+        columnName: IPCustomEntity
+  - entityType: Account
+    fieldMappings:
+      - identifier: Name
+        columnName: AccountCustomEntity
+version: 1.0.1
+kind: Scheduled

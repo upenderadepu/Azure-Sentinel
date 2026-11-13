@@ -1,0 +1,25 @@
+id: 2a9079c7-cc33-57c0-8908-c1e04e180fe5
+Function:
+  Title: corelight_openflow parser for Corelight
+  Version: '2.0.0'
+  LastUpdated: '2026-08-17'
+Category: Microsoft Sentinel Parser
+FunctionName: corelight_openflow
+FunctionAlias: corelight_openflow
+FunctionQuery: |+
+  let dummy_table = datatable(TimeGenerated: datetime) [];
+  let corelight_openflow = view () {
+      union isfuzzy=true Corelight_v3_openflow_CL, dummy_table
+        | extend
+            _path=path,
+            _system_name=system_name,
+            _write_ts=write_ts
+      | extend
+          EventVendor="Corelight",
+          EventProduct="CorelightSensor",
+          EventType="openflow",
+          ts=TimeGenerated
+  };
+  corelight_openflow
+
+...

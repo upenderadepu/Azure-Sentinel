@@ -11,13 +11,24 @@ Released on: 2020-08-25
 
 This plugin is currently in development and is free to use. We welcome contributions from the open source community on this project, and we request and appreciate feedback from users.
 
+## Support
+
+For issues regarding the output plugin please open a support ticket here - https://ms.portal.azure.com/#create/Microsoft.Support
+As the service type select- "Azure Sentinel"
+
 ## Installation
 
 Azure Sentinel provides Logstash output plugin to Log analytics workspace. 
 Install the microsoft-logstash-output-azure-loganalytics, use [Logstash Working with plugins](<https://www.elastic.co/guide/en/logstash/current/working-with-plugins.html>) document. 
 For offline setup follow [Logstash Offline Plugin Management instruction](<https://www.elastic.co/guide/en/logstash/current/offline-plugins.html>). 
 
-Required Logstash version: between 7.0 and 7.9
+This plugin supports the following versions
+- 7.0 - 7.17.13
+- 8.0 - 8.9
+- 8.11
+
+
+Please note that when using Logstash 8, it is recommended to disable ECS in pipeline. For more information refer to [Logstash documentation.](<https://www.elastic.co/guide/en/logstash/8.4/ecs-ls.html>)
 
 ## Configuration
 
@@ -57,8 +68,8 @@ input {
 }
 output {
     microsoft-logstash-output-azure-loganalytics {
-      workspace_id => "4g5tad2b-a4u4-147v-a4r7-23148a5f2c21" # <your workspace id>
-      workspace_key => "u/saRtY0JGHJ4Ce93g5WQ3Lk50ZnZ8ugfd74nk78RPLPP/KgfnjU5478Ndh64sNfdrsMni975HJP6lp==" # <your workspace key>
+      workspace_id => "" # <your workspace id>
+      workspace_key => "" # <your workspace key>
       custom_log_table_name => "tableName"
     }
 }
@@ -76,8 +87,8 @@ input {
 }
 output {
     microsoft-logstash-output-azure-loganalytics {
-      workspace_id => "4g5tad2b-a4u4-147v-a4r7-23148a5f2c21" # <your workspace id>
-      workspace_key => "u/saRtY0JGHJ4Ce93g5WQ3Lk50ZnZ8ugfd74nk78RPLPP/KgfnjU5478Ndh64sNfdrsMni975HJP6lp==" # <your workspace key>
+      workspace_id => "" # <your workspace id>
+      workspace_key => "" # <your workspace key>
       custom_log_table_name => "tableName"
     }
 }

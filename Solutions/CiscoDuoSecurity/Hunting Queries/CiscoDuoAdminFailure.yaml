@@ -1,0 +1,28 @@
+id: 385b0938-3922-48ab-a57a-cb8650ab71a3
+name: Cisco Duo - Admin failure authentications
+description: |
+  'Query searches admin failure authentication events.'
+severity: Medium
+requiredDataConnectors:
+  - connectorId: CiscoDuoActivityConnectorDefinition
+    dataTypes:
+      - DuoActivity_CL
+tactics:
+  - InitialAccess
+relevantTechniques:
+  - T1078
+query: |
+  DuoActivity_CL
+  | where TimeGenerated > ago(24h)
+  | where ActionName =~ "admin_login" and OutcomeResult =~ "FAILURE"
+  | project TimeGenerated, AccessDeviceIp, ActorName, OutcomeResult
+  | extend AccountCustomEntity = ActorName, IPCustomEntity = AccessDeviceIp
+entityMappings:
+  - entityType: Account
+    fieldMappings:
+      - identifier: Name
+        columnName: AccountCustomEntity
+  - entityType: IP
+    fieldMappings:
+      - identifier: Address
+        columnName: IPCustomEntity

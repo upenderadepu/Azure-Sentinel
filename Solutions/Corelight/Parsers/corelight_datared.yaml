@@ -1,0 +1,25 @@
+id: 8309a9d9-dbe0-5ac5-9a02-fbcabc352855
+Function:
+  Title: corelight_datared parser for Corelight
+  Version: '2.0.0'
+  LastUpdated: '2026-08-17'
+Category: Microsoft Sentinel Parser
+FunctionName: corelight_datared
+FunctionAlias: corelight_datared
+FunctionQuery: |+
+  let dummy_table = datatable(TimeGenerated: datetime) [];
+  let corelight_datared = view () {
+      union isfuzzy=true Corelight_v3_datared_CL, dummy_table
+        | extend
+            _path=path,
+            _system_name=system_name,
+            _write_ts=write_ts
+      | extend
+          EventVendor="Corelight",
+          EventProduct="CorelightSensor",
+          EventType="datared",
+          ts=TimeGenerated
+  };
+  corelight_datared
+
+...

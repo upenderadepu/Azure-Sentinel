@@ -1,0 +1,25 @@
+id: 95380f7c-7abb-5ce4-837a-5d132ebbc80a
+Function:
+  Title: corelight_wireguard parser for Corelight
+  Version: '2.0.0'
+  LastUpdated: '2026-08-17'
+Category: Microsoft Sentinel Parser
+FunctionName: corelight_wireguard
+FunctionAlias: corelight_wireguard
+FunctionQuery: |+
+  let dummy_table = datatable(TimeGenerated: datetime) [];
+  let corelight_wireguard = view () {
+      union isfuzzy=true Corelight_v3_wireguard_CL, dummy_table
+        | extend
+            _path=path,
+            _system_name=system_name,
+            _write_ts=write_ts
+      | extend
+          EventVendor="Corelight",
+          EventProduct="CorelightSensor",
+          EventType="wireguard",
+          ts=TimeGenerated
+  };
+  corelight_wireguard
+
+...

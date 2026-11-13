@@ -1,0 +1,59 @@
+id: 454133a7-5427-4a7c-bdc4-0adfa84dda16
+name: AWSCloudTrail - Creating keys with encrypt policy without MFA
+description: |
+  Identifies AWS KMS key creation or policy changes that allow `kms:Encrypt` or `kms:*` to any principal. This configuration can expose encryption capability outside approved boundaries and should be investigated as overly permissive or malicious.
+severity: Medium
+status: Available
+requiredDataConnectors:
+  - connectorId: AWS
+    dataTypes:
+      - AWSCloudTrail
+queryFrequency: 1d
+queryPeriod: 1d
+triggerOperator: gt
+triggerThreshold: 0
+tactics:
+  - Impact
+relevantTechniques:
+  - T1485
+query: |
+    let check_actions = AWSCloudTrail
+    | where EventName in ("CreateKey", "PutKeyPolicy") and isempty(ErrorCode) and isempty(ErrorMessage)
+    | extend state=parse_json(parse_json(replace_string(tostring(parse_json(RequestParameters)['policy']),'\\"','"')).['Statement'])
+    | mv-expand state
+    | extend Action= tostring(parse_json(state.['Action'][0])), Effect=tostring(parse_json(state.['Effect'])),
+             Principal=tostring(parse_json(state.['Principal']))
+    | where Action in ("kms:Encrypt", "kms:*") and (Effect == 'Allow') and (Principal has "*")
+    | distinct AwsEventId;
+    AWSCloudTrail
+    | where EventName in ("CreateKey", "PutKeyPolicy") and isempty(ErrorCode) and isempty(ErrorMessage)
+    | extend UserIdentityArn = iif(isempty(UserIdentityArn), tostring(parse_json(Resources)[0].ARN), UserIdentityArn)
+    | extend UserName = tostring(split(UserIdentityArn, '/')[-1])
+    | extend AccountName = case( UserIdentityPrincipalid == "Anonymous", "Anonymous", isempty(UserIdentityUserName), UserName, UserIdentityUserName)
+    | extend AccountName = iif(AccountName contains "@", tostring(split(AccountName, '@', 0)[0]), AccountName),
+      AccountUPNSuffix = iif(AccountName contains "@", tostring(split(AccountName, '@', 1)[0]), "")
+    | join kind=inner (check_actions) on AwsEventId
+    | extend timestamp = TimeGenerated
+    | project-away AwsEventId1
+entityMappings:
+  - entityType: Account
+    fieldMappings:
+      - identifier: Name
+        columnName: AccountName
+      - identifier: UPNSuffix
+        columnName: AccountUPNSuffix
+      - identifier: CloudAppAccountId
+        columnName: RecipientAccountId
+  - entityType: IP
+    fieldMappings:
+      - identifier: Address
+        columnName: SourceIpAddress
+customDetails:
+  AwsEventId: AwsEventId
+  EventName: EventName
+  UserIdentityArn: UserIdentityArn
+alertDetailsOverride:
+  alertDisplayNameFormat: 'AWS KMS key creation or policy update by {{AccountName}} without MFA'
+  alertDescriptionFormat: 'KMS key creation or policy update by {{AccountName}} without MFA resulted in permissive encrypt access. AwsEventId: {{AwsEventId}}'
+version: 1.0.3
+kind: Scheduled

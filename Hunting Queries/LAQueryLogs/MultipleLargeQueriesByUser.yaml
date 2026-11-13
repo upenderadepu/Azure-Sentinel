@@ -15,16 +15,22 @@ query: |
 
   let UI_apps = dynamic(['ASI_Portal','AzureMonitorLogsConnector','AppAnalytics']);
   let threshold = 3;
-  let timeframe = 1d;
   LAQueryLogs
-  | where TimeGenerated > ago(timeframe)
   | where (ResponseRowCount == 10001 and RequestClientApp in(UI_apps)) or (ResponseRowCount > 10001 and RequestClientApp !in(UI_apps))
   | summarize count() by AADEmail
   | where count_ > threshold
   | join kind=rightsemi (
   LAQueryLogs
-  | where TimeGenerated > ago(timeframe)
   | where (ResponseRowCount == 10001 and RequestClientApp in(UI_apps)) or (ResponseRowCount > 10001 and RequestClientApp !in(UI_apps)))
   on AADEmail
   | extend timestamp = TimeGenerated, AccountCustomEntity = AADEmail
-
+version: 1.0.0
+metadata:
+    source:
+        kind: Community
+    author:
+        name: Pete Bryan
+    support:
+        tier: Microsoft
+    categories:
+        domains: [ "Security - Threat Protection" ]

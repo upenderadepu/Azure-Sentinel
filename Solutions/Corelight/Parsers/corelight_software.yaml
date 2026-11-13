@@ -1,0 +1,53 @@
+id: e8d42d69-1fbe-4c04-9cc5-78cea6f28115
+Function:
+  Title: Corelight Software Events
+  Version: '2.0.0'
+  LastUpdated: '2026-08-17'
+Category: Microsoft Sentinel Parser
+FunctionName: corelight_software
+FunctionAlias: corelight_software
+FunctionQuery: |
+  let dummy_table = datatable(TimeGenerated: datetime) [];
+    let corelight_software = view () {
+        union isfuzzy=true Corelight_v3_software_CL, dummy_table
+        | extend host_header = coalesce(host_header, host)
+        | extend
+            EventVendor = "Corelight",
+            EventProduct = "CorelightSensor",
+            EventType = "software",
+            ts = TimeGenerated,
+            src_host = host_header,
+            tx_host = host_header,
+            src_port = host_p,
+            version_patch = version_minor2,
+            version = tostring(version_major),
+            sensor_name = coalesce(system_name, "unknown")
+        | extend version = iif(isnull(version_minor), version, iif(isempty(version), tostring(version_minor), strcat(version, ".", tostring(version_minor))))
+        | extend version = iif(isnull(version_minor2), version, iif(isempty(version), tostring(version_minor2), strcat(version, ".", tostring(version_minor2))))
+        | project
+            TimeGenerated,
+            path,
+            system_name,
+            write_ts,
+            host_header,
+            host_p,
+            software_type,
+            name,
+            version,
+            version_major,
+            version_minor,
+            version_minor2,
+            version_minor3,
+            version_addl,
+            unparsed_version,
+            EventVendor,
+            EventProduct,
+            EventType,
+            ts,
+            src_host,
+            tx_host,
+            src_port,
+            version_patch,
+            sensor_name
+    };
+    corelight_software

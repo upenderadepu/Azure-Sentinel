@@ -1,0 +1,33 @@
+id: 05850746-9ae4-412f-838b-844f0903f4a9
+name: Corelight - External Proxy Detected
+description: |
+  'Detects external proxy usage.'
+severity: Low
+status: Available
+requiredDataConnectors:
+  - connectorId: Corelight
+    dataTypes:
+      - corelight_http
+      - corelight_http_red
+      - corelight_http2
+      - corelight_http_agg
+queryFrequency: 1h
+queryPeriod: 1h
+triggerOperator: gt
+triggerThreshold: 0
+tactics:
+  - DefenseEvasion
+  - CommandAndControl
+relevantTechniques:
+  - T1090 
+query: |
+  union isfuzzy=true corelight_http, corelight_http_agg
+  | where isnotempty(proxied)
+  | where not(ipv4_is_private(id_orig_h))
+entityMappings:
+  - entityType: IP
+    fieldMappings:
+      - identifier: Address
+        columnName: id_orig_h
+version: 2.2.0
+kind: Scheduled

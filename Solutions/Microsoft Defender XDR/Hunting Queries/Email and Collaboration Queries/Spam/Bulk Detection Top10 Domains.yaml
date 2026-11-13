@@ -1,0 +1,28 @@
+id: 147131b3-8b57-4c50-b981-5a951ed82272
+name: Top 10 domains sending Bulk email
+description: |
+  This query visualises total inbound emails which has any Bulk complaint level.
+description-detailed: |
+  This query visualises total inbound emails which has any Bulk complaint level. It is summarizing the data by the various Bulk Complaint levels and SenderFromDomain of the email sender. It provides insights how many messages are detected with each Bulk Complaint level for each sender domain in Microsoft Defender for Office 365.
+  Taken from the the Microsoft Defender for Office 365 Detections and Insights - Microsoft Sentinel workbook.
+  https://techcommunity.microsoft.com/blog/microsoftdefenderforoffice365blog/part-2-build-custom-email-security-reports-and-dashboards-with-workbooks-in-micr/4411303
+requiredDataConnectors:
+- connectorId: MicrosoftThreatProtection
+  dataTypes:
+  - EmailEvents
+tactics:
+  - InitialAccess
+relevantTechniques:
+  - T1566
+query: |
+  //This query visualises total inbound emails which has any Bulk complaint level. It is summarizing the data by the various Bulk Complaint levels and SenderFromDomain of the email sender. It provides insights how many messages are detected with each Bulk Complaint level for each sender domain.
+  EmailEvents
+  | where Timestamp > ago(30d)
+  | where OrgLevelPolicy != "Phishing simulation" and OrgLevelPolicy != "SecOps Mailbox"
+  | extend Key = strcat(NetworkMessageId, '-', RecipientEmailAddress)
+  | summarize arg_max(Timestamp, *) by Key
+  | where EmailDirection == "Inbound" and isnotempty(BulkComplaintLevel)
+  | summarize count() by BulkComplaintLevel, SenderFromDomain
+  | top 10 by count_
+  | project SenderFromDomain, BulkComplaintLevel, Emails = count_
+version: 1.1.0

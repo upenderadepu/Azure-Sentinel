@@ -1,0 +1,37 @@
+id: 2a215222-bfc5-4858-a530-6d4088ebfa15
+name: SailPointIdentityNowUserWithFailedEvent
+description: |
+  'Detects any failed event for a particular user.'
+severity: High
+status: Available
+requiredDataConnectors:
+  - connectorId: SailPointIdentityNow
+    dataTypes:
+      - SailPointISC_Events_CL
+  - connectorId: SailPointIdentityNowConnector
+    dataTypes:
+      - SailPointISC_Events_CL
+queryFrequency: 1d
+queryPeriod: 14d
+triggerOperator: gt
+triggerThreshold: 0
+tactics:
+  - InitialAccess
+relevantTechniques:
+  - T1133
+query: |
+  declare query_parameters(lbperiod:timespan = 14d, type:string = "ACCESS_ITEM", actorName:string = "test.tester", targetName:string = "test.tester");
+    SailPointISC_Events_CL
+    | where TimeGenerated > ago(lbperiod)
+    | where EventType == type
+    | where Status == "FAILED"
+    | where ActorName == actorName
+    | where TargetName == targetName
+    | sort by Created
+entityMappings:
+  - entityType: Account
+    fieldMappings:
+      - identifier: Name
+        columnName: TechnicalName
+version: 1.2.0
+kind: Scheduled

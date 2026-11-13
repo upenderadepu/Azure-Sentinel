@@ -1,0 +1,25 @@
+id: e78e1bb2-675c-5445-bbb7-802231a8121d
+Function:
+  Title: corelight_capture_loss parser for Corelight
+  Version: '2.0.0'
+  LastUpdated: '2026-08-17'
+Category: Microsoft Sentinel Parser
+FunctionName: corelight_capture_loss
+FunctionAlias: corelight_capture_loss
+FunctionQuery: |+
+  let dummy_table = datatable(TimeGenerated: datetime) [];
+  let corelight_capture_loss = view () {
+      union isfuzzy=true Corelight_v3_capture_loss_CL, dummy_table
+        | extend
+            _path=path,
+            _system_name=system_name,
+            _write_ts=write_ts
+      | extend
+          EventVendor="Corelight",
+          EventProduct="CorelightSensor",
+          EventType="capture_loss",
+          ts=TimeGenerated
+  };
+  corelight_capture_loss
+
+...

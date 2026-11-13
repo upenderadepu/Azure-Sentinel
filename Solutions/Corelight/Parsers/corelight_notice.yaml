@@ -1,0 +1,114 @@
+id: 9573113c-ae33-48f0-8419-0862694d3a6c
+Function:
+  Title: Corelight Notice Events
+  Version: '2.0.0'
+  LastUpdated: '2026-08-17'
+Category: Microsoft Sentinel Parser
+FunctionName: corelight_notice
+FunctionAlias: corelight_notice
+FunctionQuery: |
+  let SeverityLookup = datatable(
+        severity_name: string,
+        severity_id: long,
+        severity_description: string,
+        severity_syslog_definition: string
+    )[
+        "emergencies",0,"System unstable","LOG_EMERG",
+        "alerts",1,"Immediate action needed","LOG_ALERT",
+        "critical",2,"Critical conditions","LOG_CRIT",
+        "errors",3,"Error conditions","LOG_ERR",
+        "warnings",4,"Warning conditions","LOG_WARNING",
+        "notifications",5,"Normal but significant condition","LOG_NOTICE",
+        "informational",6,"Informational messages only","LOG_INFO",
+        "debugging",7,"Debugging messages","LOG_DEBUG"
+    ];
+  let dummy_table = datatable(TimeGenerated: datetime, uid: string) [];
+    let corelight_notice = view () {
+        union isfuzzy=true Corelight_v3_notice_CL, dummy_table
+        | summarize arg_max(TimeGenerated, *) by uid
+        | join kind=leftouter 
+        ( corelight_conn
+        | project uid, local_orig, local_resp
+        ) on $left.uid == $right.uid
+        | project-away uid1
+        | extend
+            p = notice_p,
+            n = notice_n
+        | extend
+            EventVendor = "Corelight",
+            EventProduct = "CorelightSensor",
+            EventType = "notice",
+            ts = TimeGenerated,
+            action = actions,
+            src = id_orig_h,
+            src_ip = id_orig_h,
+            src_port = id_orig_p,
+            dest = id_resp_h,
+            dest_ip = id_resp_h,
+            dest_port = id_resp_p,
+            body = msg,
+            signature = note,
+            severity_id = severity_level,
+            severity = severity_name,
+            sensor_name = coalesce(system_name, "unknown")
+        | lookup kind=leftouter SeverityLookup on $left.severity_level == $right.severity_id
+        | extend
+            is_broadcast =iff(src in("0.0.0.0", "255.255.255.255") or dest in("255.255.255.255", "0.0.0.0"),"true","false"),
+            is_dest_internal_ip = iff(local_resp == true, "true", "false"),
+            is_src_internal_ip = iff(local_orig == true, "true", "false"),
+            direction=case(local_orig==true and local_resp==true, "internal", local_orig==true and local_resp==false, "outbound", local_orig==false and local_resp==false, "external", local_orig==false and local_resp==true, "inbound", "unknown")
+        | project
+            TimeGenerated,
+            path,
+            system_name,
+            write_ts,
+            uid,
+            id_orig_h,
+            id_orig_p,
+            id_resp_h,
+            id_resp_p,
+            fuid,
+            file_mime_type,
+            file_desc,
+            proto,
+            note,
+            msg,
+            sub,
+            src,
+            dst,
+            p,
+            n,
+            peer_descr,
+            actions,
+            suppress_for,
+            remote_location_country_code,
+            remote_location_region,
+            remote_location_city,
+            remote_location_latitude,
+            remote_location_longitude,
+            severity_level,
+            severity_name,
+            EventVendor,
+            EventProduct,
+            EventType,
+            ts,
+            action,
+            src_ip,
+            src_port,
+            dest,
+            dest_ip,
+            dest_port,
+            body,
+            signature,
+            severity_id,
+            severity,
+            severity_description,
+            severity_syslog_definition,
+            sensor_name,
+            is_broadcast,
+            is_dest_internal_ip,
+            is_src_internal_ip,
+            direction
+    };
+    corelight_notice
+

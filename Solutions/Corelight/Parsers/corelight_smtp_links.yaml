@@ -1,0 +1,25 @@
+id: 060f4290-8550-5180-be0b-ef49dcbc78d4
+Function:
+  Title: corelight_smtp_links parser for Corelight
+  Version: '2.0.0'
+  LastUpdated: '2026-08-17'
+Category: Microsoft Sentinel Parser
+FunctionName: corelight_smtp_links
+FunctionAlias: corelight_smtp_links
+FunctionQuery: |+
+  let dummy_table = datatable(TimeGenerated: datetime) [];
+  let corelight_smtp_links = view () {
+      union isfuzzy=true Corelight_v3_smtp_links_CL, dummy_table
+        | extend
+            _path=path,
+            _system_name=system_name,
+            _write_ts=write_ts
+      | extend
+          EventVendor="Corelight",
+          EventProduct="CorelightSensor",
+          EventType="smtp_links",
+          ts=TimeGenerated
+  };
+  corelight_smtp_links
+
+...

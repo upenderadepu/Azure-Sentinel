@@ -1,0 +1,25 @@
+id: 5b68801b-b61f-5cff-8f6d-07ccac6e6ebd
+Function:
+  Title: corelight_kerberos parser for Corelight
+  Version: '2.0.0'
+  LastUpdated: '2026-08-17'
+Category: Microsoft Sentinel Parser
+FunctionName: corelight_kerberos
+FunctionAlias: corelight_kerberos
+FunctionQuery: |+
+  let dummy_table = datatable(TimeGenerated: datetime) [];
+  let corelight_kerberos = view () {
+      union isfuzzy=true Corelight_v3_kerberos_CL, dummy_table
+        | extend
+            _path=path,
+            _system_name=system_name,
+            _write_ts=write_ts
+      | extend
+          EventVendor="Corelight",
+          EventProduct="CorelightSensor",
+          EventType="kerberos",
+          ts=TimeGenerated
+  };
+  corelight_kerberos
+
+...

@@ -1,0 +1,25 @@
+id: 6bbcad68-9fc2-5d09-9744-ebd20bf6e6e6
+Function:
+  Title: corelight_rfb parser for Corelight
+  Version: '2.0.0'
+  LastUpdated: '2026-08-17'
+Category: Microsoft Sentinel Parser
+FunctionName: corelight_rfb
+FunctionAlias: corelight_rfb
+FunctionQuery: |+
+  let dummy_table = datatable(TimeGenerated: datetime) [];
+  let corelight_rfb = view () {
+      union isfuzzy=true Corelight_v3_rfb_CL, dummy_table
+        | extend
+            _path=path,
+            _system_name=system_name,
+            _write_ts=write_ts
+      | extend
+          EventVendor="Corelight",
+          EventProduct="CorelightSensor",
+          EventType="rfb",
+          ts=TimeGenerated
+  };
+  corelight_rfb
+
+...

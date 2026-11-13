@@ -1,0 +1,26 @@
+id: 9cb7c337-f178-4af6-b0e8-b6b7552d762d
+name: Flare source code results
+description: |
+    'This query searches for events found on code sharing platforms.'
+severity: Medium
+status: Available
+requiredDataConnectors:
+  - connectorId: Flare
+    dataTypes:
+      - FireworkV2_CL
+queryFrequency: 1h
+queryPeriod: 1h
+triggerOperator: gt
+triggerThreshold: 0
+tactics:
+  - Reconnaissance
+relevantTechniques:
+  - T1593
+query: |
+  FireworkV2_CL
+  | where notempty(uid) and RiskScore >= 3
+  | extend index_name = split(uid, "/")[0]
+  | extend category_name = split(uid, "/")[1]
+  | where index_name == "driller" and category_name contains "github"
+version: 3.0.0
+kind: Scheduled

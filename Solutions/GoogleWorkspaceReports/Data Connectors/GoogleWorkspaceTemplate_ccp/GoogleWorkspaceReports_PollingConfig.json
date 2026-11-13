@@ -1,0 +1,1610 @@
+[
+  {
+    "type": "Microsoft.SecurityInsights/dataConnectors",
+    "apiVersion": "2024-09-01",
+    "name": "[[concat('parameters('workspace')', '/Microsoft.SecurityInsights/','GoogleWorkspaceAccessTransparency' , uniqueString(parameters('friendlyName')) )]",
+    "kind": "RestApiPoller",
+    "location": "{{location}}",
+    "properties": {
+      "connectorDefinitionName": "GoogleWorkspaceCCPDefinition",
+      "dataType": "GoogleWorkspaceReports",
+      "dcrConfig": {
+        "streamName": "SENTINEL_GOOGLEWORKSPACEREPORTS",
+        "dataCollectionEndpoint": "{{dataCollectionEndpoint}}",
+        "dataCollectionRuleImmutableId": "{{dataCollectionRuleImmutableId}}"
+      },
+      "auth": {
+        "type": "OAuth2",
+        "IsClientSecretInHeader": "true",
+        "IsCredentialsInHeaders": "true",
+        "ClientSecret": "{{clientSecret}}",
+        "ClientId": "{{clientId}}",
+        "AuthorizationCode": "{{authorizationCode}}",
+        "GrantType": "authorization_code",
+        "TokenEndpoint": "https://accounts.google.com/o/oauth2/token",
+        "tokenEndpointHeaders": {
+          "Accept": "application/json",
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        "authorizationEndpoint": "https://accounts.google.com/o/oauth2/auth",
+        "authorizationEndpointQueryParameters": {
+          "prompt": "consent",
+          "access_type": "offline"
+        },
+        "scope": "https://www.googleapis.com/auth/admin.reports.audit.readonly",
+        "redirectUri": "{{redirectUri}}"
+      },
+      "request": {
+        "apiEndpoint": "https://admin.googleapis.com/admin/reports/v1/activity/users/all/applications/access_transparency",
+        "httpMethod": "GET",
+        "queryParameters": {
+          "maxResults": 1000,
+          "startTime": "{_QueryWindowStartTime}",
+          "endTime": "{_QueryWindowEndTime}"
+        },
+        "queryWindowInMin": 10,
+        "queryTimeFormat": "yyyy-MM-ddTHH:mm:ss.000000+00:00",
+        "startTimeAttributeName": "startTime",
+        "endTimeAttributeName": "endTime",
+        "rateLimitQps": 10,
+        "retryCount": 3,
+        "timeoutInSeconds": 60,
+        "headers": {
+          "Accept": "application/json"
+        }
+      },
+      "extra": {
+        "transformName": "/ASI/GoogleWorkspace/OneDetectionPerRow"
+      },
+      "response": {
+        "eventsJsonPaths": [
+          "$.items"
+        ]
+      },
+      "paging": {
+        "pagingType": "NextPageToken",
+        "nextPageTokenJsonPath": "$.nextPageToken",
+        "nextPageParaName": "pageToken"
+      },
+      "addOnAttributes": {
+        "friendlyName": "[[parameters('friendlyName')]",
+        "dataType": "Access Transparency"
+      }
+    }
+  },
+  {
+    "type": "Microsoft.SecurityInsights/dataConnectors",
+    "apiVersion": "2024-09-01",
+    "name": "[[concat('parameters('workspace')', '/Microsoft.SecurityInsights/','GoogleWorkspaceAdmin' , uniqueString(parameters('friendlyName')) )]",
+    "kind": "RestApiPoller",
+    "location": "{{location}}",
+    "properties": {
+      "connectorDefinitionName": "GoogleWorkspaceCCPDefinition",
+      "dataType": "GoogleWorkspaceReports",
+      "dcrConfig": {
+        "streamName": "SENTINEL_GOOGLEWORKSPACEREPORTS",
+        "dataCollectionEndpoint": "{{dataCollectionEndpoint}}",
+        "dataCollectionRuleImmutableId": "{{dataCollectionRuleImmutableId}}"
+      },
+      "auth": {
+        "type": "OAuth2",
+        "IsClientSecretInHeader": "true",
+        "IsCredentialsInHeaders": "true",
+        "ClientSecret": "{{clientSecret}}",
+        "ClientId": "{{clientId}}",
+        "AuthorizationCode": "{{authorizationCode}}",
+        "GrantType": "authorization_code",
+        "TokenEndpoint": "https://accounts.google.com/o/oauth2/token",
+        "TokenEndpointHeaders": {
+          "Accept": "application/json",
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        "AuthorizationEndpoint": "https://accounts.google.com/o/oauth2/auth",
+        "TokenEndpointQueryParameters": {
+          "prompt": "consent",
+          "access_type": "offline"
+        },
+        "scope": "https://www.googleapis.com/auth/admin.reports.audit.readonly",
+        "redirectUri": "{{redirectUri}}"
+      },
+      "request": {
+        "apiEndpoint": "https://admin.googleapis.com/admin/reports/v1/activity/users/all/applications/admin",
+        "httpMethod": "GET",
+        "queryParameters": {
+          "maxResults": 1000,
+          "startTime": "{_QueryWindowStartTime}",
+          "endTime": "{_QueryWindowEndTime}"
+        },
+        "queryWindowInMin": 10,
+        "queryTimeFormat": "yyyy-MM-ddTHH:mm:ss.000000+00:00",
+        "startTimeAttributeName": "startTime",
+        "endTimeAttributeName": "endTime",
+        "rateLimitQps": 10,
+        "retryCount": 3,
+        "timeoutInSeconds": 60,
+        "headers": {
+          "Accept": "application/json"
+        }
+      },
+      "extra": {
+        "transformName": "/ASI/GoogleWorkspace/OneDetectionPerRow"
+      },
+      "response": {
+        "eventsJsonPaths": [
+          "$.items"
+        ]
+      },
+      "paging": {
+        "pagingType": "NextPageToken",
+        "nextPageTokenJsonPath": "$.nextPageToken",
+        "nextPageParaName": "pageToken"
+      },
+      "addOnAttributes": {
+        "friendlyName": "[[parameters('friendlyName')]",
+        "dataType": "Admin"
+      }
+    }
+  },
+  {
+    "type": "Microsoft.SecurityInsights/dataConnectors",
+    "apiVersion": "2024-09-01",
+    "name": "[[concat('parameters('workspace')', '/Microsoft.SecurityInsights/','GoogleWorkspaceCalendar' , uniqueString(parameters('friendlyName')) )]",
+    "kind": "RestApiPoller",
+    "location": "{{location}}",
+    "properties": {
+      "connectorDefinitionName": "GoogleWorkspaceCCPDefinition",
+      "dataType": "GoogleWorkspaceReports",
+      "dcrConfig": {
+        "streamName": "SENTINEL_GOOGLEWORKSPACEREPORTS",
+        "dataCollectionEndpoint": "{{dataCollectionEndpoint}}",
+        "dataCollectionRuleImmutableId": "{{dataCollectionRuleImmutableId}}"
+      },
+      "auth": {
+        "type": "OAuth2",
+        "IsClientSecretInHeader": "true",
+        "IsCredentialsInHeaders": "true",
+        "ClientSecret": "{{clientSecret}}",
+        "ClientId": "{{clientId}}",
+        "AuthorizationCode": "{{authorizationCode}}",
+        "GrantType": "authorization_code",
+        "TokenEndpoint": "https://accounts.google.com/o/oauth2/token",
+        "TokenEndpointHeaders": {
+          "Accept": "application/json",
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        "AuthorizationEndpoint": "https://accounts.google.com/o/oauth2/auth",
+        "TokenEndpointQueryParameters": {
+          "prompt": "consent",
+          "access_type": "offline"
+        },
+        "scope": "https://www.googleapis.com/auth/admin.reports.audit.readonly",
+        "redirectUri": "{{redirectUri}}"
+      },
+      "request": {
+        "apiEndpoint": "https://admin.googleapis.com/admin/reports/v1/activity/users/all/applications/calendar",
+        "httpMethod": "GET",
+        "queryParameters": {
+          "maxResults": 1000,
+          "startTime": "{_QueryWindowStartTime}",
+          "endTime": "{_QueryWindowEndTime}"
+        },
+        "queryWindowInMin": 360,
+        "queryTimeFormat": "yyyy-MM-ddTHH:mm:ss.000000+00:00",
+        "startTimeAttributeName": "startTime",
+        "endTimeAttributeName": "endTime",
+        "rateLimitQps": 10,
+        "retryCount": 3,
+        "timeoutInSeconds": 60,
+        "headers": {
+          "Accept": "application/json"
+        }
+      },
+      "extra": {
+        "transformName": "/ASI/GoogleWorkspace/OneDetectionPerRow"
+      },
+      "response": {
+        "eventsJsonPaths": [
+          "$.items"
+        ]
+      },
+      "paging": {
+        "pagingType": "NextPageToken",
+        "nextPageTokenJsonPath": "$.nextPageToken",
+        "nextPageParaName": "pageToken"
+      },
+      "addOnAttributes": {
+        "friendlyName": "[[parameters('friendlyName')]",
+        "dataType": "Calendar"
+      }
+    }
+  },
+  {
+    "type": "Microsoft.SecurityInsights/dataConnectors",
+    "apiVersion": "2024-09-01",
+    "name": "[[concat('parameters('workspace')', '/Microsoft.SecurityInsights/','GoogleWorkspaceChat' , uniqueString(parameters('friendlyName')) )]",
+    "kind": "RestApiPoller",
+    "location": "{{location}}",
+    "properties": {
+      "connectorDefinitionName": "GoogleWorkspaceCCPDefinition",
+      "dataType": "GoogleWorkspaceReports",
+      "dcrConfig": {
+        "streamName": "SENTINEL_GOOGLEWORKSPACEREPORTS",
+        "dataCollectionEndpoint": "{{dataCollectionEndpoint}}",
+        "dataCollectionRuleImmutableId": "{{dataCollectionRuleImmutableId}}"
+      },
+      "auth": {
+        "type": "OAuth2",
+        "IsClientSecretInHeader": "true",
+        "IsCredentialsInHeaders": "true",
+        "ClientSecret": "{{clientSecret}}",
+        "ClientId": "{{clientId}}",
+        "AuthorizationCode": "{{authorizationCode}}",
+        "GrantType": "authorization_code",
+        "TokenEndpoint": "https://accounts.google.com/o/oauth2/token",
+        "TokenEndpointHeaders": {
+          "Accept": "application/json",
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        "AuthorizationEndpoint": "https://accounts.google.com/o/oauth2/auth",
+        "TokenEndpointQueryParameters": {
+          "prompt": "consent",
+          "access_type": "offline"
+        },
+        "scope": "https://www.googleapis.com/auth/admin.reports.audit.readonly",
+        "redirectUri": "{{redirectUri}}"
+      },
+      "request": {
+        "apiEndpoint": "https://admin.googleapis.com/admin/reports/v1/activity/users/all/applications/chat",
+        "httpMethod": "GET",
+        "queryParameters": {
+          "maxResults": 1000,
+          "startTime": "{_QueryWindowStartTime}",
+          "endTime": "{_QueryWindowEndTime}"
+        },
+        "queryWindowInMin": 1440,
+        "queryTimeFormat": "yyyy-MM-ddTHH:mm:ss.000000+00:00",
+        "startTimeAttributeName": "startTime",
+        "endTimeAttributeName": "endTime",
+        "rateLimitQps": 10,
+        "retryCount": 3,
+        "timeoutInSeconds": 60,
+        "headers": {
+          "Accept": "application/json"
+        }
+      },
+      "extra": {
+        "transformName": "/ASI/GoogleWorkspace/OneDetectionPerRow"
+      },
+      "response": {
+        "eventsJsonPaths": [
+          "$.items"
+        ]
+      },
+      "paging": {
+        "pagingType": "NextPageToken",
+        "nextPageTokenJsonPath": "$.nextPageToken",
+        "nextPageParaName": "pageToken"
+      },
+      "addOnAttributes": {
+        "friendlyName": "[[parameters('friendlyName')]",
+        "dataType": "Chat"
+      }
+    }
+  },
+  {
+    "type": "Microsoft.SecurityInsights/dataConnectors",
+    "apiVersion": "2024-09-01",
+    "name": "[[concat('parameters('workspace')', '/Microsoft.SecurityInsights/','GoogleWorkspaceDrive' , uniqueString(parameters('friendlyName')) )]",
+    "kind": "RestApiPoller",
+    "location": "{{location}}",
+    "properties": {
+      "connectorDefinitionName": "GoogleWorkspaceCCPDefinition",
+      "dataType": "GoogleWorkspaceReports",
+      "dcrConfig": {
+        "streamName": "SENTINEL_GOOGLEWORKSPACEREPORTS",
+        "dataCollectionEndpoint": "{{dataCollectionEndpoint}}",
+        "dataCollectionRuleImmutableId": "{{dataCollectionRuleImmutableId}}"
+      },
+      "auth": {
+        "type": "OAuth2",
+        "IsClientSecretInHeader": "true",
+        "IsCredentialsInHeaders": "true",
+        "ClientSecret": "{{clientSecret}}",
+        "ClientId": "{{clientId}}",
+        "AuthorizationCode": "{{authorizationCode}}",
+        "GrantType": "authorization_code",
+        "TokenEndpoint": "https://accounts.google.com/o/oauth2/token",
+        "TokenEndpointHeaders": {
+          "Accept": "application/json",
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        "AuthorizationEndpoint": "https://accounts.google.com/o/oauth2/auth",
+        "TokenEndpointQueryParameters": {
+          "prompt": "consent",
+          "access_type": "offline"
+        },
+        "scope": "https://www.googleapis.com/auth/admin.reports.audit.readonly",
+        "redirectUri": "{{redirectUri}}"
+      },
+      "request": {
+        "apiEndpoint": "https://admin.googleapis.com/admin/reports/v1/activity/users/all/applications/drive",
+        "httpMethod": "GET",
+        "queryParameters": {
+          "maxResults": 1000,
+          "startTime": "{_QueryWindowStartTime}",
+          "endTime": "{_QueryWindowEndTime}"
+        },
+        "queryWindowInMin": 10,
+        "queryTimeFormat": "yyyy-MM-ddTHH:mm:ss.000000+00:00",
+        "startTimeAttributeName": "startTime",
+        "endTimeAttributeName": "endTime",
+        "rateLimitQps": 10,
+        "retryCount": 3,
+        "timeoutInSeconds": 60,
+        "headers": {
+          "Accept": "application/json"
+        }
+      },
+      "extra": {
+        "transformName": "/ASI/GoogleWorkspace/OneDetectionPerRow"
+      },
+      "response": {
+        "eventsJsonPaths": [
+          "$.items"
+        ]
+      },
+      "paging": {
+        "pagingType": "NextPageToken",
+        "nextPageTokenJsonPath": "$.nextPageToken",
+        "nextPageParaName": "pageToken"
+      },
+      "addOnAttributes": {
+        "friendlyName": "[[parameters('friendlyName')]",
+        "dataType": "Drive"
+      }
+    }
+  },
+  {
+    "type": "Microsoft.SecurityInsights/dataConnectors",
+    "apiVersion": "2024-09-01",
+    "name": "[[concat('parameters('workspace')', '/Microsoft.SecurityInsights/','GoogleWorkspaceGCP' , uniqueString(parameters('friendlyName')) )]",
+    "kind": "RestApiPoller",
+    "location": "{{location}}",
+    "properties": {
+      "connectorDefinitionName": "GoogleWorkspaceCCPDefinition",
+      "dataType": "GoogleWorkspaceReports",
+      "dcrConfig": {
+        "streamName": "SENTINEL_GOOGLEWORKSPACEREPORTS",
+        "dataCollectionEndpoint": "{{dataCollectionEndpoint}}",
+        "dataCollectionRuleImmutableId": "{{dataCollectionRuleImmutableId}}"
+      },
+      "auth": {
+        "type": "OAuth2",
+        "IsClientSecretInHeader": "true",
+        "IsCredentialsInHeaders": "true",
+        "ClientSecret": "{{clientSecret}}",
+        "ClientId": "{{clientId}}",
+        "AuthorizationCode": "{{authorizationCode}}",
+        "GrantType": "authorization_code",
+        "TokenEndpoint": "https://accounts.google.com/o/oauth2/token",
+        "TokenEndpointHeaders": {
+          "Accept": "application/json",
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        "AuthorizationEndpoint": "https://accounts.google.com/o/oauth2/auth",
+        "TokenEndpointQueryParameters": {
+          "prompt": "consent",
+          "access_type": "offline"
+        },
+        "scope": "https://www.googleapis.com/auth/admin.reports.audit.readonly",
+        "redirectUri": "{{redirectUri}}"
+      },
+      "request": {
+        "apiEndpoint": "https://admin.googleapis.com/admin/reports/v1/activity/users/all/applications/gcp",
+        "httpMethod": "GET",
+        "queryParameters": {
+          "maxResults": 1000,
+          "startTime": "{_QueryWindowStartTime}",
+          "endTime": "{_QueryWindowEndTime}"
+        },
+        "queryWindowInMin": 10,
+        "queryTimeFormat": "yyyy-MM-ddTHH:mm:ss.000000+00:00",
+        "startTimeAttributeName": "startTime",
+        "endTimeAttributeName": "endTime",
+        "rateLimitQps": 10,
+        "retryCount": 3,
+        "timeoutInSeconds": 60,
+        "headers": {
+          "Accept": "application/json"
+        }
+      },
+      "extra": {
+        "transformName": "/ASI/GoogleWorkspace/OneDetectionPerRow"
+      },
+      "response": {
+        "eventsJsonPaths": [
+          "$.items"
+        ]
+      },
+      "paging": {
+        "pagingType": "NextPageToken",
+        "nextPageTokenJsonPath": "$.nextPageToken",
+        "nextPageParaName": "pageToken"
+      },
+      "addOnAttributes": {
+        "friendlyName": "[[parameters('friendlyName')]",
+        "dataType": "GCP"
+      }
+    }
+  },
+  {
+    "type": "Microsoft.SecurityInsights/dataConnectors",
+    "apiVersion": "2024-09-01",
+    "name": "[[concat('parameters('workspace')', '/Microsoft.SecurityInsights/','GoogleWorkspaceGPlus' , uniqueString(parameters('friendlyName')) )]",
+    "kind": "RestApiPoller",
+    "location": "{{location}}",
+    "properties": {
+      "connectorDefinitionName": "GoogleWorkspaceCCPDefinition",
+      "dataType": "GoogleWorkspaceReports",
+      "dcrConfig": {
+        "streamName": "SENTINEL_GOOGLEWORKSPACEREPORTS",
+        "dataCollectionEndpoint": "{{dataCollectionEndpoint}}",
+        "dataCollectionRuleImmutableId": "{{dataCollectionRuleImmutableId}}"
+      },
+      "auth": {
+        "type": "OAuth2",
+        "IsClientSecretInHeader": "true",
+        "IsCredentialsInHeaders": "true",
+        "ClientSecret": "{{clientSecret}}",
+        "ClientId": "{{clientId}}",
+        "AuthorizationCode": "{{authorizationCode}}",
+        "GrantType": "authorization_code",
+        "TokenEndpoint": "https://accounts.google.com/o/oauth2/token",
+        "TokenEndpointHeaders": {
+          "Accept": "application/json",
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        "AuthorizationEndpoint": "https://accounts.google.com/o/oauth2/auth",
+        "TokenEndpointQueryParameters": {
+          "prompt": "consent",
+          "access_type": "offline"
+        },
+        "scope": "https://www.googleapis.com/auth/admin.reports.audit.readonly",
+        "redirectUri": "{{redirectUri}}"
+      },
+      "request": {
+        "apiEndpoint": "https://admin.googleapis.com/admin/reports/v1/activity/users/all/applications/gplus",
+        "httpMethod": "GET",
+        "queryParameters": {
+          "maxResults": 1000,
+          "startTime": "{_QueryWindowStartTime}",
+          "endTime": "{_QueryWindowEndTime}"
+        },
+        "queryWindowInMin": 10,
+        "queryTimeFormat": "yyyy-MM-ddTHH:mm:ss.000000+00:00",
+        "startTimeAttributeName": "startTime",
+        "endTimeAttributeName": "endTime",
+        "rateLimitQps": 10,
+        "retryCount": 3,
+        "timeoutInSeconds": 60,
+        "headers": {
+          "Accept": "application/json"
+        }
+      },
+      "extra": {
+        "transformName": "/ASI/GoogleWorkspace/OneDetectionPerRow"
+      },
+      "response": {
+        "eventsJsonPaths": [
+          "$.items"
+        ]
+      },
+      "paging": {
+        "pagingType": "NextPageToken",
+        "nextPageTokenJsonPath": "$.nextPageToken",
+        "nextPageParaName": "pageToken"
+      },
+      "addOnAttributes": {
+        "friendlyName": "[[parameters('friendlyName')]",
+        "dataType": "Google+"
+      }
+    }
+  },
+  {
+    "type": "Microsoft.SecurityInsights/dataConnectors",
+    "apiVersion": "2024-09-01",
+    "name": "[[concat('parameters('workspace')', '/Microsoft.SecurityInsights/','GoogleWorkspaceGroups' , uniqueString(parameters('friendlyName')) )]",
+    "kind": "RestApiPoller",
+    "location": "{{location}}",
+    "properties": {
+      "connectorDefinitionName": "GoogleWorkspaceCCPDefinition",
+      "dataType": "GoogleWorkspaceReports",
+      "dcrConfig": {
+        "streamName": "SENTINEL_GOOGLEWORKSPACEREPORTS",
+        "dataCollectionEndpoint": "{{dataCollectionEndpoint}}",
+        "dataCollectionRuleImmutableId": "{{dataCollectionRuleImmutableId}}"
+      },
+      "auth": {
+        "type": "OAuth2",
+        "IsClientSecretInHeader": "true",
+        "IsCredentialsInHeaders": "true",
+        "ClientSecret": "{{clientSecret}}",
+        "ClientId": "{{clientId}}",
+        "AuthorizationCode": "{{authorizationCode}}",
+        "GrantType": "authorization_code",
+        "TokenEndpoint": "https://accounts.google.com/o/oauth2/token",
+        "TokenEndpointHeaders": {
+          "Accept": "application/json",
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        "AuthorizationEndpoint": "https://accounts.google.com/o/oauth2/auth",
+        "TokenEndpointQueryParameters": {
+          "prompt": "consent",
+          "access_type": "offline"
+        },
+        "scope": "https://www.googleapis.com/auth/admin.reports.audit.readonly",
+        "redirectUri": "{{redirectUri}}"
+      },
+      "request": {
+        "apiEndpoint": "https://admin.googleapis.com/admin/reports/v1/activity/users/all/applications/groups",
+        "httpMethod": "GET",
+        "queryParameters": {
+          "maxResults": 1000,
+          "startTime": "{_QueryWindowStartTime}",
+          "endTime": "{_QueryWindowEndTime}"
+        },
+        "queryWindowInMin": 10,
+        "queryTimeFormat": "yyyy-MM-ddTHH:mm:ss.000000+00:00",
+        "startTimeAttributeName": "startTime",
+        "endTimeAttributeName": "endTime",
+        "rateLimitQps": 10,
+        "retryCount": 3,
+        "timeoutInSeconds": 60,
+        "headers": {
+          "Accept": "application/json"
+        }
+      },
+      "response": {
+        "eventsJsonPaths": [
+          "$.items"
+        ]
+      },
+      "extra": {
+        "transformName": "/ASI/GoogleWorkspace/OneDetectionPerRow"
+      },
+      "paging": {
+        "pagingType": "NextPageToken",
+        "nextPageTokenJsonPath": "$.nextPageToken",
+        "nextPageParaName": "pageToken"
+      },
+      "addOnAttributes": {
+        "friendlyName": "[[parameters('friendlyName')]",
+        "dataType": "Groups"
+      }
+    }
+  },
+  {
+    "type": "Microsoft.SecurityInsights/dataConnectors",
+    "apiVersion": "2024-09-01",
+    "name": "[[concat('parameters('workspace')', '/Microsoft.SecurityInsights/','GoogleWorkspaceGroupsEnterprise' , uniqueString(parameters('friendlyName')) )]",
+    "kind": "RestApiPoller",
+    "location": "{{location}}",
+    "properties": {
+      "connectorDefinitionName": "GoogleWorkspaceCCPDefinition",
+      "dataType": "GoogleWorkspaceReports",
+      "dcrConfig": {
+        "streamName": "SENTINEL_GOOGLEWORKSPACEREPORTS",
+        "dataCollectionEndpoint": "{{dataCollectionEndpoint}}",
+        "dataCollectionRuleImmutableId": "{{dataCollectionRuleImmutableId}}"
+      },
+      "auth": {
+        "type": "OAuth2",
+        "IsClientSecretInHeader": "true",
+        "IsCredentialsInHeaders": "true",
+        "ClientSecret": "{{clientSecret}}",
+        "ClientId": "{{clientId}}",
+        "AuthorizationCode": "{{authorizationCode}}",
+        "GrantType": "authorization_code",
+        "TokenEndpoint": "https://accounts.google.com/o/oauth2/token",
+        "TokenEndpointHeaders": {
+          "Accept": "application/json",
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        "AuthorizationEndpoint": "https://accounts.google.com/o/oauth2/auth",
+        "TokenEndpointQueryParameters": {
+          "prompt": "consent",
+          "access_type": "offline"
+        },
+        "scope": "https://www.googleapis.com/auth/admin.reports.audit.readonly",
+        "redirectUri": "{{redirectUri}}"
+      },
+      "request": {
+        "apiEndpoint": "https://admin.googleapis.com/admin/reports/v1/activity/users/all/applications/groups_enterprise",
+        "httpMethod": "GET",
+        "queryParameters": {
+          "maxResults": 1000,
+          "startTime": "{_QueryWindowStartTime}",
+          "endTime": "{_QueryWindowEndTime}"
+        },
+        "queryWindowInMin": 10,
+        "queryTimeFormat": "yyyy-MM-ddTHH:mm:ss.000000+00:00",
+        "startTimeAttributeName": "startTime",
+        "endTimeAttributeName": "endTime",
+        "rateLimitQps": 10,
+        "retryCount": 3,
+        "timeoutInSeconds": 60,
+        "headers": {
+          "Accept": "application/json"
+        }
+      },
+      "response": {
+        "eventsJsonPaths": [
+          "$.items"
+        ]
+      },
+      "extra": {
+        "transformName": "/ASI/GoogleWorkspace/OneDetectionPerRow"
+      },
+      "paging": {
+        "pagingType": "NextPageToken",
+        "nextPageTokenJsonPath": "$.nextPageToken",
+        "nextPageParaName": "pageToken"
+      },
+      "addOnAttributes": {
+        "friendlyName": "[[parameters('friendlyName')]",
+        "dataType": "Groups Enterprise"
+      }
+    }
+  },
+  {
+    "type": "Microsoft.SecurityInsights/dataConnectors",
+    "apiVersion": "2024-09-01",
+    "name": "[[concat('parameters('workspace')', '/Microsoft.SecurityInsights/','GoogleWorkspaceJamboard' , uniqueString(parameters('friendlyName')) )]",
+    "kind": "RestApiPoller",
+    "location": "{{location}}",
+    "properties": {
+      "connectorDefinitionName": "GoogleWorkspaceCCPDefinition",
+      "dataType": "GoogleWorkspaceReports",
+      "dcrConfig": {
+        "streamName": "SENTINEL_GOOGLEWORKSPACEREPORTS",
+        "dataCollectionEndpoint": "{{dataCollectionEndpoint}}",
+        "dataCollectionRuleImmutableId": "{{dataCollectionRuleImmutableId}}"
+      },
+      "auth": {
+        "type": "OAuth2",
+        "IsClientSecretInHeader": "true",
+        "IsCredentialsInHeaders": "true",
+        "ClientSecret": "{{clientSecret}}",
+        "ClientId": "{{clientId}}",
+        "AuthorizationCode": "{{authorizationCode}}",
+        "GrantType": "authorization_code",
+        "TokenEndpoint": "https://accounts.google.com/o/oauth2/token",
+        "TokenEndpointHeaders": {
+          "Accept": "application/json",
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        "AuthorizationEndpoint": "https://accounts.google.com/o/oauth2/auth",
+        "TokenEndpointQueryParameters": {
+          "prompt": "consent",
+          "access_type": "offline"
+        },
+        "scope": "https://www.googleapis.com/auth/admin.reports.audit.readonly",
+        "redirectUri": "{{redirectUri}}"
+      },
+      "request": {
+        "apiEndpoint": "https://admin.googleapis.com/admin/reports/v1/activity/users/all/applications/jamboard",
+        "httpMethod": "GET",
+        "queryParameters": {
+          "maxResults": 1000,
+          "startTime": "{_QueryWindowStartTime}",
+          "endTime": "{_QueryWindowEndTime}"
+        },
+        "queryWindowInMin": 10,
+        "queryTimeFormat": "yyyy-MM-ddTHH:mm:ss.000000+00:00",
+        "startTimeAttributeName": "startTime",
+        "endTimeAttributeName": "endTime",
+        "rateLimitQps": 10,
+        "retryCount": 3,
+        "timeoutInSeconds": 60,
+        "headers": {
+          "Accept": "application/json"
+        }
+      },
+      "extra": {
+        "transformName": "/ASI/GoogleWorkspace/OneDetectionPerRow"
+      },
+      "response": {
+        "eventsJsonPaths": [
+          "$.items"
+        ]
+      },
+      "paging": {
+        "pagingType": "NextPageToken",
+        "nextPageTokenJsonPath": "$.nextPageToken",
+        "nextPageParaName": "pageToken"
+      },
+      "addOnAttributes": {
+        "friendlyName": "[[parameters('friendlyName')]",
+        "dataType": "Jamboard"
+      }
+    }
+  },
+  {
+    "type": "Microsoft.SecurityInsights/dataConnectors",
+    "apiVersion": "2024-09-01",
+    "name": "[[concat('parameters('workspace')', '/Microsoft.SecurityInsights/','GoogleWorkspaceLogin' , uniqueString(parameters('friendlyName')) )]",
+    "kind": "RestApiPoller",
+    "location": "{{location}}",
+    "properties": {
+      "connectorDefinitionName": "GoogleWorkspaceCCPDefinition",
+      "dataType": "GoogleWorkspaceReports",
+      "dcrConfig": {
+        "streamName": "SENTINEL_GOOGLEWORKSPACEREPORTS",
+        "dataCollectionEndpoint": "{{dataCollectionEndpoint}}",
+        "dataCollectionRuleImmutableId": "{{dataCollectionRuleImmutableId}}"
+      },
+      "auth": {
+        "type": "OAuth2",
+        "IsClientSecretInHeader": "true",
+        "IsCredentialsInHeaders": "true",
+        "ClientSecret": "{{clientSecret}}",
+        "ClientId": "{{clientId}}",
+        "AuthorizationCode": "{{authorizationCode}}",
+        "GrantType": "authorization_code",
+        "TokenEndpoint": "https://accounts.google.com/o/oauth2/token",
+        "TokenEndpointHeaders": {
+          "Accept": "application/json",
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        "AuthorizationEndpoint": "https://accounts.google.com/o/oauth2/auth",
+        "TokenEndpointQueryParameters": {
+          "prompt": "consent",
+          "access_type": "offline"
+        },
+        "scope": "https://www.googleapis.com/auth/admin.reports.audit.readonly",
+        "redirectUri": "{{redirectUri}}"
+      },
+      "request": {
+        "apiEndpoint": "https://admin.googleapis.com/admin/reports/v1/activity/users/all/applications/login",
+        "httpMethod": "GET",
+        "queryParameters": {
+          "maxResults": 1000,
+          "startTime": "{_QueryWindowStartTime}",
+          "endTime": "{_QueryWindowEndTime}"
+        },
+        "queryWindowInMin": 360,
+        "queryTimeFormat": "yyyy-MM-ddTHH:mm:ss.000000+00:00",
+        "startTimeAttributeName": "startTime",
+        "endTimeAttributeName": "endTime",
+        "rateLimitQps": 10,
+        "retryCount": 3,
+        "timeoutInSeconds": 60,
+        "headers": {
+          "Accept": "application/json"
+        }
+      },
+      "extra": {
+        "transformName": "/ASI/GoogleWorkspace/OneDetectionPerRow"
+      },
+      "response": {
+        "eventsJsonPaths": [
+          "$.items"
+        ]
+      },
+      "paging": {
+        "pagingType": "NextPageToken",
+        "nextPageTokenJsonPath": "$.nextPageToken",
+        "nextPageParaName": "pageToken"
+      },
+      "addOnAttributes": {
+        "friendlyName": "[[parameters('friendlyName')]",
+        "dataType": "Login"
+      }
+    }
+  },
+  {
+    "type": "Microsoft.SecurityInsights/dataConnectors",
+    "apiVersion": "2024-09-01",
+    "name": "[[concat('parameters('workspace')', '/Microsoft.SecurityInsights/','GoogleWorkspaceMeet' , uniqueString(parameters('friendlyName')) )]",
+    "kind": "RestApiPoller",
+    "location": "{{location}}",
+    "properties": {
+      "connectorDefinitionName": "GoogleWorkspaceCCPDefinition",
+      "dataType": "GoogleWorkspaceReports",
+      "dcrConfig": {
+        "streamName": "SENTINEL_GOOGLEWORKSPACEREPORTS",
+        "dataCollectionEndpoint": "{{dataCollectionEndpoint}}",
+        "dataCollectionRuleImmutableId": "{{dataCollectionRuleImmutableId}}"
+      },
+      "auth": {
+        "type": "OAuth2",
+        "IsClientSecretInHeader": "true",
+        "IsCredentialsInHeaders": "true",
+        "ClientSecret": "{{clientSecret}}",
+        "ClientId": "{{clientId}}",
+        "AuthorizationCode": "{{authorizationCode}}",
+        "GrantType": "authorization_code",
+        "TokenEndpoint": "https://accounts.google.com/o/oauth2/token",
+        "TokenEndpointHeaders": {
+          "Accept": "application/json",
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        "AuthorizationEndpoint": "https://accounts.google.com/o/oauth2/auth",
+        "TokenEndpointQueryParameters": {
+          "prompt": "consent",
+          "access_type": "offline"
+        },
+        "scope": "https://www.googleapis.com/auth/admin.reports.audit.readonly",
+        "redirectUri": "{{redirectUri}}"
+      },
+      "request": {
+        "apiEndpoint": "https://admin.googleapis.com/admin/reports/v1/activity/users/all/applications/meet",
+        "httpMethod": "GET",
+        "queryParameters": {
+          "maxResults": 1000,
+          "startTime": "{_QueryWindowStartTime}",
+          "endTime": "{_QueryWindowEndTime}"
+        },
+        "queryWindowInMin": 10,
+        "queryWindowDelayInMin": 30,
+        "queryTimeFormat": "yyyy-MM-ddTHH:mm:ss.000000+00:00",
+        "startTimeAttributeName": "startTime",
+        "endTimeAttributeName": "endTime",
+        "rateLimitQps": 10,
+        "retryCount": 3,
+        "timeoutInSeconds": 60,
+        "headers": {
+          "Accept": "application/json"
+        }
+      },
+      "extra": {
+        "transformName": "/ASI/GoogleWorkspace/OneDetectionPerRow"
+      },
+      "response": {
+        "eventsJsonPaths": [
+          "$.items"
+        ]
+      },
+      "paging": {
+        "pagingType": "NextPageToken",
+        "nextPageTokenJsonPath": "$.nextPageToken",
+        "nextPageParaName": "pageToken"
+      },
+      "addOnAttributes": {
+        "friendlyName": "[[parameters('friendlyName')]",
+        "dataType": "Meet"
+      }
+    }
+  },
+  {
+    "type": "Microsoft.SecurityInsights/dataConnectors",
+    "apiVersion": "2024-09-01",
+    "name": "[[concat('parameters('workspace')', '/Microsoft.SecurityInsights/','GoogleWorkspaceMobile' , uniqueString(parameters('friendlyName')) )]",
+    "kind": "RestApiPoller",
+    "location": "{{location}}",
+    "properties": {
+      "connectorDefinitionName": "GoogleWorkspaceCCPDefinition",
+      "dataType": "GoogleWorkspaceReports",
+      "dcrConfig": {
+        "streamName": "SENTINEL_GOOGLEWORKSPACEREPORTS",
+        "dataCollectionEndpoint": "{{dataCollectionEndpoint}}",
+        "dataCollectionRuleImmutableId": "{{dataCollectionRuleImmutableId}}"
+      },
+      "auth": {
+        "type": "OAuth2",
+        "IsClientSecretInHeader": "true",
+        "IsCredentialsInHeaders": "true",
+        "ClientSecret": "{{clientSecret}}",
+        "ClientId": "{{clientId}}",
+        "AuthorizationCode": "{{authorizationCode}}",
+        "GrantType": "authorization_code",
+        "TokenEndpoint": "https://accounts.google.com/o/oauth2/token",
+        "TokenEndpointHeaders": {
+          "Accept": "application/json",
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        "AuthorizationEndpoint": "https://accounts.google.com/o/oauth2/auth",
+        "TokenEndpointQueryParameters": {
+          "prompt": "consent",
+          "access_type": "offline"
+        },
+        "scope": "https://www.googleapis.com/auth/admin.reports.audit.readonly",
+        "redirectUri": "{{redirectUri}}"
+      },
+      "request": {
+        "apiEndpoint": "https://admin.googleapis.com/admin/reports/v1/activity/users/all/applications/mobile",
+        "httpMethod": "GET",
+        "queryParameters": {
+          "maxResults": 1000,
+          "startTime": "{_QueryWindowStartTime}",
+          "endTime": "{_QueryWindowEndTime}"
+        },
+        "queryWindowInMin": 10,
+        "queryTimeFormat": "yyyy-MM-ddTHH:mm:ss.000000+00:00",
+        "startTimeAttributeName": "startTime",
+        "endTimeAttributeName": "endTime",
+        "rateLimitQps": 10,
+        "retryCount": 3,
+        "timeoutInSeconds": 60,
+        "headers": {
+          "Accept": "application/json"
+        }
+      },
+      "extra": {
+        "transformName": "/ASI/GoogleWorkspace/OneDetectionPerRow"
+      },
+      "response": {
+        "eventsJsonPaths": [
+          "$.items"
+        ]
+      },
+      "paging": {
+        "pagingType": "NextPageToken",
+        "nextPageTokenJsonPath": "$.nextPageToken",
+        "nextPageParaName": "pageToken"
+      },
+      "addOnAttributes": {
+        "friendlyName": "[[parameters('friendlyName')]",
+        "dataType": "Mobile"
+      }
+    }
+  },
+  {
+    "type": "Microsoft.SecurityInsights/dataConnectors",
+    "apiVersion": "2024-09-01",
+    "name": "[[concat('parameters('workspace')', '/Microsoft.SecurityInsights/','GoogleWorkspaceRules' , uniqueString(parameters('friendlyName')) )]",
+    "kind": "RestApiPoller",
+    "location": "{{location}}",
+    "properties": {
+      "connectorDefinitionName": "GoogleWorkspaceCCPDefinition",
+      "dataType": "GoogleWorkspaceReports",
+      "dcrConfig": {
+        "streamName": "SENTINEL_GOOGLEWORKSPACEREPORTS",
+        "dataCollectionEndpoint": "{{dataCollectionEndpoint}}",
+        "dataCollectionRuleImmutableId": "{{dataCollectionRuleImmutableId}}"
+      },
+      "auth": {
+        "type": "OAuth2",
+        "IsClientSecretInHeader": "true",
+        "IsCredentialsInHeaders": "true",
+        "ClientSecret": "{{clientSecret}}",
+        "ClientId": "{{clientId}}",
+        "AuthorizationCode": "{{authorizationCode}}",
+        "GrantType": "authorization_code",
+        "TokenEndpoint": "https://accounts.google.com/o/oauth2/token",
+        "TokenEndpointHeaders": {
+          "Accept": "application/json",
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        "AuthorizationEndpoint": "https://accounts.google.com/o/oauth2/auth",
+        "TokenEndpointQueryParameters": {
+          "prompt": "consent",
+          "access_type": "offline"
+        },
+        "scope": "https://www.googleapis.com/auth/admin.reports.audit.readonly",
+        "redirectUri": "{{redirectUri}}"
+      },
+      "request": {
+        "apiEndpoint": "https://admin.googleapis.com/admin/reports/v1/activity/users/all/applications/rules",
+        "httpMethod": "GET",
+        "queryParameters": {
+          "maxResults": 1000,
+          "startTime": "{_QueryWindowStartTime}",
+          "endTime": "{_QueryWindowEndTime}"
+        },
+        "queryWindowInMin": 10,
+        "queryTimeFormat": "yyyy-MM-ddTHH:mm:ss.000000+00:00",
+        "startTimeAttributeName": "startTime",
+        "endTimeAttributeName": "endTime",
+        "rateLimitQps": 10,
+        "retryCount": 3,
+        "timeoutInSeconds": 60,
+        "headers": {
+          "Accept": "application/json"
+        }
+      },
+      "extra": {
+        "transformName": "/ASI/GoogleWorkspace/OneDetectionPerRow"
+      },
+      "response": {
+        "eventsJsonPaths": [
+          "$.items"
+        ]
+      },
+      "paging": {
+        "pagingType": "NextPageToken",
+        "nextPageTokenJsonPath": "$.nextPageToken",
+        "nextPageParaName": "pageToken"
+      },
+      "addOnAttributes": {
+        "friendlyName": "[[parameters('friendlyName')]",
+        "dataType": "Rules"
+      }
+    }
+  },
+  {
+    "type": "Microsoft.SecurityInsights/dataConnectors",
+    "apiVersion": "2024-09-01",
+    "name": "[[concat('parameters('workspace')', '/Microsoft.SecurityInsights/','GoogleWorkspaceSAML' , uniqueString(parameters('friendlyName')) )]",
+    "kind": "RestApiPoller",
+    "location": "{{location}}",
+    "properties": {
+      "connectorDefinitionName": "GoogleWorkspaceCCPDefinition",
+      "dataType": "GoogleWorkspaceReports",
+      "dcrConfig": {
+        "streamName": "SENTINEL_GOOGLEWORKSPACEREPORTS",
+        "dataCollectionEndpoint": "{{dataCollectionEndpoint}}",
+        "dataCollectionRuleImmutableId": "{{dataCollectionRuleImmutableId}}"
+      },
+      "auth": {
+        "type": "OAuth2",
+        "IsClientSecretInHeader": "true",
+        "IsCredentialsInHeaders": "true",
+        "ClientSecret": "{{clientSecret}}",
+        "ClientId": "{{clientId}}",
+        "AuthorizationCode": "{{authorizationCode}}",
+        "GrantType": "authorization_code",
+        "TokenEndpoint": "https://accounts.google.com/o/oauth2/token",
+        "TokenEndpointHeaders": {
+          "Accept": "application/json",
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        "AuthorizationEndpoint": "https://accounts.google.com/o/oauth2/auth",
+        "TokenEndpointQueryParameters": {
+          "prompt": "consent",
+          "access_type": "offline"
+        },
+        "scope": "https://www.googleapis.com/auth/admin.reports.audit.readonly",
+        "redirectUri": "{{redirectUri}}"
+      },
+      "request": {
+        "apiEndpoint": "https://admin.googleapis.com/admin/reports/v1/activity/users/all/applications/saml",
+        "httpMethod": "GET",
+        "queryParameters": {
+          "maxResults": 1000,
+          "startTime": "{_QueryWindowStartTime}",
+          "endTime": "{_QueryWindowEndTime}"
+        },
+        "queryWindowInMin": 10,
+        "queryTimeFormat": "yyyy-MM-ddTHH:mm:ss.000000+00:00",
+        "startTimeAttributeName": "startTime",
+        "endTimeAttributeName": "endTime",
+        "rateLimitQps": 10,
+        "retryCount": 3,
+        "timeoutInSeconds": 60,
+        "headers": {
+          "Accept": "application/json"
+        }
+      },
+      "extra": {
+        "transformName": "/ASI/GoogleWorkspace/OneDetectionPerRow"
+      },
+      "response": {
+        "eventsJsonPaths": [
+          "$.items"
+        ]
+      },
+      "paging": {
+        "pagingType": "NextPageToken",
+        "nextPageTokenJsonPath": "$.nextPageToken",
+        "nextPageParaName": "pageToken"
+      },
+      "addOnAttributes": {
+        "friendlyName": "[[parameters('friendlyName')]",
+        "dataType": "SAML"
+      }
+    }
+  },
+  {
+    "type": "Microsoft.SecurityInsights/dataConnectors",
+    "apiVersion": "2024-09-01",
+    "name": "[[concat('parameters('workspace')', '/Microsoft.SecurityInsights/','GoogleWorkspaceToken' , uniqueString(parameters('friendlyName')) )]",
+    "kind": "RestApiPoller",
+    "location": "{{location}}",
+    "properties": {
+      "connectorDefinitionName": "GoogleWorkspaceCCPDefinition",
+      "dataType": "GoogleWorkspaceReports",
+      "dcrConfig": {
+        "streamName": "SENTINEL_GOOGLEWORKSPACEREPORTS",
+        "dataCollectionEndpoint": "{{dataCollectionEndpoint}}",
+        "dataCollectionRuleImmutableId": "{{dataCollectionRuleImmutableId}}"
+      },
+      "auth": {
+        "type": "OAuth2",
+        "IsClientSecretInHeader": "true",
+        "IsCredentialsInHeaders": "true",
+        "ClientSecret": "{{clientSecret}}",
+        "ClientId": "{{clientId}}",
+        "AuthorizationCode": "{{authorizationCode}}",
+        "GrantType": "authorization_code",
+        "TokenEndpoint": "https://accounts.google.com/o/oauth2/token",
+        "TokenEndpointHeaders": {
+          "Accept": "application/json",
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        "AuthorizationEndpoint": "https://accounts.google.com/o/oauth2/auth",
+        "TokenEndpointQueryParameters": {
+          "prompt": "consent",
+          "access_type": "offline"
+        },
+        "scope": "https://www.googleapis.com/auth/admin.reports.audit.readonly",
+        "redirectUri": "{{redirectUri}}"
+      },
+      "request": {
+        "apiEndpoint": "https://admin.googleapis.com/admin/reports/v1/activity/users/all/applications/token",
+        "httpMethod": "GET",
+        "queryParameters": {
+          "maxResults": 1000,
+          "startTime": "{_QueryWindowStartTime}",
+          "endTime": "{_QueryWindowEndTime}"
+        },
+        "queryWindowInMin": 10,
+        "queryTimeFormat": "yyyy-MM-ddTHH:mm:ss.000000+00:00",
+        "startTimeAttributeName": "startTime",
+        "endTimeAttributeName": "endTime",
+        "rateLimitQps": 10,
+        "retryCount": 3,
+        "timeoutInSeconds": 60,
+        "headers": {
+          "Accept": "application/json"
+        }
+      },
+      "extra": {
+        "transformName": "/ASI/GoogleWorkspace/OneDetectionPerRow"
+      },
+      "response": {
+        "eventsJsonPaths": [
+          "$.items"
+        ]
+      },
+      "paging": {
+        "pagingType": "NextPageToken",
+        "nextPageTokenJsonPath": "$.nextPageToken",
+        "nextPageParaName": "pageToken"
+      },
+      "addOnAttributes": {
+        "friendlyName": "[[parameters('friendlyName')]",
+        "dataType": "Token"
+      }
+    }
+  },
+  {
+    "type": "Microsoft.SecurityInsights/dataConnectors",
+    "apiVersion": "2024-09-01",
+    "name": "[[concat('parameters('workspace')', '/Microsoft.SecurityInsights/','GoogleWorkspaceUserAccounts' , uniqueString(parameters('friendlyName')) )]",
+    "kind": "RestApiPoller",
+    "location": "{{location}}",
+    "properties": {
+      "connectorDefinitionName": "GoogleWorkspaceCCPDefinition",
+      "dataType": "GoogleWorkspaceReports",
+      "dcrConfig": {
+        "streamName": "SENTINEL_GOOGLEWORKSPACEREPORTS",
+        "dataCollectionEndpoint": "{{dataCollectionEndpoint}}",
+        "dataCollectionRuleImmutableId": "{{dataCollectionRuleImmutableId}}"
+      },
+      "auth": {
+        "type": "OAuth2",
+        "IsClientSecretInHeader": "true",
+        "IsCredentialsInHeaders": "true",
+        "ClientSecret": "{{clientSecret}}",
+        "ClientId": "{{clientId}}",
+        "AuthorizationCode": "{{authorizationCode}}",
+        "GrantType": "authorization_code",
+        "TokenEndpoint": "https://accounts.google.com/o/oauth2/token",
+        "TokenEndpointHeaders": {
+          "Accept": "application/json",
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        "AuthorizationEndpoint": "https://accounts.google.com/o/oauth2/auth",
+        "TokenEndpointQueryParameters": {
+          "prompt": "consent",
+          "access_type": "offline"
+        },
+        "scope": "https://www.googleapis.com/auth/admin.reports.audit.readonly",
+        "redirectUri": "{{redirectUri}}"
+      },
+      "request": {
+        "apiEndpoint": "https://admin.googleapis.com/admin/reports/v1/activity/users/all/applications/user_accounts",
+        "httpMethod": "GET",
+        "queryParameters": {
+          "maxResults": 1000,
+          "startTime": "{_QueryWindowStartTime}",
+          "endTime": "{_QueryWindowEndTime}"
+        },
+        "queryWindowInMin": 180,
+        "queryTimeFormat": "yyyy-MM-ddTHH:mm:ss.000000+00:00",
+        "startTimeAttributeName": "startTime",
+        "endTimeAttributeName": "endTime",
+        "rateLimitQps": 10,
+        "retryCount": 3,
+        "timeoutInSeconds": 60,
+        "headers": {
+          "Accept": "application/json"
+        }
+      },
+      "response": {
+        "eventsJsonPaths": [
+          "$.items"
+        ]
+      },
+      "extra": {
+        "transformName": "/ASI/GoogleWorkspace/OneDetectionPerRow"
+      },
+      "paging": {
+        "pagingType": "NextPageToken",
+        "nextPageTokenJsonPath": "$.nextPageToken",
+        "nextPageParaName": "pageToken"
+      },
+      "addOnAttributes": {
+        "friendlyName": "[[parameters('friendlyName')]",
+        "dataType": "User Accounts"
+      }
+    }
+  },
+  {
+    "type": "Microsoft.SecurityInsights/dataConnectors",
+    "apiVersion": "2024-09-01",
+    "name": "[[concat('parameters('workspace')', '/Microsoft.SecurityInsights/','GoogleWorkspaceContextAwareAccess' , uniqueString(parameters('friendlyName')) )]",
+    "kind": "RestApiPoller",
+    "location": "{{location}}",
+    "properties": {
+      "connectorDefinitionName": "GoogleWorkspaceCCPDefinition",
+      "dataType": "GoogleWorkspaceReports",
+      "dcrConfig": {
+        "streamName": "SENTINEL_GOOGLEWORKSPACEREPORTS",
+        "dataCollectionEndpoint": "{{dataCollectionEndpoint}}",
+        "dataCollectionRuleImmutableId": "{{dataCollectionRuleImmutableId}}"
+      },
+      "auth": {
+        "type": "OAuth2",
+        "IsClientSecretInHeader": "true",
+        "IsCredentialsInHeaders": "true",
+        "ClientSecret": "{{clientSecret}}",
+        "ClientId": "{{clientId}}",
+        "AuthorizationCode": "{{authorizationCode}}",
+        "GrantType": "authorization_code",
+        "TokenEndpoint": "https://accounts.google.com/o/oauth2/token",
+        "TokenEndpointHeaders": {
+          "Accept": "application/json",
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        "AuthorizationEndpoint": "https://accounts.google.com/o/oauth2/auth",
+        "TokenEndpointQueryParameters": {
+          "prompt": "consent",
+          "access_type": "offline"
+        },
+        "scope": "https://www.googleapis.com/auth/admin.reports.audit.readonly",
+        "redirectUri": "{{redirectUri}}"
+      },
+      "request": {
+        "apiEndpoint": "https://admin.googleapis.com/admin/reports/v1/activity/users/all/applications/context_aware_access",
+        "httpMethod": "GET",
+        "queryParameters": {
+          "maxResults": 1000,
+          "startTime": "{_QueryWindowStartTime}",
+          "endTime": "{_QueryWindowEndTime}"
+        },
+        "queryWindowInMin": 10,
+        "queryTimeFormat": "yyyy-MM-ddTHH:mm:ss.000000+00:00",
+        "startTimeAttributeName": "startTime",
+        "endTimeAttributeName": "endTime",
+        "rateLimitQps": 10,
+        "retryCount": 3,
+        "timeoutInSeconds": 60,
+        "headers": {
+          "Accept": "application/json"
+        }
+      },
+      "extra": {
+        "transformName": "/ASI/GoogleWorkspace/OneDetectionPerRow"
+      },
+      "response": {
+        "eventsJsonPaths": [
+          "$.items"
+        ]
+      },
+      "paging": {
+        "pagingType": "NextPageToken",
+        "nextPageTokenJsonPath": "$.nextPageToken",
+        "nextPageParaName": "pageToken"
+      },
+      "addOnAttributes": {
+        "friendlyName": "[[parameters('friendlyName')]",
+        "dataType": "Context-Aware Access"
+      }
+    }
+  },
+  {
+    "type": "Microsoft.SecurityInsights/dataConnectors",
+    "apiVersion": "2024-09-01",
+    "name": "[[concat('parameters('workspace')', '/Microsoft.SecurityInsights/','GoogleWorkspaceChrome' , uniqueString(parameters('friendlyName')) )]",
+    "kind": "RestApiPoller",
+    "location": "{{location}}",
+    "properties": {
+      "connectorDefinitionName": "GoogleWorkspaceCCPDefinition",
+      "dataType": "GoogleWorkspaceReports",
+      "dcrConfig": {
+        "streamName": "SENTINEL_GOOGLEWORKSPACEREPORTS",
+        "dataCollectionEndpoint": "{{dataCollectionEndpoint}}",
+        "dataCollectionRuleImmutableId": "{{dataCollectionRuleImmutableId}}"
+      },
+      "auth": {
+        "type": "OAuth2",
+        "IsClientSecretInHeader": "true",
+        "IsCredentialsInHeaders": "true",
+        "ClientSecret": "{{clientSecret}}",
+        "ClientId": "{{clientId}}",
+        "AuthorizationCode": "{{authorizationCode}}",
+        "GrantType": "authorization_code",
+        "TokenEndpoint": "https://accounts.google.com/o/oauth2/token",
+        "TokenEndpointHeaders": {
+          "Accept": "application/json",
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        "AuthorizationEndpoint": "https://accounts.google.com/o/oauth2/auth",
+        "TokenEndpointQueryParameters": {
+          "prompt": "consent",
+          "access_type": "offline"
+        },
+        "scope": "https://www.googleapis.com/auth/admin.reports.audit.readonly",
+        "redirectUri": "{{redirectUri}}"
+      },
+      "request": {
+        "apiEndpoint": "https://admin.googleapis.com/admin/reports/v1/activity/users/all/applications/chrome",
+        "httpMethod": "GET",
+        "queryParameters": {
+          "maxResults": 1000,
+          "startTime": "{_QueryWindowStartTime}",
+          "endTime": "{_QueryWindowEndTime}"
+        },
+        "queryWindowInMin": 10,
+        "queryTimeFormat": "yyyy-MM-ddTHH:mm:ss.000000+00:00",
+        "startTimeAttributeName": "startTime",
+        "endTimeAttributeName": "endTime",
+        "rateLimitQps": 10,
+        "retryCount": 3,
+        "timeoutInSeconds": 60,
+        "headers": {
+          "Accept": "application/json"
+        }
+      },
+      "extra": {
+        "transformName": "/ASI/GoogleWorkspace/OneDetectionPerRow"
+      },
+      "response": {
+        "eventsJsonPaths": [
+          "$.items"
+        ]
+      },
+      "paging": {
+        "pagingType": "NextPageToken",
+        "nextPageTokenJsonPath": "$.nextPageToken",
+        "nextPageParaName": "pageToken"
+      },
+      "addOnAttributes": {
+        "friendlyName": "[[parameters('friendlyName')]",
+        "dataType": "Chrome"
+      }
+    }
+  },
+  {
+    "type": "Microsoft.SecurityInsights/dataConnectors",
+    "apiVersion": "2024-09-01",
+    "name": "[[concat('parameters('workspace')', '/Microsoft.SecurityInsights/','GoogleWorkspaceDataStudio' , uniqueString(parameters('friendlyName')) )]",
+    "kind": "RestApiPoller",
+    "location": "{{location}}",
+    "properties": {
+      "connectorDefinitionName": "GoogleWorkspaceCCPDefinition",
+      "dataType": "GoogleWorkspaceReports",
+      "dcrConfig": {
+        "streamName": "SENTINEL_GOOGLEWORKSPACEREPORTS",
+        "dataCollectionEndpoint": "{{dataCollectionEndpoint}}",
+        "dataCollectionRuleImmutableId": "{{dataCollectionRuleImmutableId}}"
+      },
+      "auth": {
+        "type": "OAuth2",
+        "IsClientSecretInHeader": "true",
+        "IsCredentialsInHeaders": "true",
+        "ClientSecret": "{{clientSecret}}",
+        "ClientId": "{{clientId}}",
+        "AuthorizationCode": "{{authorizationCode}}",
+        "GrantType": "authorization_code",
+        "TokenEndpoint": "https://accounts.google.com/o/oauth2/token",
+        "TokenEndpointHeaders": {
+          "Accept": "application/json",
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        "AuthorizationEndpoint": "https://accounts.google.com/o/oauth2/auth",
+        "TokenEndpointQueryParameters": {
+          "prompt": "consent",
+          "access_type": "offline"
+        },
+        "scope": "https://www.googleapis.com/auth/admin.reports.audit.readonly",
+        "redirectUri": "{{redirectUri}}"
+      },
+      "request": {
+        "apiEndpoint": "https://admin.googleapis.com/admin/reports/v1/activity/users/all/applications/data_studio",
+        "httpMethod": "GET",
+        "queryParameters": {
+          "maxResults": 1000,
+          "startTime": "{_QueryWindowStartTime}",
+          "endTime": "{_QueryWindowEndTime}"
+        },
+        "queryWindowInMin": 10,
+        "queryTimeFormat": "yyyy-MM-ddTHH:mm:ss.000000+00:00",
+        "startTimeAttributeName": "startTime",
+        "endTimeAttributeName": "endTime",
+        "rateLimitQps": 10,
+        "retryCount": 3,
+        "timeoutInSeconds": 60,
+        "headers": {
+          "Accept": "application/json"
+        }
+      },
+      "response": {
+        "eventsJsonPaths": [
+          "$.items"
+        ]
+      },
+      "extra": {
+        "transformName": "/ASI/GoogleWorkspace/OneDetectionPerRow"
+      },
+      "paging": {
+        "pagingType": "NextPageToken",
+        "nextPageTokenJsonPath": "$.nextPageToken",
+        "nextPageParaName": "pageToken"
+      },
+      "addOnAttributes": {
+        "friendlyName": "[[parameters('friendlyName')]",
+        "dataType": "Data Studio"
+      }
+    }
+  },
+  {
+    "type": "Microsoft.SecurityInsights/dataConnectors",
+    "apiVersion": "2024-09-01",
+    "name": "[[concat('parameters('workspace')', '/Microsoft.SecurityInsights/','GoogleWorkspaceGmail' , uniqueString(parameters('friendlyName')) )]",
+    "kind": "RestApiPoller",
+    "location": "{{location}}",
+    "properties": {
+      "connectorDefinitionName": "GoogleWorkspaceCCPDefinition",
+      "dataType": "GoogleWorkspaceReports",
+      "dcrConfig": {
+        "streamName": "SENTINEL_GOOGLEWORKSPACEREPORTS",
+        "dataCollectionEndpoint": "{{dataCollectionEndpoint}}",
+        "dataCollectionRuleImmutableId": "{{dataCollectionRuleImmutableId}}"
+      },
+      "auth": {
+        "type": "OAuth2",
+        "IsClientSecretInHeader": "true",
+        "IsCredentialsInHeaders": "true",
+        "ClientSecret": "{{clientSecret}}",
+        "ClientId": "{{clientId}}",
+        "AuthorizationCode": "{{authorizationCode}}",
+        "GrantType": "authorization_code",
+        "TokenEndpoint": "https://accounts.google.com/o/oauth2/token",
+        "TokenEndpointHeaders": {
+          "Accept": "application/json",
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        "AuthorizationEndpoint": "https://accounts.google.com/o/oauth2/auth",
+        "TokenEndpointQueryParameters": {
+          "prompt": "consent",
+          "access_type": "offline"
+        },
+        "scope": "https://www.googleapis.com/auth/admin.reports.audit.readonly",
+        "redirectUri": "{{redirectUri}}"
+      },
+      "request": {
+        "apiEndpoint": "https://admin.googleapis.com/admin/reports/v1/activity/users/all/applications/gmail",
+        "httpMethod": "GET",
+        "queryParameters": {
+          "maxResults": 1000,
+          "startTime": "{_QueryWindowStartTime}",
+          "endTime": "{_QueryWindowEndTime}"
+        },
+        "queryWindowInMin": 10,
+        "queryWindowDelayInMin": 10,
+        "queryTimeFormat": "yyyy-MM-ddTHH:mm:ss.000000+00:00",
+        "startTimeAttributeName": "startTime",
+        "endTimeAttributeName": "endTime",
+        "rateLimitQps": 10,
+        "retryCount": 3,
+        "timeoutInSeconds": 60,
+        "headers": {
+          "Accept": "application/json"
+        }
+      },
+      "extra": {
+        "transformName": "/ASI/GoogleWorkspace/OneDetectionPerRow"
+      },
+      "response": {
+        "eventsJsonPaths": [
+          "$.items"
+        ]
+      },
+      "paging": {
+        "pagingType": "NextPageToken",
+        "nextPageTokenJsonPath": "$.nextPageToken",
+        "nextPageParaName": "pageToken"
+      },
+      "addOnAttributes": {
+        "friendlyName": "[[parameters('friendlyName')]",
+        "dataType": "Gmail"
+      }
+    }
+  },
+  {
+    "type": "Microsoft.SecurityInsights/dataConnectors",
+    "apiVersion": "2024-09-01",
+    "name": "[[concat('parameters('workspace')', '/Microsoft.SecurityInsights/','GoogleWorkspaceKeep' , uniqueString(parameters('friendlyName')) )]",
+    "kind": "RestApiPoller",
+    "location": "{{location}}",
+    "properties": {
+      "connectorDefinitionName": "GoogleWorkspaceCCPDefinition",
+      "dataType": "GoogleWorkspaceReports",
+      "dcrConfig": {
+        "streamName": "SENTINEL_GOOGLEWORKSPACEREPORTS",
+        "dataCollectionEndpoint": "{{dataCollectionEndpoint}}",
+        "dataCollectionRuleImmutableId": "{{dataCollectionRuleImmutableId}}"
+      },
+      "auth": {
+        "type": "OAuth2",
+        "IsClientSecretInHeader": "true",
+        "IsCredentialsInHeaders": "true",
+        "ClientSecret": "{{clientSecret}}",
+        "ClientId": "{{clientId}}",
+        "AuthorizationCode": "{{authorizationCode}}",
+        "GrantType": "authorization_code",
+        "TokenEndpoint": "https://accounts.google.com/o/oauth2/token",
+        "TokenEndpointHeaders": {
+          "Accept": "application/json",
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        "AuthorizationEndpoint": "https://accounts.google.com/o/oauth2/auth",
+        "TokenEndpointQueryParameters": {
+          "prompt": "consent",
+          "access_type": "offline"
+        },
+        "scope": "https://www.googleapis.com/auth/admin.reports.audit.readonly",
+        "redirectUri": "{{redirectUri}}"
+      },
+      "request": {
+        "apiEndpoint": "https://admin.googleapis.com/admin/reports/v1/activity/users/all/applications/keep",
+        "httpMethod": "GET",
+        "queryParameters": {
+          "maxResults": 1000,
+          "startTime": "{_QueryWindowStartTime}",
+          "endTime": "{_QueryWindowEndTime}"
+        },
+        "queryWindowInMin": 10,
+        "queryTimeFormat": "yyyy-MM-ddTHH:mm:ss.000000+00:00",
+        "startTimeAttributeName": "startTime",
+        "endTimeAttributeName": "endTime",
+        "rateLimitQps": 10,
+        "retryCount": 3,
+        "timeoutInSeconds": 60,
+        "headers": {
+          "Accept": "application/json"
+        }
+      },
+      "extra": {
+        "transformName": "/ASI/GoogleWorkspace/OneDetectionPerRow"
+      },
+      "response": {
+        "eventsJsonPaths": [
+          "$.items"
+        ]
+      },
+      "paging": {
+        "pagingType": "NextPageToken",
+        "nextPageTokenJsonPath": "$.nextPageToken",
+        "nextPageParaName": "pageToken"
+      },
+      "addOnAttributes": {
+        "friendlyName": "[[parameters('friendlyName')]",
+        "dataType": "Keep"
+      }
+    }
+  }
+]

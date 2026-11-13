@@ -1,0 +1,25 @@
+id: 1e41e1fd-e966-5128-b4f3-944b8706d89c
+Function:
+  Title: corelight_tds parser for Corelight
+  Version: '2.0.0'
+  LastUpdated: '2026-08-17'
+Category: Microsoft Sentinel Parser
+FunctionName: corelight_tds
+FunctionAlias: corelight_tds
+FunctionQuery: |+
+  let dummy_table = datatable(TimeGenerated: datetime) [];
+  let corelight_tds = view () {
+      union isfuzzy=true Corelight_v3_tds_CL, dummy_table
+        | extend
+            _path=path,
+            _system_name=system_name,
+            _write_ts=write_ts
+      | extend
+          EventVendor="Corelight",
+          EventProduct="CorelightSensor",
+          EventType="tds",
+          ts=TimeGenerated
+  };
+  corelight_tds
+
+...

@@ -1,0 +1,25 @@
+id: 8b09d9fb-51e6-510a-aca5-f118a82dccd8
+Function:
+  Title: corelight_conn_long parser for Corelight
+  Version: '2.0.0'
+  LastUpdated: '2026-08-17'
+Category: Microsoft Sentinel Parser
+FunctionName: corelight_conn_long
+FunctionAlias: corelight_conn_long
+FunctionQuery: |+
+  let dummy_table = datatable(TimeGenerated: datetime) [];
+  let corelight_conn_long = view () {
+      union isfuzzy=true Corelight_v3_conn_long_CL, dummy_table
+        | extend
+            _path=path,
+            _system_name=system_name,
+            _write_ts=write_ts
+      | extend
+          EventVendor="Corelight",
+          EventProduct="CorelightSensor",
+          EventType="conn_long",
+          ts=TimeGenerated
+  };
+  corelight_conn_long
+
+...

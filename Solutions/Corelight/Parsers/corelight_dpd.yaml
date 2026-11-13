@@ -1,0 +1,25 @@
+id: 9a79a3ed-8343-511f-997c-a50d3dafdb36
+Function:
+  Title: corelight_dpd parser for Corelight
+  Version: '2.0.0'
+  LastUpdated: '2026-08-17'
+Category: Microsoft Sentinel Parser
+FunctionName: corelight_dpd
+FunctionAlias: corelight_dpd
+FunctionQuery: |+
+  let dummy_table = datatable(TimeGenerated: datetime) [];
+  let corelight_dpd = view () {
+      union isfuzzy=true Corelight_v3_dpd_CL, dummy_table
+        | extend
+            _path=path,
+            _system_name=system_name,
+            _write_ts=write_ts
+      | extend
+          EventVendor="Corelight",
+          EventProduct="CorelightSensor",
+          EventType="dpd",
+          ts=TimeGenerated
+  };
+  corelight_dpd
+
+...

@@ -1,0 +1,144 @@
+{
+  "version": "Notebook/1.0",
+  "items": [
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "WizIssuesV3_CL \n| summarize count() by bin(TimeGenerated, 1h)",
+        "title": "Issues over time",
+        "size": 3,
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "visualization": "linechart"
+      },
+      "name": "Issues over time"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "WizDetectionsV3_CL \n| summarize count() by bin(TimeGenerated, 1h)",
+        "title": "Detections over time",
+        "size": 3,
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "visualization": "linechart"
+      },
+      "name": "Detections over time"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "WizAuditLogsV3_CL \n| summarize count() by bin(TimeGenerated, 1h)",
+        "title": "Audit logs over time",
+        "size": 3,
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "visualization": "linechart"
+      },
+      "name": "Audit logs over time"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "WizIssuesV3_CL \n| summarize arg_max(TimeGenerated, *) by issueId\n| summarize count() by severity",
+        "title": "Issues by severity",
+        "size": 3,
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "visualization": "piechart"
+      },
+      "customWidth": "33",
+      "name": "Issues by severity"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "WizIssuesV3_CL \n| summarize arg_max(TimeGenerated, *) by issueId\n| summarize count() by status",
+        "title": "Issues by status",
+        "size": 3,
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "visualization": "piechart"
+      },
+      "customWidth": "33",
+      "name": "Issues by status"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "WizIssuesV3_CL \n| summarize arg_max(TimeGenerated, *) by issueId\n| summarize count() by tostring(entitySnapshot.cloudPlatform)",
+        "title": "Issues by cloud platform",
+        "size": 3,
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "visualization": "piechart"
+      },
+      "customWidth": "33",
+      "name": "Issues by cloud platform"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "WizDetectionsV3_CL \n| summarize arg_max(TimeGenerated, *) by detectionId\n| summarize count() by severity",
+        "title": "Detections by severity",
+        "size": 3,
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "visualization": "piechart"
+      },
+      "customWidth": "33",
+      "name": "Detections by severity"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "WizDetectionsV3_CL \n| summarize arg_max(TimeGenerated, *) by detectionId\n| summarize count() by tdrSource",
+        "title": "Detections by TDR source",
+        "size": 3,
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "visualization": "piechart"
+      },
+      "customWidth": "33",
+      "name": "Detections by TDR source"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "WizAuditLogsV3_CL \n| summarize arg_max(TimeGenerated, *) by auditlogId\n| summarize count() by action",
+        "title": "Audit logs by action",
+        "size": 3,
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "visualization": "piechart"
+      },
+      "customWidth": "33",
+      "name": "Audit logs by action"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "WizAuditLogsV3_CL \n| summarize arg_max(TimeGenerated, *) by auditlogId\n| summarize count() by status",
+        "title": "Audit logs by status",
+        "size": 3,
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "visualization": "piechart"
+      },
+      "customWidth": "33",
+      "name": "Audit logs by status"
+    }
+  ],
+  "fromTemplateId": "sentinel-WizFindings",
+  "$schema": "https://github.com/Microsoft/Application-Insights-Workbooks/blob/master/schema/workbook.json"
+}

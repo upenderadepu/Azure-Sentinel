@@ -1,0 +1,30 @@
+id: 2dd2143b-6667-4a7a-b04f-98d22caeffac
+name: AWSCloudTrail - Lambda function code updated
+description: |
+  Identifies IAM users updating Lambda function code via UpdateFunctionCode, which may indicate unauthorized code injection or persistence mechanism deployment.
+severity: Medium
+requiredDataConnectors:
+  - connectorId: AWS
+    dataTypes:
+      - AWSCloudTrail
+tactics:
+  - Execution
+  - Persistence
+relevantTechniques:
+  - T1204
+  - T1059.004
+  - T1053.007
+query: |
+    AWSCloudTrail
+    | where EventName startswith 'UpdateFunctionCode' and EventSource == "lambda.amazonaws.com" and UserIdentityType =='IAMUser' and isempty(ErrorCode) and isempty(ErrorMessage)
+    | extend UserIdentityUserName = iff(isnotempty(UserIdentityUserName), UserIdentityUserName, tostring(split(UserIdentityArn,'/')[-1]))
+entityMappings:
+  - entityType: Account
+    fieldMappings:
+      - identifier: FullName
+        columnName: UserIdentityUserName
+  - entityType: IP
+    fieldMappings:
+      - identifier: Address
+        columnName: SourceIpAddress
+version: 1.0.0

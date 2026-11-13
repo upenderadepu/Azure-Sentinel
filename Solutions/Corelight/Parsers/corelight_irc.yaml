@@ -1,0 +1,25 @@
+id: 981a6c6b-869c-55ed-8504-1004739ee233
+Function:
+  Title: corelight_irc parser for Corelight
+  Version: '2.0.0'
+  LastUpdated: '2026-08-17'
+Category: Microsoft Sentinel Parser
+FunctionName: corelight_irc
+FunctionAlias: corelight_irc
+FunctionQuery: |+
+  let dummy_table = datatable(TimeGenerated: datetime) [];
+  let corelight_irc = view () {
+      union isfuzzy=true Corelight_v3_irc_CL, dummy_table
+        | extend
+            _path=path,
+            _system_name=system_name,
+            _write_ts=write_ts
+      | extend
+          EventVendor="Corelight",
+          EventProduct="CorelightSensor",
+          EventType="irc",
+          ts=TimeGenerated
+  };
+  corelight_irc
+
+...

@@ -1,0 +1,25 @@
+id: 2b983664-516b-5b35-b94b-9264bff1b9b7
+Function:
+  Title: corelight_iso_cotp parser for Corelight
+  Version: '2.0.0'
+  LastUpdated: '2026-08-17'
+Category: Microsoft Sentinel Parser
+FunctionName: corelight_iso_cotp
+FunctionAlias: corelight_iso_cotp
+FunctionQuery: |+
+  let dummy_table = datatable(TimeGenerated: datetime) [];
+  let corelight_iso_cotp = view () {
+      union isfuzzy=true Corelight_v3_iso_cotp_CL, dummy_table
+        | extend
+            _path=path,
+            _system_name=system_name,
+            _write_ts=write_ts
+      | extend
+          EventVendor="Corelight",
+          EventProduct="CorelightSensor",
+          EventType="iso_cotp",
+          ts=TimeGenerated
+  };
+  corelight_iso_cotp
+
+...

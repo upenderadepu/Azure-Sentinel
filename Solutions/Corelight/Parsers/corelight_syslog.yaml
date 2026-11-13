@@ -1,0 +1,25 @@
+id: 4b5c9af1-86a4-527f-99b2-af8af7392e77
+Function:
+  Title: corelight_syslog parser for Corelight
+  Version: '2.0.0'
+  LastUpdated: '2026-08-17'
+Category: Microsoft Sentinel Parser
+FunctionName: corelight_syslog
+FunctionAlias: corelight_syslog
+FunctionQuery: |+
+  let dummy_table = datatable(TimeGenerated: datetime) [];
+  let corelight_syslog = view () {
+      union isfuzzy=true Corelight_v3_syslog_CL, dummy_table
+        | extend
+            _path=path,
+            _system_name=system_name,
+            _write_ts=write_ts
+      | extend
+          EventVendor="Corelight",
+          EventProduct="CorelightSensor",
+          EventType="syslog",
+          ts=TimeGenerated
+  };
+  corelight_syslog
+
+...

@@ -4,10 +4,12 @@
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
 # User-specific files
+/Tools/ignored/
 *.suo
 *.user
 *.userosscache
 *.sln.docstates
+*.lscache
 *.lock
 .bundle/
 
@@ -25,6 +27,9 @@ bld/
 [Bb]in/
 [Oo]bj/
 [Ll]og/
+
+# Execution results
+[Ll]ogs/
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/
@@ -105,7 +110,6 @@ ipch/
 *.psess
 *.vsp
 *.vspx
-*.sap
 
 # Visual Studio Trace Files
 *.e2e
@@ -223,7 +227,7 @@ ClientBin/
 *.publishsettings
 orleans.codegen.cs
 
-# Including strong name files can present a security risk 
+# Including strong name files can present a security risk
 # (https://github.com/github/gitignore/pull/2483#issue-259490424)
 #*.snk
 
@@ -319,7 +323,7 @@ __pycache__/
 # OpenCover UI analysis results
 OpenCover/
 
-# Azure Stream Analytics local run output 
+# Azure Stream Analytics local run output
 ASALocalRun/
 
 # MSBuild Binary and Structured Log
@@ -328,12 +332,51 @@ ASALocalRun/
 # NVidia Nsight GPU debugger configuration file
 *.nvuser
 
-# MFractors (Xamarin productivity tool) working folder 
+# MFractors (Xamarin productivity tool) working folder
 .mfractor/
 **/.ipynb_checkpoints/**
 
 # No need to store DeployedQueries.json - it is auto generated anyway
 Hunting Queries/DeployedQueries.json
 
+# Local Sentinel-to-XDR orchestration state
+Solutions/**/XDR Detections/workflow-state.json
+
 #Mac OSx
 .DS_Store
+!*Microsoft.Azure.Sentinel.KustoServices.*.nupkg
+
+# TypeScript build output
+.script/**/*.js
+.script/**/*.js.map
+.script/**/*.d.ts
+.script/**/*.d.ts.map
+/.vscode
+
+# cspell
+**/cspell-results.json
+
+
+.arm-ttk
+
+
+# Local-only helper scripts (not for upstream submission)
+.local-helpers/
+
+# Generated migration, validation, deployment, and parity evidence.
+/Reports/
+
+# Solution-local runtime logs, state, configuration, and evidence remain private.
+/Solutions/**/Logs/
+/Solutions/**/Evidence/*.raw.json
+/Solutions/**/Evidence/receipts/*.raw.json
+/Solutions/**/Evidence/qualification-runtime-state.json
+# Ignore only per-solution runtime configuration; keep the shared template tracked.
+/Solutions/**/.env
+!/Tools/SentinelToXDRMigration/.env.example
+
+# Local generated packaging workspaces.
+**/_ws/
+
+# Generated Custom Logs ingestion result files.
+Tools/CustomLogsIngestion-DCE-DCR/src/CustomlogsIngestion_*.csv

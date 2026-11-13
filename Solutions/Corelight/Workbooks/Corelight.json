@@ -1,0 +1,2180 @@
+{
+  "version": "Notebook/1.0",
+  "items": [
+    {
+      "type": 1,
+      "content": {
+        "json": ">**NOTE:** This workbook depends on a parser based on a Kusto Function to work as expected [**Corelight**](https://aka.ms/sentinel-Corelight-parser) which is deployed with the Microsoft Sentinel Solution."
+      },
+      "name": "text - 23"
+    },
+    {
+      "type": 9,
+      "content": {
+        "version": "KqlParameterItem/1.0",
+        "parameters": [
+          {
+            "id": "c64d5d3d-90c6-484a-ab88-c70652b75b6e",
+            "version": "KqlParameterItem/1.0",
+            "name": "GlobalTimeRestriction",
+            "label": "Global Time Restriction",
+            "type": 4,
+            "description": "Select Time Range",
+            "isRequired": true,
+            "typeSettings": {
+              "selectableValues": [
+                {
+                  "durationMs": 300000
+                },
+                {
+                  "durationMs": 900000
+                },
+                {
+                  "durationMs": 1800000
+                },
+                {
+                  "durationMs": 3600000
+                },
+                {
+                  "durationMs": 14400000
+                },
+                {
+                  "durationMs": 43200000
+                },
+                {
+                  "durationMs": 86400000
+                },
+                {
+                  "durationMs": 172800000
+                },
+                {
+                  "durationMs": 259200000
+                },
+                {
+                  "durationMs": 604800000
+                },
+                {
+                  "durationMs": 1209600000
+                },
+                {
+                  "durationMs": 2419200000
+                },
+                {
+                  "durationMs": 2592000000
+                },
+                {
+                  "durationMs": 5184000000
+                },
+                {
+                  "durationMs": 7776000000
+                }
+              ],
+              "allowCustom": true
+            },
+            "timeContext": {
+              "durationMs": 86400000
+            },
+            "value": {
+              "durationMs": 86400000
+            }
+          },
+          {
+            "id": "a076210e-a47c-43c2-97e1-1f663fedbd01",
+            "version": "KqlParameterItem/1.0",
+            "name": "Sensor",
+            "label": "Corelight Sensor",
+            "type": 2,
+            "description": "Select Corelight Sensor",
+            "isRequired": true,
+            "multiSelect": true,
+            "quote": "'",
+            "delimiter": ",",
+            "query": "corelight_conn\n| distinct sensor_name\n| sort by sensor_name",
+            "typeSettings": {
+              "additionalResourceOptions": [
+                "value::all"
+              ],
+              "selectAllValue": "*",
+              "showDefault": false
+            },
+            "timeContext": {
+              "durationMs": 0
+            },
+            "timeContextFromParameter": "GlobalTimeRestriction",
+            "defaultValue": "value::all",
+            "queryType": 0,
+            "resourceType": "microsoft.operationalinsights/workspaces",
+            "value": [
+              "value::all"
+            ]
+          }
+        ],
+        "style": "pills",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces"
+      },
+      "name": "parameters - 1"
+    },
+    {
+      "type": 11,
+      "content": {
+        "version": "LinkItem/1.0",
+        "style": "tabs",
+        "tabStyle": "bigger",
+        "links": [
+          {
+            "id": "2e4f43b5-1def-42b3-bee5-d84912ae6115",
+            "cellValue": "Tab",
+            "linkTarget": "parameter",
+            "linkLabel": "Corelight Main Dashboard",
+            "subTarget": "corelight_main_dashboard",
+            "preText": "Data Explorer",
+            "style": "link"
+          },
+          {
+            "id": "0b72c376-8bd9-4896-a3b3-8994f028e1b4",
+            "cellValue": "Tab",
+            "linkTarget": "parameter",
+            "linkLabel": "Security Posture",
+            "subTarget": "security_posture",
+            "style": "link"
+          }
+        ]
+      },
+      "name": "links - 14"
+    },
+    {
+      "type": 12,
+      "content": {
+        "version": "NotebookGroup/1.0",
+        "groupType": "editable",
+        "items": [
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "let dummy_table = datatable(system_name: string, TimeGenerated: datetime, path: string)[];\nunion isfuzzy=true Corelight_v3_*_CL, dummy_table\n| where ('*' in ({Sensor}) or system_name in ({Sensor}))\n| where TimeGenerated {GlobalTimeRestriction}\n|make-series Trend = count() on TimeGenerated from {GlobalTimeRestriction:start} to {GlobalTimeRestriction:end} step {GlobalTimeRestriction:grain} by path;",
+              "size": 0,
+              "showAnalytics": true,
+              "title": "Sensor Events Timechart",
+              "noDataMessage": "No data found.",
+              "showRefreshButton": true,
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "visualization": "areachart"
+            },
+            "customWidth": "50",
+            "conditionalVisibility": {
+              "parameterName": "Tab",
+              "comparison": "isEqualTo",
+              "value": "corelight_main_dashboard"
+            },
+            "name": "Sensor Events Timechart"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "let dummy_table = datatable(system_name: string, TimeGenerated: datetime, path: string)[];\nunion isfuzzy=true Corelight_v3_*_CL, dummy_table\n| where ('*' in ({Sensor}) or system_name in ({Sensor}))\n| where TimeGenerated {GlobalTimeRestriction}\n| summarize Count=count() by path | sort by Count desc",
+              "size": 0,
+              "showAnalytics": true,
+              "title": "Sensor Events Count",
+              "noDataMessage": "No data found.",
+              "showRefreshButton": true,
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "visualization": "categoricalbar"
+            },
+            "customWidth": "50",
+            "conditionalVisibility": {
+              "parameterName": "Tab",
+              "comparison": "isEqualTo",
+              "value": "corelight_main_dashboard"
+            },
+            "name": "Sensor Events Count"
+          }
+        ]
+      },
+      "conditionalVisibility": {
+        "parameterName": "Tab",
+        "comparison": "isEqualTo",
+        "value": "corelight_main_dashboard"
+      },
+      "name": "corelight_main_dashboard_group"
+    },
+    {
+      "type": 12,
+      "content": {
+        "version": "NotebookGroup/1.0",
+        "groupType": "editable",
+        "title": "Events",
+        "items": [
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "let QueryResults = ((corelight_notice\r\n| where ('*' in ({Sensor}) or system_name in ({Sensor}))\r\n//| where note != \"LongConnection::found\" and note != \"SSL::Invalid_Server_Cert\"\r\n//| project-rename Alert = note \r\n| union corelight_suricata_corelight)\r\n| where ('*' in ({Sensor}) or system_name in ({Sensor}))\r\n//| where alert_category != \"Not Suspicious Traffic\" and alert_category != \"Attempted Information Leak\" and alert_category != \"Potentially Bad Traffic\"\r\n//| where path == \"notice\"\r\n//| project-rename Alert = alert_category\r\n| extend\r\n    Category = coalesce(note, alert_category),\r\n    Alert = coalesce(msg, alert_signature),\r\n    Severity = coalesce(todouble(severity_level), todouble(alert_severity), 7.0),\r\n    Type = path\r\n| extend PartitionKey = case(path == \"suricata_corelight\", Alert, Category)\r\n| where (isnotempty(uid) or isnotempty(community_id))\r\n| partition hint.strategy=native by PartitionKey\r\n    (\r\n    top 10 by TimeGenerated\r\n    )\r\n| order by Severity asc, TimeGenerated\r\n// hack to hide empty columns\r\n| evaluate narrow()\r\n| where isnotempty(Value) and Value != \"##(null)\" or Column == \"system_name\"\r\n| evaluate pivot(Column, any(Value), Row)\r\n);\r\nlet QueryCount=QueryResults\r\n| summarize count()\r\n| project count_;\r\nlet NoResults = datatable(TimeGenerated: string , Type: string , Category: string, Alert: string, Severity: string, uid: string, id_orig_h: string, id_resp_h: string, id_resp_p: string )[];\r\nunion isfuzzy=true\r\n(QueryResults| where toscalar(QueryCount) != 0),\r\n(NoResults| where toscalar(QueryCount) == 0)\r\n| project-reorder\r\n    TimeGenerated,\r\n    Type,\r\n    Category,\r\n    Alert,\r\n    Severity,\r\n    uid,\r\n    id_orig_h,\r\n    id_resp_h,\r\n    id_resp_p",
+              "size": 0,
+              "showAnalytics": true,
+              "title": "Recent Events Summary (10 most recent per message type)",
+              "noDataMessage": "No data found.",
+              "timeContextFromParameter": "GlobalTimeRestriction",
+              "showRefreshButton": true,
+              "exportFieldName": "uid",
+              "exportParameterName": "Selected_uid",
+              "showExportToExcel": true,
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "gridSettings": {
+                "rowLimit": 10000,
+                "filter": true
+              }
+            },
+            "name": "events_summary_recent"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "union Corelight_v3_*_CL\r\n| where ('*' in ({Sensor}) or system_name in ({Sensor}))\r\n| where (isnotempty(\"{Selected_uid}\") and (uid == \"{Selected_uid}\" or conn_uids contains_cs \"{Selected_uid}\"))\r\n| top 300 by TimeGenerated\r\n// hack to hide empty columns\r\n| evaluate narrow()\r\n| where isnotempty(Value) and Value != \"##(null)\" or Column == \"system_name\"\r\n| evaluate pivot(Column, any(Value), Row)\r\n| project-reorder TimeGenerated, path, id_orig_h, id_resp_h, id_resp_p, system_name\r\n| project-away Row",
+              "size": 0,
+              "showAnalytics": true,
+              "title": "Related paths (select in Events Summary)",
+              "noDataMessage": "No data found.",
+              "timeContextFromParameter": "GlobalTimeRestriction",
+              "showRefreshButton": true,
+              "exportFieldName": "path",
+              "exportParameterName": "Selected_path",
+              "showExportToExcel": true,
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "gridSettings": {
+                "rowLimit": 10000,
+                "filter": true,
+                "labelSettings": [
+                  {
+                    "columnId": "path",
+                    "label": "Path"
+                  }
+                ]
+              }
+            },
+            "name": "events_related_entries"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "corelight_suricata_corelight\r\n| where ('*' in ({Sensor}) or system_name in ({Sensor}))\r\n| summarize alert_count=count() by source_ip=id_orig_h, alert_signature, severity=alert_severity\r\n| top 10 by alert_count\r\n",
+              "size": 0,
+              "showAnalytics": true,
+              "title": "Suricata Top Alerts by Source",
+              "noDataMessage": "No data found.",
+              "timeContext": {
+                "durationMs": 86400000
+              },
+              "showRefreshButton": true,
+              "showExportToExcel": true,
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "gridSettings": {
+                "rowLimit": 10000,
+                "filter": true
+              }
+            },
+            "customWidth": "50",
+            "name": "events_suricata_most_hits_src"
+          }
+        ]
+      },
+      "conditionalVisibility": {
+        "parameterName": "Tab",
+        "comparison": "isEqualTo",
+        "value": "corelight_main_dashboard"
+      },
+      "name": "tme_events"
+    },
+    {
+      "type": 12,
+      "content": {
+        "version": "NotebookGroup/1.0",
+        "groupType": "editable",
+        "items": [
+          {
+            "type": 1,
+            "content": {
+              "json": "## Security Posture"
+            },
+            "name": "text - 0"
+          },
+          {
+            "type": 12,
+            "content": {
+              "version": "NotebookGroup/1.0",
+              "groupType": "editable",
+              "items": [
+                {
+                  "type": 12,
+                  "content": {
+                    "version": "NotebookGroup/1.0",
+                    "groupType": "editable",
+                    "items": [
+                      {
+                        "type": 1,
+                        "content": {
+                          "json": "### Alert Insights\r\n---"
+                        },
+                        "name": "text - 6"
+                      },
+                      {
+                        "type": 1,
+                        "content": {
+                          "json": "## Importing CSV Data into Watchlists\r\n\r\nThis workbook requires you to import two CSV files into specific Watchlists:\r\n1. [**CorelightAggregationsEnrichment1.csv**](https://github.com/Azure/Azure-Sentinel/blob/master/Solutions/Corelight/Watchlists/Corelight-AggregationsEnrichment/CorelightAggregationsEnrichment1.csv) ->  CorelightAggregationsEnrichment1 Watchlist\r\n2. [**CorelightAggregationsEnrichment2.csv**](https://github.com/Azure/Azure-Sentinel/blob/master/Solutions/Corelight/Watchlists/Corelight-AggregationsEnrichment/CorelightAggregationsEnrichment2.csv) -> CorelightAggregationsEnrichment2 Watchlist\r\n\r\n## Import Process\r\n- Navigate to Microsoft Sentinel\r\n- Access the Watchlists section\r\n- Select the appropriate Watchlist (**CorelightAggregationsEnrichment1** or **CorelightAggregationsEnrichment2**)\r\n- Choose **Update watchlist** -> **Bulk update**\r\n- Upload the corresponding CSV file\r\n- Proceed through **Next: Review + create**\r\n- Finalize by clicking **Update**\r\n\r\nRepeat these steps for both Watchlists to ensure all data is properly imported.",
+                          "style": "upsell"
+                        },
+                        "name": "text - 15"
+                      },
+                      {
+                        "type": 12,
+                        "content": {
+                          "version": "NotebookGroup/1.0",
+                          "groupType": "editable",
+                          "items": [
+                            {
+                              "type": 3,
+                              "content": {
+                                "version": "KqlItem/1.0",
+                                "query": "let interval_in_hrs=datetime_diff('hour', {GlobalTimeRestriction:end}, {GlobalTimeRestriction:start});\r\nlet interval_in_days=datetime_diff('day', {GlobalTimeRestriction:end}, {GlobalTimeRestriction:start});\r\nlet bin_duration=case(interval_in_hrs<=24, 1h, interval_in_days<=30, 1d, interval_in_days>=31 and interval_in_days<=90, 7d, 31d);\r\n\r\nlet AggregationRecords=corelight_suri_aggregations\r\n| where ('*' in ({Sensor}) or sensor_name in ({Sensor}))\r\n| where isnotempty(sid)\r\n| summarize TimeGenerated = max(TimeGenerated) by did;\r\n\r\nlet trendline=toscalar(\r\n    AggregationRecords\r\n    | make-series Trend = count(did) default = 0 on TimeGenerated from {GlobalTimeRestriction:start} to {GlobalTimeRestriction:end} step       bin_duration | project Trend);\r\n    \r\nAggregationRecords\r\n| count\r\n| extend Trend = trendline\r\n                                      ",
+                                "size": 3,
+                                "showAnalytics": true,
+                                "title": "Suricata Aggregations (From Suricata Alerts)",
+                                "noDataMessage": "No data found.",
+                                "timeContextFromParameter": "GlobalTimeRestriction",
+                                "showRefreshButton": true,
+                                "queryType": 0,
+                                "resourceType": "microsoft.operationalinsights/workspaces",
+                                "visualization": "tiles",
+                                "tileSettings": {
+                                  "leftContent": {
+                                    "columnMatch": "Count",
+                                    "formatter": 12,
+                                    "formatOptions": {
+                                      "palette": "greenRed"
+                                    },
+                                    "numberFormat": {
+                                      "unit": 17,
+                                      "options": {
+                                        "style": "decimal"
+                                      }
+                                    }
+                                  },
+                                  "secondaryContent": {
+                                    "columnMatch": "Trend",
+                                    "formatter": 9,
+                                    "formatOptions": {
+                                      "palette": "greenDark"
+                                    }
+                                  },
+                                  "showBorder": true
+                                }
+                              },
+                              "showPin": false,
+                              "name": "query - 0",
+                              "styleSettings": {
+                                "showBorder": true
+                              }
+                            },
+                            {
+                              "type": 3,
+                              "content": {
+                                "version": "KqlItem/1.0",
+                                "query": "corelight_suri_aggregations\r\n| where ('*' in ({Sensor}) or sensor_name in ({Sensor}))\r\n| mv-expand sid\r\n| where isnotempty(sid)\r\n| extend sid = tostring(toint(sid))\r\n| lookup (union isfuzzy=true _GetWatchlist('CorelightAggregationsEnrichment1'), _GetWatchlist('CorelightAggregationsEnrichment2')) on sid\r\n| where isnotempty(technique_number)\r\n| distinct technique_number\r\n| count",
+                                "size": 3,
+                                "showAnalytics": true,
+                                "title": "Mitre Techniques",
+                                "noDataMessage": "No data found",
+                                "timeContextFromParameter": "GlobalTimeRestriction",
+                                "showRefreshButton": true,
+                                "queryType": 0,
+                                "resourceType": "microsoft.operationalinsights/workspaces",
+                                "visualization": "tiles",
+                                "tileSettings": {
+                                  "leftContent": {
+                                    "columnMatch": "Count",
+                                    "formatter": 12,
+                                    "formatOptions": {
+                                      "palette": "greenRed"
+                                    },
+                                    "numberFormat": {
+                                      "unit": 17,
+                                      "options": {
+                                        "style": "decimal"
+                                      }
+                                    }
+                                  },
+                                  "showBorder": true
+                                }
+                              },
+                              "name": "query - 1",
+                              "styleSettings": {
+                                "showBorder": true
+                              }
+                            },
+                            {
+                              "type": 3,
+                              "content": {
+                                "version": "KqlItem/1.0",
+                                "query": "corelight_suri_aggregations\r\n| where ('*' in ({Sensor}) or sensor_name in ({Sensor}))\r\n| mv-expand sid\r\n| where isnotempty(sid)\r\n| extend sid = tostring(toint(sid))\r\n| lookup (union isfuzzy=true _GetWatchlist('CorelightAggregationsEnrichment1'), _GetWatchlist('CorelightAggregationsEnrichment2')) on sid\r\n| summarize Max = max(impact_score)\r\n| extend Max = iff(isempty(Max),'0', Max)",
+                                "size": 3,
+                                "showAnalytics": true,
+                                "title": "Highest Score",
+                                "noDataMessage": "No data found",
+                                "timeContextFromParameter": "GlobalTimeRestriction",
+                                "showRefreshButton": true,
+                                "queryType": 0,
+                                "resourceType": "microsoft.operationalinsights/workspaces",
+                                "visualization": "tiles",
+                                "tileSettings": {
+                                  "leftContent": {
+                                    "columnMatch": "Max",
+                                    "formatter": 12,
+                                    "formatOptions": {
+                                      "palette": "greenRed"
+                                    },
+                                    "numberFormat": {
+                                      "unit": 17,
+                                      "options": {
+                                        "style": "decimal"
+                                      }
+                                    }
+                                  },
+                                  "showBorder": true
+                                }
+                              },
+                              "name": "query - 2",
+                              "styleSettings": {
+                                "showBorder": true
+                              }
+                            },
+                            {
+                              "type": 3,
+                              "content": {
+                                "version": "KqlItem/1.0",
+                                "query": "corelight_suri_aggregations\r\n| where ('*' in ({Sensor}) or sensor_name in ({Sensor}))\r\n| mv-expand sid\r\n| where isnotempty(sid)\r\n| extend sid = tostring(toint(sid))\r\n| lookup (union isfuzzy=true _GetWatchlist('CorelightAggregationsEnrichment1'), _GetWatchlist('CorelightAggregationsEnrichment2')) on sid\r\n| where isnotempty(cve_number)\r\n| count\r\n",
+                                "size": 3,
+                                "showAnalytics": true,
+                                "title": "Detections With CVEs",
+                                "noDataMessage": "No data found",
+                                "timeContextFromParameter": "GlobalTimeRestriction",
+                                "showRefreshButton": true,
+                                "queryType": 0,
+                                "resourceType": "microsoft.operationalinsights/workspaces",
+                                "visualization": "tiles",
+                                "tileSettings": {
+                                  "leftContent": {
+                                    "columnMatch": "Count",
+                                    "formatter": 12,
+                                    "formatOptions": {
+                                      "palette": "greenRed"
+                                    },
+                                    "numberFormat": {
+                                      "unit": 17,
+                                      "options": {
+                                        "style": "decimal"
+                                      }
+                                    }
+                                  },
+                                  "showBorder": true
+                                }
+                              },
+                              "name": "query - 3",
+                              "styleSettings": {
+                                "showBorder": true
+                              }
+                            },
+                            {
+                              "type": 3,
+                              "content": {
+                                "version": "KqlItem/1.0",
+                                "query": "corelight_suri_aggregations\r\n| where ('*' in ({Sensor}) or sensor_name in ({Sensor}))\r\n| where isnotempty(sid) and local_resp == \"true\"\r\n| count",
+                                "size": 3,
+                                "showAnalytics": true,
+                                "title": "Internal Hosts Affected",
+                                "noDataMessage": "No data found",
+                                "timeContextFromParameter": "GlobalTimeRestriction",
+                                "showRefreshButton": true,
+                                "queryType": 0,
+                                "resourceType": "microsoft.operationalinsights/workspaces",
+                                "visualization": "tiles",
+                                "tileSettings": {
+                                  "leftContent": {
+                                    "columnMatch": "Count",
+                                    "formatter": 12,
+                                    "formatOptions": {
+                                      "palette": "greenRed"
+                                    },
+                                    "numberFormat": {
+                                      "unit": 17,
+                                      "options": {
+                                        "style": "decimal"
+                                      }
+                                    }
+                                  },
+                                  "showBorder": true
+                                }
+                              },
+                              "name": "query - 4",
+                              "styleSettings": {
+                                "showBorder": true
+                              }
+                            }
+                          ]
+                        },
+                        "customWidth": "28",
+                        "name": "Alert Insights - Suricata Aggregations"
+                      },
+                      {
+                        "type": 12,
+                        "content": {
+                          "version": "NotebookGroup/1.0",
+                          "groupType": "editable",
+                          "items": [
+                            {
+                              "type": 3,
+                              "content": {
+                                "version": "KqlItem/1.0",
+                                "query": "let interval_in_hrs=datetime_diff('hour', {GlobalTimeRestriction:end}, {GlobalTimeRestriction:start});\r\nlet interval_in_days=datetime_diff('day', {GlobalTimeRestriction:end}, {GlobalTimeRestriction:start});\r\nlet bin_duration=case(interval_in_hrs<=24, 1h, interval_in_days<=30, 1d, interval_in_days>=31 and interval_in_days<=90, 7d, 31d);\r\nlet SuricataRecords=corelight_suricata_corelight\r\n| where ('*' in ({Sensor}) or sensor_name in ({Sensor}));\r\nlet trendline=toscalar(\r\nSuricataRecords\r\n| make-series Trend = count() default = 0 on TimeGenerated from {GlobalTimeRestriction:start} to {GlobalTimeRestriction:end} step bin_duration \r\n| project Trend);\r\nSuricataRecords\r\n| summarize Count=count()\r\n| extend Trend = trendline",
+                                "size": 3,
+                                "showAnalytics": true,
+                                "title": "Suricata Alerts (All Suricata Alerts)",
+                                "noDataMessage": "No data found",
+                                "timeContextFromParameter": "GlobalTimeRestriction",
+                                "showRefreshButton": true,
+                                "queryType": 0,
+                                "resourceType": "microsoft.operationalinsights/workspaces",
+                                "visualization": "tiles",
+                                "tileSettings": {
+                                  "leftContent": {
+                                    "columnMatch": "Count",
+                                    "formatter": 12,
+                                    "formatOptions": {
+                                      "palette": "greenRed"
+                                    },
+                                    "numberFormat": {
+                                      "unit": 17,
+                                      "options": {
+                                        "style": "decimal"
+                                      }
+                                    }
+                                  },
+                                  "secondaryContent": {
+                                    "columnMatch": "Trend",
+                                    "formatter": 9,
+                                    "formatOptions": {
+                                      "palette": "greenDark"
+                                    }
+                                  },
+                                  "showBorder": true
+                                }
+                              },
+                              "name": "query - 0",
+                              "styleSettings": {
+                                "showBorder": true
+                              }
+                            },
+                            {
+                              "type": 3,
+                              "content": {
+                                "version": "KqlItem/1.0",
+                                "query": "corelight_suricata_corelight\r\n| where ('*' in ({Sensor}) or sensor_name in ({Sensor}))\r\n| where isnotempty(src_ip)\r\n| distinct src_ip\r\n| count\r\n\r\n",
+                                "size": 3,
+                                "showAnalytics": true,
+                                "title": "Unique Source IPs",
+                                "noDataMessage": "No data found.",
+                                "timeContextFromParameter": "GlobalTimeRestriction",
+                                "showRefreshButton": true,
+                                "queryType": 0,
+                                "resourceType": "microsoft.operationalinsights/workspaces",
+                                "visualization": "tiles",
+                                "tileSettings": {
+                                  "leftContent": {
+                                    "columnMatch": "Count",
+                                    "formatter": 12,
+                                    "formatOptions": {
+                                      "palette": "greenRed"
+                                    },
+                                    "numberFormat": {
+                                      "unit": 17,
+                                      "options": {
+                                        "style": "decimal"
+                                      }
+                                    }
+                                  },
+                                  "showBorder": true
+                                }
+                              },
+                              "name": "query - 1",
+                              "styleSettings": {
+                                "showBorder": true
+                              }
+                            },
+                            {
+                              "type": 3,
+                              "content": {
+                                "version": "KqlItem/1.0",
+                                "query": "corelight_suricata_corelight\r\n| where ('*' in ({Sensor}) or sensor_name in ({Sensor}))\r\n| where isnotempty(dest_ip)\r\n| distinct dest_ip\r\n| count\r\n\r\n",
+                                "size": 3,
+                                "showAnalytics": true,
+                                "title": "Unique Destination IPs",
+                                "noDataMessage": "No data found",
+                                "timeContextFromParameter": "GlobalTimeRestriction",
+                                "showRefreshButton": true,
+                                "queryType": 0,
+                                "resourceType": "microsoft.operationalinsights/workspaces",
+                                "visualization": "tiles",
+                                "tileSettings": {
+                                  "leftContent": {
+                                    "columnMatch": "Count",
+                                    "formatter": 12,
+                                    "formatOptions": {
+                                      "palette": "greenRed"
+                                    },
+                                    "numberFormat": {
+                                      "unit": 17,
+                                      "options": {
+                                        "style": "decimal"
+                                      }
+                                    }
+                                  },
+                                  "showBorder": true
+                                }
+                              },
+                              "name": "query - 2",
+                              "styleSettings": {
+                                "showBorder": true
+                              }
+                            },
+                            {
+                              "type": 3,
+                              "content": {
+                                "version": "KqlItem/1.0",
+                                "query": "corelight_suricata_corelight\r\n| where ('*' in ({Sensor}) or sensor_name in ({Sensor}))\r\n| where isnotempty(alert_signature_id)\r\n| distinct alert_signature_id\r\n| count\r\n\r\n",
+                                "size": 3,
+                                "showAnalytics": true,
+                                "title": "Unique Signatures",
+                                "noDataMessage": "No data found",
+                                "timeContextFromParameter": "GlobalTimeRestriction",
+                                "showRefreshButton": true,
+                                "queryType": 0,
+                                "resourceType": "microsoft.operationalinsights/workspaces",
+                                "visualization": "tiles",
+                                "tileSettings": {
+                                  "leftContent": {
+                                    "columnMatch": "Count",
+                                    "formatter": 12,
+                                    "formatOptions": {
+                                      "palette": "greenRed"
+                                    },
+                                    "numberFormat": {
+                                      "unit": 17,
+                                      "options": {
+                                        "style": "decimal"
+                                      }
+                                    }
+                                  },
+                                  "showBorder": true
+                                }
+                              },
+                              "name": "query - 3",
+                              "styleSettings": {
+                                "showBorder": true
+                              }
+                            }
+                          ]
+                        },
+                        "customWidth": "24",
+                        "name": "Alert Insights - Suricata Alerts"
+                      },
+                      {
+                        "type": 12,
+                        "content": {
+                          "version": "NotebookGroup/1.0",
+                          "groupType": "editable",
+                          "items": [
+                            {
+                              "type": 3,
+                              "content": {
+                                "version": "KqlItem/1.0",
+                                "query": "let interval_in_hrs=datetime_diff('hour', {GlobalTimeRestriction:end}, {GlobalTimeRestriction:start});\r\nlet interval_in_days=datetime_diff('day', {GlobalTimeRestriction:end}, {GlobalTimeRestriction:start});\r\nlet bin_duration=case(interval_in_hrs<=24, 1h, interval_in_days<=30, 1d, interval_in_days>=31 and interval_in_days<=90, 7d, 31d);\r\nlet NoticeRecords=corelight_notice\r\n| where ('*' in ({Sensor}) or sensor_name in ({Sensor}))\r\n| where isnotempty(id_orig_h) and note !startswith \"Intel\";\r\nlet trendline=toscalar(\r\nNoticeRecords\r\n| make-series Trend = count() default = 0 on TimeGenerated from {GlobalTimeRestriction:start} to {GlobalTimeRestriction:end} step bin_duration \r\n| project Trend);\r\nNoticeRecords\r\n| summarize Count=count()\r\n| extend Trend = trendline\r\n\r\n",
+                                "size": 3,
+                                "showAnalytics": true,
+                                "title": "Notices (Messages excluding Intel)",
+                                "noDataMessage": "No data found",
+                                "timeContextFromParameter": "GlobalTimeRestriction",
+                                "showRefreshButton": true,
+                                "queryType": 0,
+                                "resourceType": "microsoft.operationalinsights/workspaces",
+                                "visualization": "tiles",
+                                "tileSettings": {
+                                  "leftContent": {
+                                    "columnMatch": "Count",
+                                    "formatter": 12,
+                                    "formatOptions": {
+                                      "palette": "greenRed"
+                                    },
+                                    "numberFormat": {
+                                      "unit": 17,
+                                      "options": {
+                                        "style": "decimal"
+                                      }
+                                    }
+                                  },
+                                  "secondaryContent": {
+                                    "columnMatch": "Trend",
+                                    "formatter": 9,
+                                    "formatOptions": {
+                                      "palette": "greenDark"
+                                    }
+                                  },
+                                  "showBorder": true
+                                }
+                              },
+                              "name": "query - 0",
+                              "styleSettings": {
+                                "showBorder": true
+                              }
+                            },
+                            {
+                              "type": 3,
+                              "content": {
+                                "version": "KqlItem/1.0",
+                                "query": "corelight_notice\r\n| where ('*' in ({Sensor}) or sensor_name in ({Sensor}))\r\n| where isnotempty(id_orig_h) \r\n| where note startswith \"ATTACK::\"\r\n| count\r\n\r\n",
+                                "size": 3,
+                                "showAnalytics": true,
+                                "title": "Attack Count",
+                                "noDataMessage": "No data found.",
+                                "timeContextFromParameter": "GlobalTimeRestriction",
+                                "showRefreshButton": true,
+                                "queryType": 0,
+                                "resourceType": "microsoft.operationalinsights/workspaces",
+                                "visualization": "tiles",
+                                "tileSettings": {
+                                  "leftContent": {
+                                    "columnMatch": "Count",
+                                    "formatter": 12,
+                                    "formatOptions": {
+                                      "palette": "greenRed"
+                                    },
+                                    "numberFormat": {
+                                      "unit": 17,
+                                      "options": {
+                                        "style": "decimal"
+                                      }
+                                    }
+                                  },
+                                  "showBorder": true
+                                }
+                              },
+                              "name": "query - 1",
+                              "styleSettings": {
+                                "showBorder": true
+                              }
+                            },
+                            {
+                              "type": 3,
+                              "content": {
+                                "version": "KqlItem/1.0",
+                                "query": "corelight_notice\r\n| where ('*' in ({Sensor}) or sensor_name in ({Sensor}))\r\n| where note == \"MeterpreterDetection::Meterpreter_Detected\"\r\n| count",
+                                "size": 3,
+                                "showAnalytics": true,
+                                "title": "Meterpreter Count",
+                                "noDataMessage": "No data found.",
+                                "timeContextFromParameter": "GlobalTimeRestriction",
+                                "showRefreshButton": true,
+                                "queryType": 0,
+                                "resourceType": "microsoft.operationalinsights/workspaces",
+                                "visualization": "tiles",
+                                "tileSettings": {
+                                  "leftContent": {
+                                    "columnMatch": "Count",
+                                    "formatter": 12,
+                                    "formatOptions": {
+                                      "palette": "greenRed"
+                                    },
+                                    "numberFormat": {
+                                      "unit": 17,
+                                      "options": {
+                                        "style": "decimal"
+                                      }
+                                    }
+                                  },
+                                  "showBorder": true
+                                }
+                              },
+                              "name": "query - 2",
+                              "styleSettings": {
+                                "showBorder": true
+                              }
+                            },
+                            {
+                              "type": 3,
+                              "content": {
+                                "version": "KqlItem/1.0",
+                                "query": "corelight_notice\r\n| where ('*' in ({Sensor}) or sensor_name in ({Sensor}))\r\n| where note in (\"SSL::Certificate_Expired\", \"SSL::Invalid_Server_Cert\", \"SSL::Old_Version\")\r\n| count",
+                                "size": 3,
+                                "showAnalytics": true,
+                                "title": "SSL Certificate Issues",
+                                "noDataMessage": "No data found",
+                                "timeContextFromParameter": "GlobalTimeRestriction",
+                                "showRefreshButton": true,
+                                "queryType": 0,
+                                "resourceType": "microsoft.operationalinsights/workspaces",
+                                "visualization": "tiles",
+                                "tileSettings": {
+                                  "leftContent": {
+                                    "columnMatch": "Count",
+                                    "formatter": 12,
+                                    "formatOptions": {
+                                      "palette": "greenRed"
+                                    },
+                                    "numberFormat": {
+                                      "unit": 17,
+                                      "options": {
+                                        "style": "decimal"
+                                      }
+                                    }
+                                  },
+                                  "showBorder": true
+                                }
+                              },
+                              "name": "query - 3",
+                              "styleSettings": {
+                                "showBorder": true
+                              }
+                            },
+                            {
+                              "type": 3,
+                              "content": {
+                                "version": "KqlItem/1.0",
+                                "query": "corelight_notice\r\n| where ('*' in ({Sensor}) or sensor_name in ({Sensor}))\r\n| where isnotempty(note)\r\n| distinct note\r\n| count",
+                                "size": 3,
+                                "showAnalytics": true,
+                                "title": "Unique Note Count",
+                                "noDataMessage": "No data found",
+                                "timeContextFromParameter": "GlobalTimeRestriction",
+                                "showRefreshButton": true,
+                                "queryType": 0,
+                                "resourceType": "microsoft.operationalinsights/workspaces",
+                                "visualization": "tiles",
+                                "tileSettings": {
+                                  "leftContent": {
+                                    "columnMatch": "Count",
+                                    "formatter": 12,
+                                    "formatOptions": {
+                                      "palette": "greenRed"
+                                    },
+                                    "numberFormat": {
+                                      "unit": 17,
+                                      "options": {
+                                        "style": "decimal"
+                                      }
+                                    }
+                                  },
+                                  "showBorder": true
+                                }
+                              },
+                              "name": "query - 4",
+                              "styleSettings": {
+                                "showBorder": true
+                              }
+                            }
+                          ]
+                        },
+                        "customWidth": "24",
+                        "name": "Alert Insights-Notices"
+                      },
+                      {
+                        "type": 12,
+                        "content": {
+                          "version": "NotebookGroup/1.0",
+                          "groupType": "editable",
+                          "items": [
+                            {
+                              "type": 3,
+                              "content": {
+                                "version": "KqlItem/1.0",
+                                "query": "let interval_in_hrs=datetime_diff('hour', {GlobalTimeRestriction:end}, {GlobalTimeRestriction:start});\r\nlet interval_in_days=datetime_diff('day', {GlobalTimeRestriction:end}, {GlobalTimeRestriction:start});\r\nlet bin_duration=case(interval_in_hrs<=24, 1h, interval_in_days<=30, 1d, interval_in_days>=31 and interval_in_days<=90, 7d, 31d);\r\nlet IntelRecords=corelight_intel\r\n| where ('*' in ({Sensor}) or sensor_name in ({Sensor}));\r\nlet trendline=toscalar(\r\nIntelRecords\r\n| make-series Trend = count() default = 0 on TimeGenerated from {GlobalTimeRestriction:start} to {GlobalTimeRestriction:end} step bin_duration \r\n| project Trend);\r\nIntelRecords\r\n| summarize Count=count()\r\n| extend Trend = trendline\r\n",
+                                "size": 3,
+                                "showAnalytics": true,
+                                "title": "Threat Intel (Intel Indicators)",
+                                "noDataMessage": "No data found.",
+                                "timeContextFromParameter": "GlobalTimeRestriction",
+                                "showRefreshButton": true,
+                                "queryType": 0,
+                                "resourceType": "microsoft.operationalinsights/workspaces",
+                                "visualization": "tiles",
+                                "tileSettings": {
+                                  "leftContent": {
+                                    "columnMatch": "Count",
+                                    "formatter": 12,
+                                    "formatOptions": {
+                                      "palette": "greenRed"
+                                    },
+                                    "numberFormat": {
+                                      "unit": 17,
+                                      "options": {
+                                        "style": "decimal"
+                                      }
+                                    }
+                                  },
+                                  "secondaryContent": {
+                                    "columnMatch": "Trend",
+                                    "formatter": 9,
+                                    "formatOptions": {
+                                      "palette": "greenDark"
+                                    }
+                                  },
+                                  "showBorder": true
+                                }
+                              },
+                              "name": "query - 0",
+                              "styleSettings": {
+                                "showBorder": true
+                              }
+                            },
+                            {
+                              "type": 3,
+                              "content": {
+                                "version": "KqlItem/1.0",
+                                "query": "corelight_intel\r\n| where ('*' in ({Sensor}) or sensor_name in ({Sensor}))\r\n| where isnotempty(seen_indicator)\r\n| distinct seen_indicator\r\n| count",
+                                "size": 3,
+                                "showAnalytics": true,
+                                "title": "Unique Indicators",
+                                "noDataMessage": "No data found",
+                                "timeContextFromParameter": "GlobalTimeRestriction",
+                                "showRefreshButton": true,
+                                "queryType": 0,
+                                "resourceType": "microsoft.operationalinsights/workspaces",
+                                "visualization": "tiles",
+                                "tileSettings": {
+                                  "leftContent": {
+                                    "columnMatch": "Count",
+                                    "formatter": 12,
+                                    "formatOptions": {
+                                      "palette": "greenRed"
+                                    },
+                                    "numberFormat": {
+                                      "unit": 17,
+                                      "options": {
+                                        "style": "decimal"
+                                      }
+                                    }
+                                  },
+                                  "showBorder": true
+                                }
+                              },
+                              "name": "query - 1",
+                              "styleSettings": {
+                                "showBorder": true
+                              }
+                            },
+                            {
+                              "type": 3,
+                              "content": {
+                                "version": "KqlItem/1.0",
+                                "query": "let Records = (corelight_intel\r\n| where ('*' in ({Sensor}) or sensor_name in ({Sensor}))\r\n);\r\nlet TotalAlerts = toscalar(Records\r\n| count);\r\nRecords\r\n| summarize ['Unique Indicators'] = dcountif(seen_indicator, isnotempty(seen_indicator))\r\n| project ['Avg Alerts Per Indicator'] = iff(['Unique Indicators'] != 0, round(toreal(TotalAlerts)/['Unique Indicators'], 2),toreal(0))\r\n",
+                                "size": 3,
+                                "showAnalytics": true,
+                                "title": "Avg Alerts Per Indicator",
+                                "noDataMessage": "No data found",
+                                "timeContextFromParameter": "GlobalTimeRestriction",
+                                "showRefreshButton": true,
+                                "queryType": 0,
+                                "resourceType": "microsoft.operationalinsights/workspaces",
+                                "visualization": "tiles",
+                                "tileSettings": {
+                                  "leftContent": {
+                                    "columnMatch": "Avg Alerts Per Indicator",
+                                    "formatter": 12,
+                                    "formatOptions": {
+                                      "palette": "greenRed"
+                                    },
+                                    "numberFormat": {
+                                      "unit": 17,
+                                      "options": {
+                                        "style": "decimal"
+                                      }
+                                    }
+                                  },
+                                  "showBorder": true
+                                }
+                              },
+                              "name": "query - 2",
+                              "styleSettings": {
+                                "showBorder": true
+                              }
+                            },
+                            {
+                              "type": 3,
+                              "content": {
+                                "version": "KqlItem/1.0",
+                                "query": "let Records = (corelight_intel\r\n| where ('*' in ({Sensor}) or sensor_name in ({Sensor}))\r\n);\r\nlet TotalAlerts = toscalar(Records\r\n| count);\r\nRecords\r\n| summarize ['Unique Source IPs'] = dcountif(id_orig_h, isnotempty(id_orig_h))\r\n| project ['Avg Alerts Per Source IP'] = iff(['Unique Source IPs'] != 0,round(toreal(TotalAlerts)/['Unique Source IPs'], 2), toreal(0))\r\n",
+                                "size": 3,
+                                "showAnalytics": true,
+                                "title": "Avg Alerts Per Source IP",
+                                "noDataMessage": "No data found",
+                                "timeContextFromParameter": "GlobalTimeRestriction",
+                                "showRefreshButton": true,
+                                "queryType": 0,
+                                "resourceType": "microsoft.operationalinsights/workspaces",
+                                "visualization": "tiles",
+                                "tileSettings": {
+                                  "leftContent": {
+                                    "columnMatch": "Avg Alerts Per Source IP",
+                                    "formatter": 12,
+                                    "formatOptions": {
+                                      "palette": "greenRed"
+                                    },
+                                    "numberFormat": {
+                                      "unit": 17,
+                                      "options": {
+                                        "style": "decimal"
+                                      }
+                                    }
+                                  },
+                                  "showBorder": true
+                                }
+                              },
+                              "name": "query - 3",
+                              "styleSettings": {
+                                "showBorder": true
+                              }
+                            }
+                          ]
+                        },
+                        "customWidth": "24",
+                        "name": "Alert Insights - Intel"
+                      }
+                    ]
+                  },
+                  "name": "Alert Insights"
+                },
+                {
+                  "type": 12,
+                  "content": {
+                    "version": "NotebookGroup/1.0",
+                    "groupType": "editable",
+                    "items": [
+                      {
+                        "type": 1,
+                        "content": {
+                          "json": "### Encrypted Traffic Hygiene\r\n---"
+                        },
+                        "name": "text - 6"
+                      },
+                      {
+                        "type": 12,
+                        "content": {
+                          "version": "NotebookGroup/1.0",
+                          "groupType": "editable",
+                          "items": [
+                            {
+                              "type": 3,
+                              "content": {
+                                "version": "KqlItem/1.0",
+                                "query": "let interval_in_hrs= datetime_diff('hour', {GlobalTimeRestriction:end}, {GlobalTimeRestriction:start});\r\nlet interval_in_days= datetime_diff('day', {GlobalTimeRestriction:end}, {GlobalTimeRestriction:start});\r\nlet bin_duration=case(interval_in_hrs<=24, 1h, interval_in_days<=30, 1d, interval_in_days>=31 and interval_in_days<=90, 7d, 31d);\r\nlet SSL=corelight_ssl\r\n| where ('*' in ({Sensor}) or sensor_name in ({Sensor}))\r\n| where is_self_signed==\"yes\" and is_dest_internal_ip==\"true\";\r\nlet trendline=toscalar(\r\nSSL\r\n| summarize arg_max(TimeGenerated, *) by ssl_subject_common_name\r\n| make-series Trend = dcount(ssl_subject_common_name) default = 0 on TimeGenerated from {GlobalTimeRestriction:start} to {GlobalTimeRestriction:end} step bin_duration\r\n| project Trend);\r\nSSL\r\n| summarize Count=dcount(ssl_subject_common_name)\r\n| extend Trend = trendline",
+                                "size": 4,
+                                "showAnalytics": true,
+                                "title": "Self Signed Certs",
+                                "noDataMessage": "No data found.",
+                                "timeContextFromParameter": "GlobalTimeRestriction",
+                                "showRefreshButton": true,
+                                "queryType": 0,
+                                "resourceType": "microsoft.operationalinsights/workspaces",
+                                "visualization": "tiles",
+                                "tileSettings": {
+                                  "leftContent": {
+                                    "columnMatch": "Count",
+                                    "formatter": 12,
+                                    "formatOptions": {
+                                      "palette": "greenRed"
+                                    },
+                                    "numberFormat": {
+                                      "unit": 0,
+                                      "options": {
+                                        "style": "decimal"
+                                      }
+                                    }
+                                  },
+                                  "secondaryContent": {
+                                    "columnMatch": "Trend",
+                                    "formatter": 9,
+                                    "formatOptions": {
+                                      "palette": "greenDark"
+                                    }
+                                  },
+                                  "showBorder": true
+                                }
+                              },
+                              "name": "query - 0"
+                            },
+                            {
+                              "type": 3,
+                              "content": {
+                                "version": "KqlItem/1.0",
+                                "query": "let interval_in_hrs= datetime_diff('hour', {GlobalTimeRestriction:end}, {GlobalTimeRestriction:start});\r\nlet interval_in_days= datetime_diff('day', {GlobalTimeRestriction:end}, {GlobalTimeRestriction:start});\r\nlet bin_duration=case(interval_in_hrs<=24, 1h, interval_in_days<=30, 1d, interval_in_days>=31 and interval_in_days<=90, 7d, 31d);\r\nlet X509=corelight_x509\r\n| where ('*' in ({Sensor}) or sensor_name in ({Sensor}))\r\n| extend key_length = toint(certificate_key_length)\r\n| where key_length < 2048;\r\nlet trendline=toscalar(\r\nX509\r\n| summarize arg_max(TimeGenerated, *) by ssl_hash\r\n| make-series Trend = dcount(ssl_hash) default = 0 on TimeGenerated from {GlobalTimeRestriction:start} to {GlobalTimeRestriction:end} step bin_duration\r\n| project Trend);\r\nX509\r\n| summarize Count = dcount(ssl_hash)\r\n| extend Trend = trendline\r\n\r\n",
+                                "size": 3,
+                                "showAnalytics": true,
+                                "title": "Certs w/ Low Keys",
+                                "noDataMessage": "No data found.",
+                                "timeContextFromParameter": "GlobalTimeRestriction",
+                                "showRefreshButton": true,
+                                "queryType": 0,
+                                "resourceType": "microsoft.operationalinsights/workspaces",
+                                "visualization": "tiles",
+                                "tileSettings": {
+                                  "leftContent": {
+                                    "columnMatch": "Count",
+                                    "formatter": 12,
+                                    "formatOptions": {
+                                      "palette": "greenRed"
+                                    },
+                                    "numberFormat": {
+                                      "unit": 0,
+                                      "options": {
+                                        "style": "decimal"
+                                      }
+                                    }
+                                  },
+                                  "secondaryContent": {
+                                    "columnMatch": "Trend",
+                                    "formatter": 9,
+                                    "formatOptions": {
+                                      "palette": "greenDark"
+                                    }
+                                  },
+                                  "showBorder": true
+                                }
+                              },
+                              "name": "query - 1"
+                            },
+                            {
+                              "type": 3,
+                              "content": {
+                                "version": "KqlItem/1.0",
+                                "query": "corelight_x509\r\n| where ('*' in ({Sensor}) or sensor_name in ({Sensor}))\r\n| where days_to_expiry > 0 and days_to_expiry <= 15\r\n| summarize [\"Distinct Certs\"] = dcount(ssl_hash)\r\n",
+                                "size": 4,
+                                "showAnalytics": true,
+                                "title": "Expiring Certs.",
+                                "noDataMessage": "No data found.",
+                                "timeContextFromParameter": "GlobalTimeRestriction",
+                                "showRefreshButton": true,
+                                "queryType": 0,
+                                "resourceType": "microsoft.operationalinsights/workspaces",
+                                "visualization": "tiles",
+                                "tileSettings": {
+                                  "leftContent": {
+                                    "columnMatch": "Distinct Certs",
+                                    "formatter": 12,
+                                    "formatOptions": {
+                                      "palette": "greenRed"
+                                    },
+                                    "numberFormat": {
+                                      "unit": 0,
+                                      "options": {
+                                        "style": "decimal"
+                                      }
+                                    }
+                                  },
+                                  "secondaryContent": {
+                                    "columnMatch": "Trend",
+                                    "formatter": 9,
+                                    "formatOptions": {
+                                      "palette": "green"
+                                    }
+                                  },
+                                  "showBorder": true
+                                }
+                              },
+                              "name": "query - 2"
+                            }
+                          ]
+                        },
+                        "customWidth": "25",
+                        "name": "Encrypted Traffic Hygiene Tiles"
+                      },
+                      {
+                        "type": 3,
+                        "content": {
+                          "version": "KqlItem/1.0",
+                          "query": "let interval_in_hrs= datetime_diff('hour', {GlobalTimeRestriction:end}, {GlobalTimeRestriction:start});\r\nlet interval_in_days= datetime_diff('day', {GlobalTimeRestriction:end}, {GlobalTimeRestriction:start});\r\nlet bin_duration=case(interval_in_hrs<=24, 1h, interval_in_days<=30, 1d, interval_in_days>=31 and interval_in_days<=90, 7d, 31d);\r\ncorelight_ssl\r\n| where ('*' in ({Sensor}) or sensor_name in ({Sensor}))\r\n| make-series ['Encrypted Traffic Volume']=count() default = 0 on TimeGenerated from {GlobalTimeRestriction:start} to {GlobalTimeRestriction:end} step bin_duration",
+                          "size": 2,
+                          "showAnalytics": true,
+                          "title": "Encrypted Traffic Over Time",
+                          "noDataMessage": "No data found.",
+                          "timeContextFromParameter": "GlobalTimeRestriction",
+                          "showRefreshButton": true,
+                          "queryType": 0,
+                          "resourceType": "microsoft.operationalinsights/workspaces",
+                          "visualization": "areachart",
+                          "chartSettings": {
+                            "xAxis": "TimeGenerated",
+                            "showLegend": true,
+                            "seriesLabelSettings": [
+                              {
+                                "seriesName": "Count",
+                                "color": "green"
+                              },
+                              {
+                                "seriesName": "Encrypted Traffic Volume",
+                                "color": "green"
+                              }
+                            ],
+                            "xSettings": {
+                              "label": "Time"
+                            },
+                            "ySettings": {
+                              "label": "Encrypted traffic Volume"
+                            }
+                          }
+                        },
+                        "customWidth": "75",
+                        "name": "query - 3"
+                      },
+                      {
+                        "type": 3,
+                        "content": {
+                          "version": "KqlItem/1.0",
+                          "query": "corelight_ssl\r\n| where ('*' in ({Sensor}) or sensor_name in ({Sensor}))\r\n| extend version_status=case(version==\"TLSv13\", \"Most Secure\", \r\n                            version==\"TLSv12\", \"Secure\", \r\n                            version==\"DTLSv12\", \"Secure\", \r\n                            version==\"unknown-64282\", \"Unknown\", \r\n                            \"Old Version\")\r\n| summarize Count= count() by version_status\r\n| sort by Count desc",
+                          "size": 0,
+                          "showAnalytics": true,
+                          "title": "TLS Versions",
+                          "noDataMessage": "No data found.",
+                          "timeContextFromParameter": "GlobalTimeRestriction",
+                          "showRefreshButton": true,
+                          "queryType": 0,
+                          "resourceType": "microsoft.operationalinsights/workspaces",
+                          "visualization": "piechart",
+                          "chartSettings": {
+                            "group": "version_status",
+                            "createOtherGroup": 0
+                          }
+                        },
+                        "customWidth": "40",
+                        "name": "query - 4"
+                      },
+                      {
+                        "type": 3,
+                        "content": {
+                          "version": "KqlItem/1.0",
+                          "query": "corelight_ssl\r\n| where ('*' in ({Sensor}) or sensor_name in ({Sensor}))\r\n| extend src_internal=iff(isnull(is_src_internal_ip) or is_src_internal_ip==\"false\", \"External\", \"Internal\"), dest_internal=iff(isnull(is_dest_internal_ip) or is_dest_internal_ip==\"false\", \"External\", \"Internal\")\r\n| where src_internal==\"Internal\" \r\n| extend version_status=case(version==\"TLSv13\", \"Most Secure\", \r\n                            version==\"TLSv12\", \"Secure\", \r\n                            version==\"DTLSv12\", \"Secure\", \r\n                            version==\"unknown-64282\", \"Unknown\", \r\n                            \"Old Version\")\r\n| summarize Count= count() by version_status\r\n| sort by Count desc",
+                          "size": 0,
+                          "showAnalytics": true,
+                          "title": "Internal TLS Version Profile",
+                          "noDataMessage": "No data found.",
+                          "timeContextFromParameter": "GlobalTimeRestriction",
+                          "showRefreshButton": true,
+                          "queryType": 0,
+                          "resourceType": "microsoft.operationalinsights/workspaces",
+                          "visualization": "barchart",
+                          "chartSettings": {
+                            "showLegend": true,
+                            "xSettings": {
+                              "label": "TLS Version"
+                            },
+                            "ySettings": {
+                              "label": "Count"
+                            }
+                          }
+                        },
+                        "customWidth": "60",
+                        "name": "query - 5"
+                      }
+                    ]
+                  },
+                  "name": "Encrypted Traffic Hygiene"
+                },
+                {
+                  "type": 12,
+                  "content": {
+                    "version": "NotebookGroup/1.0",
+                    "groupType": "editable",
+                    "items": [
+                      {
+                        "type": 1,
+                        "content": {
+                          "json": "### Unencrypted Traffic Hygiene - Indicators\r\n---"
+                        },
+                        "name": "text - 8"
+                      },
+                      {
+                        "type": 12,
+                        "content": {
+                          "version": "NotebookGroup/1.0",
+                          "groupType": "editable",
+                          "items": [
+                            {
+                              "type": 3,
+                              "content": {
+                                "version": "KqlItem/1.0",
+                                "query": "let interval_in_hrs= datetime_diff('hour', {GlobalTimeRestriction:end}, {GlobalTimeRestriction:start});\r\nlet interval_in_days= datetime_diff('day', {GlobalTimeRestriction:end}, {GlobalTimeRestriction:start});\r\nlet bin_duration=case(interval_in_hrs<=24, 1h, interval_in_days<=30, 1d, interval_in_days>=31 and interval_in_days<=90, 7d, 31d);\r\nlet UnencryptedConnection=corelight_etc_viz\r\n| where ('*' in ({Sensor}) or sensor_name in ({Sensor}))\r\n| where  viz_stat in (\"C\", \"Cc\", \"C!\", \"cc\");\r\nlet trendline=toscalar(\r\nUnencryptedConnection \r\n| make-series Trend = count() default = 0 on TimeGenerated from {GlobalTimeRestriction:start} to {GlobalTimeRestriction:end} step bin_duration by server_a, server_p\r\n| project Trend);\r\nUnencryptedConnection \r\n| summarize Count = count() by server_a, server_p\r\n| summarize Sum = sum(Count)\r\n| extend Trend=trendline\r\n",
+                                "size": 3,
+                                "showAnalytics": true,
+                                "title": "Unencrypted Connections",
+                                "noDataMessage": "No data found.",
+                                "timeContextFromParameter": "GlobalTimeRestriction",
+                                "showRefreshButton": true,
+                                "exportFieldName": "Sum",
+                                "exportParameterName": "sum",
+                                "exportDefaultValue": "none",
+                                "queryType": 0,
+                                "resourceType": "microsoft.operationalinsights/workspaces",
+                                "visualization": "tiles",
+                                "tileSettings": {
+                                  "leftContent": {
+                                    "columnMatch": "Sum",
+                                    "formatter": 12,
+                                    "formatOptions": {
+                                      "palette": "greenRed"
+                                    },
+                                    "numberFormat": {
+                                      "unit": 17,
+                                      "options": {
+                                        "style": "decimal"
+                                      }
+                                    }
+                                  },
+                                  "secondaryContent": {
+                                    "columnMatch": "Trend",
+                                    "formatter": 9,
+                                    "formatOptions": {
+                                      "palette": "green"
+                                    }
+                                  },
+                                  "showBorder": true
+                                }
+                              },
+                              "name": "query - 0"
+                            },
+                            {
+                              "type": 1,
+                              "content": {
+                                "json": "#### Click on the count in the above panel **Unencrypted Connections** to view more information.",
+                                "style": "info"
+                              },
+                              "name": "text - 3"
+                            },
+                            {
+                              "type": 3,
+                              "content": {
+                                "version": "KqlItem/1.0",
+                                "query": "union isfuzzy=true\r\ncorelight_http,\r\ncorelight_conn,\r\ncorelight_dns,\r\ncorelight_ssl,\r\ncorelight_files\r\n| where ('*' in ({Sensor}) or sensor_name in ({Sensor}))\r\n| where id_resp_p == 23\r\n| summarize Count = count()\r\n",
+                                "size": 3,
+                                "showAnalytics": true,
+                                "title": "Telnet Sessions",
+                                "noDataMessage": "No data found.",
+                                "timeContextFromParameter": "GlobalTimeRestriction",
+                                "showRefreshButton": true,
+                                "exportFieldName": "Count",
+                                "exportParameterName": "telnet_count",
+                                "exportDefaultValue": "none",
+                                "queryType": 0,
+                                "resourceType": "microsoft.operationalinsights/workspaces",
+                                "visualization": "tiles",
+                                "tileSettings": {
+                                  "leftContent": {
+                                    "columnMatch": "Count",
+                                    "formatter": 12,
+                                    "formatOptions": {
+                                      "palette": "greenRed"
+                                    },
+                                    "numberFormat": {
+                                      "unit": 17,
+                                      "options": {
+                                        "style": "decimal",
+                                        "useGrouping": false
+                                      }
+                                    }
+                                  },
+                                  "showBorder": true
+                                }
+                              },
+                              "name": "query - 3"
+                            },
+                            {
+                              "type": 1,
+                              "content": {
+                                "json": "#### Click on the count in the above panel **Telnet Sessions** to view more information.",
+                                "style": "info"
+                              },
+                              "name": "text - 3"
+                            },
+                            {
+                              "type": 3,
+                              "content": {
+                                "version": "KqlItem/1.0",
+                                "query": "union isfuzzy=true\r\ncorelight_smb_mapping,\r\ncorelight_smb_files\r\n| where ('*' in ({Sensor}) or sensor_name in ({Sensor}))\r\n| count\r\n",
+                                "size": 3,
+                                "showAnalytics": true,
+                                "title": "SMB V1 Connections",
+                                "noDataMessage": "No data found.",
+                                "timeContextFromParameter": "GlobalTimeRestriction",
+                                "showRefreshButton": true,
+                                "exportFieldName": "Count",
+                                "exportParameterName": "smb_count",
+                                "queryType": 0,
+                                "resourceType": "microsoft.operationalinsights/workspaces",
+                                "visualization": "tiles",
+                                "tileSettings": {
+                                  "leftContent": {
+                                    "columnMatch": "Count",
+                                    "formatter": 12,
+                                    "formatOptions": {
+                                      "palette": "greenRed"
+                                    },
+                                    "numberFormat": {
+                                      "unit": 17,
+                                      "options": {
+                                        "style": "decimal",
+                                        "useGrouping": false
+                                      }
+                                    }
+                                  },
+                                  "showBorder": true
+                                }
+                              },
+                              "name": "query - 3"
+                            },
+                            {
+                              "type": 1,
+                              "content": {
+                                "json": "#### Click on the count in the above panel **SMB V1 Connections** to view more information.",
+                                "style": "info"
+                              },
+                              "name": "text - 3"
+                            },
+                            {
+                              "type": 3,
+                              "content": {
+                                "version": "KqlItem/1.0",
+                                "query": "corelight_ftp\r\n| where ('*' in ({Sensor}) or sensor_name in ({Sensor}))\r\n| summarize Count = count()\r\n",
+                                "size": 3,
+                                "showAnalytics": true,
+                                "title": "FTP Sessions",
+                                "noDataMessage": "No data found.",
+                                "timeContextFromParameter": "GlobalTimeRestriction",
+                                "showRefreshButton": true,
+                                "exportFieldName": "Count",
+                                "exportParameterName": "ftp_count",
+                                "exportDefaultValue": "none",
+                                "queryType": 0,
+                                "resourceType": "microsoft.operationalinsights/workspaces",
+                                "visualization": "tiles",
+                                "tileSettings": {
+                                  "leftContent": {
+                                    "columnMatch": "Count",
+                                    "formatter": 12,
+                                    "formatOptions": {
+                                      "palette": "greenRed"
+                                    },
+                                    "numberFormat": {
+                                      "unit": 17,
+                                      "options": {
+                                        "style": "decimal"
+                                      }
+                                    }
+                                  },
+                                  "showBorder": true
+                                }
+                              },
+                              "name": "query - 3"
+                            },
+                            {
+                              "type": 1,
+                              "content": {
+                                "json": "#### Click on the count in the above panel **FTP Sessions** to view more information.",
+                                "style": "info"
+                              },
+                              "name": "text - 3"
+                            }
+                          ],
+                          "exportParameters": true
+                        },
+                        "customWidth": "25",
+                        "name": "Unencrypted Traffic Hygiene - Indicators - Tiles"
+                      },
+                      {
+                        "type": 3,
+                        "content": {
+                          "version": "KqlItem/1.0",
+                          "query": "let interval_in_hrs= datetime_diff('hour', {GlobalTimeRestriction:end}, {GlobalTimeRestriction:start});\r\nlet interval_in_days= datetime_diff('day', {GlobalTimeRestriction:end}, {GlobalTimeRestriction:start});\r\nlet bin_duration=case(interval_in_hrs<=24, 1h, interval_in_days<=30, 1d, interval_in_days>=31 and interval_in_days<=90, 7d, 31d);\r\nunion isfuzzy=true\r\ncorelight_http,\r\ncorelight_conn,\r\ncorelight_dns,\r\ncorelight_ssl,\r\ncorelight_files\r\n| where ('*' in ({Sensor}) or sensor_name in ({Sensor}))\r\n| where isnotempty(service) and service !in ('ssl', 'tls', 'dns', \"ssl,http\", \"http,ssl\")\r\n| make-series [\"Unencrypted Traffic Volume\"]=count() default = 0 on TimeGenerated from {GlobalTimeRestriction:start} to {GlobalTimeRestriction:end} step bin_duration by service",
+                          "size": 2,
+                          "showAnalytics": true,
+                          "title": "Top Unencrypted Protocols Used",
+                          "noDataMessage": "No data found.",
+                          "timeContextFromParameter": "GlobalTimeRestriction",
+                          "showRefreshButton": true,
+                          "exportFieldName": "series",
+                          "exportParameterName": "service",
+                          "exportDefaultValue": "none",
+                          "queryType": 0,
+                          "resourceType": "microsoft.operationalinsights/workspaces",
+                          "visualization": "areachart",
+                          "chartSettings": {
+                            "group": "service",
+                            "createOtherGroup": 0,
+                            "showLegend": true
+                          }
+                        },
+                        "customWidth": "75",
+                        "name": "query - 2"
+                      },
+                      {
+                        "type": 1,
+                        "content": {
+                          "json": "#### Click on the datapoints in the above panel **Top Unencrypted Protocols Used** to view more information.\r\n",
+                          "style": "info"
+                        },
+                        "name": "text - 7"
+                      },
+                      {
+                        "type": 3,
+                        "content": {
+                          "version": "KqlItem/1.0",
+                          "query": "corelight_etc_viz\r\n| where ('*' in ({Sensor}) or sensor_name in ({Sensor}))\r\n| where  viz_stat in (\"C\", \"Cc\", \"C!\", \"cc\") \r\n| summarize Count = count() by server_a, server_p\r\n",
+                          "size": 0,
+                          "showAnalytics": true,
+                          "title": "Details of Unencrypted Connections",
+                          "noDataMessage": "No data found.",
+                          "timeContextFromParameter": "GlobalTimeRestriction",
+                          "showRefreshButton": true,
+                          "showExportToExcel": true,
+                          "queryType": 0,
+                          "resourceType": "microsoft.operationalinsights/workspaces",
+                          "visualization": "table",
+                          "gridSettings": {
+                            "rowLimit": 10000,
+                            "filter": true
+                          }
+                        },
+                        "customWidth": "100",
+                        "conditionalVisibility": {
+                          "parameterName": "sum",
+                          "comparison": "isNotEqualTo",
+                          "value": "none"
+                        },
+                        "name": "query - 4",
+                        "styleSettings": {
+                          "showBorder": true
+                        }
+                      },
+                      {
+                        "type": 3,
+                        "content": {
+                          "version": "KqlItem/1.0",
+                          "query": "union isfuzzy=true\r\ncorelight_http,\r\ncorelight_conn,\r\ncorelight_dns,\r\ncorelight_ssl,\r\ncorelight_files\r\n| where ('*' in ({Sensor}) or sensor_name in ({Sensor}))\r\n| where id_resp_p == 23\r\n",
+                          "size": 0,
+                          "showAnalytics": true,
+                          "title": "Details of Telnet Sessions",
+                          "noDataMessage": "No data found.",
+                          "timeContextFromParameter": "GlobalTimeRestriction",
+                          "showRefreshButton": true,
+                          "showExportToExcel": true,
+                          "queryType": 0,
+                          "resourceType": "microsoft.operationalinsights/workspaces",
+                          "visualization": "table",
+                          "gridSettings": {
+                            "rowLimit": 10000,
+                            "filter": true
+                          }
+                        },
+                        "conditionalVisibility": {
+                          "parameterName": "telnet_count",
+                          "comparison": "isNotEqualTo",
+                          "value": "none"
+                        },
+                        "name": "query - 5",
+                        "styleSettings": {
+                          "showBorder": true
+                        }
+                      },
+                      {
+                        "type": 3,
+                        "content": {
+                          "version": "KqlItem/1.0",
+                          "query": "union isfuzzy=true\r\ncorelight_smb_mapping,\r\ncorelight_smb_files\r\n| where ('*' in ({Sensor}) or sensor_name in ({Sensor}))\r\n",
+                          "size": 0,
+                          "showAnalytics": true,
+                          "title": "Details of SMB V1 Connections",
+                          "timeContextFromParameter": "GlobalTimeRestriction",
+                          "showRefreshButton": true,
+                          "showExportToExcel": true,
+                          "queryType": 0,
+                          "resourceType": "microsoft.operationalinsights/workspaces",
+                          "gridSettings": {
+                            "rowLimit": 10000,
+                            "filter": true
+                          }
+                        },
+                        "conditionalVisibility": {
+                          "parameterName": "smb_count",
+                          "comparison": "isNotEqualTo"
+                        },
+                        "name": "query - 8",
+                        "styleSettings": {
+                          "showBorder": true
+                        }
+                      },
+                      {
+                        "type": 3,
+                        "content": {
+                          "version": "KqlItem/1.0",
+                          "query": "corelight_ftp\r\n| where ('*' in ({Sensor}) or sensor_name in ({Sensor}))\r\n",
+                          "size": 0,
+                          "showAnalytics": true,
+                          "title": "Details of FTP Sessions",
+                          "noDataMessage": "No data found.",
+                          "timeContextFromParameter": "GlobalTimeRestriction",
+                          "showRefreshButton": true,
+                          "showExportToExcel": true,
+                          "queryType": 0,
+                          "resourceType": "microsoft.operationalinsights/workspaces",
+                          "visualization": "table",
+                          "gridSettings": {
+                            "rowLimit": 10000,
+                            "filter": true
+                          }
+                        },
+                        "conditionalVisibility": {
+                          "parameterName": "ftp_count",
+                          "comparison": "isNotEqualTo",
+                          "value": "none"
+                        },
+                        "name": "query - 6",
+                        "styleSettings": {
+                          "showBorder": true
+                        }
+                      },
+                      {
+                        "type": 3,
+                        "content": {
+                          "version": "KqlItem/1.0",
+                          "query": "union isfuzzy=true\r\ncorelight_http,\r\ncorelight_conn,\r\ncorelight_dns,\r\ncorelight_ssl,\r\ncorelight_files\r\n| where ('*' in ({Sensor}) or sensor_name in ({Sensor}))\r\n| where service == '{service}'\r\n",
+                          "size": 0,
+                          "showAnalytics": true,
+                          "title": "Details of Top Unencrypted Protocols Used",
+                          "noDataMessage": "No data found.",
+                          "timeContextFromParameter": "GlobalTimeRestriction",
+                          "showRefreshButton": true,
+                          "showExportToExcel": true,
+                          "queryType": 0,
+                          "resourceType": "microsoft.operationalinsights/workspaces",
+                          "visualization": "table",
+                          "gridSettings": {
+                            "rowLimit": 10000,
+                            "filter": true
+                          }
+                        },
+                        "conditionalVisibility": {
+                          "parameterName": "service",
+                          "comparison": "isNotEqualTo",
+                          "value": "none"
+                        },
+                        "name": "query - 2",
+                        "styleSettings": {
+                          "showBorder": true
+                        }
+                      }
+                    ]
+                  },
+                  "name": "Unencrypted Traffic Hygiene - Indicators"
+                },
+                {
+                  "type": 12,
+                  "content": {
+                    "version": "NotebookGroup/1.0",
+                    "groupType": "editable",
+                    "items": [
+                      {
+                        "type": 1,
+                        "content": {
+                          "json": "### DNS Hygiene\r\n---"
+                        },
+                        "name": "text - 6"
+                      },
+                      {
+                        "type": 3,
+                        "content": {
+                          "version": "KqlItem/1.0",
+                          "query": "let interval_in_hrs= datetime_diff('hour', {GlobalTimeRestriction:end}, {GlobalTimeRestriction:start});\r\nlet interval_in_days= datetime_diff('day', {GlobalTimeRestriction:end}, {GlobalTimeRestriction:start});\r\nlet bin_duration=case(interval_in_hrs<=24, 1h, interval_in_days<=30, 1d, interval_in_days>=31 and interval_in_days<=90, 7d, 31d);\r\nlet FailedDNS=corelight_dns\r\n| where ('*' in ({Sensor}) or sensor_name in ({Sensor}))\r\n| where rcode_name in ('SERVFAIL', 'REFUSED', 'FORMERR' ,'NOTIMP' ,'NOTAUTH');\r\nlet trendline=toscalar(\r\nFailedDNS\r\n| make-series Trend = count() default = 0 on TimeGenerated from {GlobalTimeRestriction:start} to {GlobalTimeRestriction:end} step bin_duration\r\n| project Trend);\r\nFailedDNS\r\n| summarize dns_fails = count()\r\n| extend Trend = trendline\r\n",
+                          "size": 3,
+                          "showAnalytics": true,
+                          "title": "Failed DNS Queries",
+                          "noDataMessage": "No data found.",
+                          "timeContextFromParameter": "GlobalTimeRestriction",
+                          "showRefreshButton": true,
+                          "queryType": 0,
+                          "resourceType": "microsoft.operationalinsights/workspaces",
+                          "visualization": "tiles",
+                          "tileSettings": {
+                            "titleContent": {
+                              "columnMatch": "rcode_name",
+                              "formatter": 1
+                            },
+                            "leftContent": {
+                              "columnMatch": "dns_fails",
+                              "formatter": 12,
+                              "formatOptions": {
+                                "palette": "greenRed"
+                              },
+                              "numberFormat": {
+                                "unit": 17,
+                                "options": {
+                                  "style": "decimal"
+                                }
+                              }
+                            },
+                            "secondaryContent": {
+                              "columnMatch": "Trend",
+                              "formatter": 9,
+                              "formatOptions": {
+                                "palette": "green"
+                              }
+                            },
+                            "showBorder": true
+                          }
+                        },
+                        "customWidth": "25",
+                        "name": "query - 0"
+                      },
+                      {
+                        "type": 3,
+                        "content": {
+                          "version": "KqlItem/1.0",
+                          "query": "let interval_in_hrs= datetime_diff('hour', {GlobalTimeRestriction:end}, {GlobalTimeRestriction:start});\r\nlet interval_in_days= datetime_diff('day', {GlobalTimeRestriction:end}, {GlobalTimeRestriction:start});\r\nlet bin_duration=case(interval_in_hrs<=24, 1h, interval_in_days<=30, 1d, interval_in_days>=31 and interval_in_days<=90, 7d, 31d);\r\nlet UnusualQtypes=corelight_dns\r\n| where ('*' in ({Sensor}) or sensor_name in ({Sensor}))\r\n| where qtype_name in (\"AXFR\", \"IXFR\", \"ANY\", \"TXT\");\r\nlet trendline=toscalar(\r\nUnusualQtypes\r\n| make-series Trend = count() default = 0 on TimeGenerated from {GlobalTimeRestriction:start} to {GlobalTimeRestriction:end} step bin_duration\r\n);\r\nUnusualQtypes\r\n| summarize failed_q=count() by bin(TimeGenerated, 1d)\r\n| summarize total = sum(failed_q) by TimeGenerated\r\n| extend today = iff(TimeGenerated==(startofday(now())), total, 0)\r\n| extend yesterday = iff(TimeGenerated==(startofday(now())-1d), total, 0)\r\n| extend Trend = trendline\r\n| serialize\r\n| order by TimeGenerated desc\r\n| extend nextyesterday = iff((today == 0 and yesterday > 0), yesterday, iff(isempty(next(yesterday)), 0, next(yesterday)))\r\n| limit 1\r\n| extend percentage = case(nextyesterday == 0 and today == 0, 0.0, \r\n                           nextyesterday == 0 and today !=0, todouble(today)*100, \r\n                           (todouble(today-nextyesterday)/nextyesterday)*100)",
+                          "size": 3,
+                          "showAnalytics": true,
+                          "title": "Unusual Qtypes",
+                          "noDataMessage": "No data found.",
+                          "timeContextFromParameter": "GlobalTimeRestriction",
+                          "showRefreshButton": true,
+                          "exportFieldName": "failed_q",
+                          "exportParameterName": "failed_count",
+                          "exportDefaultValue": "none",
+                          "queryType": 0,
+                          "resourceType": "microsoft.operationalinsights/workspaces",
+                          "visualization": "tiles",
+                          "tileSettings": {
+                            "leftContent": {
+                              "columnMatch": "today",
+                              "formatter": 12,
+                              "formatOptions": {
+                                "palette": "greenRed"
+                              },
+                              "numberFormat": {
+                                "unit": 17,
+                                "options": {
+                                  "style": "decimal"
+                                }
+                              }
+                            },
+                            "rightContent": {
+                              "columnMatch": "percentage",
+                              "formatter": 12,
+                              "formatOptions": {
+                                "palette": "none"
+                              },
+                              "numberFormat": {
+                                "unit": 1,
+                                "options": {
+                                  "style": "decimal"
+                                }
+                              }
+                            },
+                            "secondaryContent": {
+                              "columnMatch": "Trend",
+                              "formatter": 9,
+                              "formatOptions": {
+                                "palette": "green"
+                              }
+                            },
+                            "showBorder": true,
+                            "size": "full"
+                          }
+                        },
+                        "customWidth": "25",
+                        "name": "query - 1"
+                      },
+                      {
+                        "type": 3,
+                        "content": {
+                          "version": "KqlItem/1.0",
+                          "query": "let interval_in_hrs= datetime_diff('hour', {GlobalTimeRestriction:end}, {GlobalTimeRestriction:start});\r\nlet interval_in_days= datetime_diff('day', {GlobalTimeRestriction:end}, {GlobalTimeRestriction:start});\r\nlet bin_duration=case(interval_in_hrs<=24, 1h, interval_in_days<=30, 1d, interval_in_days>=31 and interval_in_days<=90, 7d, 31d);\r\nlet NxdomainResponses=corelight_dns\r\n| where ('*' in ({Sensor}) or sensor_name in ({Sensor}))\r\n| where rcode_name in ('NXDOMAIN', 'NOERROR');\r\nlet trendline=toscalar(\r\nNxdomainResponses\r\n| make-series Trend = count() default = 0 on TimeGenerated from {GlobalTimeRestriction:start} to {GlobalTimeRestriction:end} step bin_duration\r\n);\r\nNxdomainResponses\r\n| summarize Count=count() by bin(TimeGenerated, 1d)\r\n| summarize total = sum(Count) by TimeGenerated\r\n| extend today = iff(TimeGenerated==(startofday(now())), total, 0)\r\n| extend yesterday = iff(TimeGenerated==(startofday(now())-1d), total, 0)\r\n| extend Trend = trendline\r\n| serialize\r\n| order by TimeGenerated desc\r\n| extend nextyesterday = iff((today == 0 and yesterday > 0), yesterday, iff(isempty(next(yesterday)), 0, next(yesterday)))\r\n| limit 1\r\n| extend percentage = case(nextyesterday == 0 and today == 0, 0.0, \r\n                           nextyesterday == 0 and today !=0, todouble(today)*100, \r\n                           (todouble(today-nextyesterday)/nextyesterday)*100)",
+                          "size": 3,
+                          "showAnalytics": true,
+                          "title": "NXDOMAIN Responses",
+                          "noDataMessage": "No data found.",
+                          "timeContextFromParameter": "GlobalTimeRestriction",
+                          "showRefreshButton": true,
+                          "queryType": 0,
+                          "resourceType": "microsoft.operationalinsights/workspaces",
+                          "visualization": "tiles",
+                          "tileSettings": {
+                            "leftContent": {
+                              "columnMatch": "today",
+                              "formatter": 12,
+                              "formatOptions": {
+                                "palette": "greenRed"
+                              },
+                              "numberFormat": {
+                                "unit": 17,
+                                "options": {
+                                  "style": "decimal"
+                                }
+                              }
+                            },
+                            "rightContent": {
+                              "columnMatch": "percentage",
+                              "formatter": 12,
+                              "formatOptions": {
+                                "palette": "none"
+                              },
+                              "numberFormat": {
+                                "unit": 1,
+                                "options": {
+                                  "style": "decimal"
+                                }
+                              }
+                            },
+                            "secondaryContent": {
+                              "columnMatch": "Trend",
+                              "formatter": 9,
+                              "formatOptions": {
+                                "palette": "green"
+                              }
+                            },
+                            "showBorder": true,
+                            "size": "full"
+                          }
+                        },
+                        "customWidth": "25",
+                        "name": "query - 2"
+                      },
+                      {
+                        "type": 3,
+                        "content": {
+                          "version": "KqlItem/1.0",
+                          "query": "corelight_dns\r\n| where ('*' in ({Sensor}) or sensor_name in ({Sensor}))\r\n| where isnotempty(dest_ip) and dest_port in (53, 5353) and is_dest_internal_ip==\"true\"\r\n| summarize NumberOfInternalDnsServers = dcount(dest_ip)",
+                          "size": 3,
+                          "showAnalytics": true,
+                          "title": "Internal DNS Servers",
+                          "noDataMessage": "Nodata found.",
+                          "timeContextFromParameter": "GlobalTimeRestriction",
+                          "showRefreshButton": true,
+                          "queryType": 0,
+                          "resourceType": "microsoft.operationalinsights/workspaces",
+                          "visualization": "tiles",
+                          "tileSettings": {
+                            "leftContent": {
+                              "columnMatch": "NumberOfInternalDnsServers",
+                              "formatter": 12,
+                              "formatOptions": {
+                                "palette": "greenRed"
+                              },
+                              "numberFormat": {
+                                "unit": 17,
+                                "options": {
+                                  "style": "decimal"
+                                }
+                              }
+                            },
+                            "showBorder": true
+                          }
+                        },
+                        "customWidth": "25",
+                        "name": "query - 3"
+                      },
+                      {
+                        "type": 1,
+                        "content": {
+                          "json": "#### Click on the count in the above panel **Unusual Qtypes** to view more information.",
+                          "style": "info"
+                        },
+                        "name": "text - 3"
+                      },
+                      {
+                        "type": 3,
+                        "content": {
+                          "version": "KqlItem/1.0",
+                          "query": "corelight_dns\r\n| where ('*' in ({Sensor}) or sensor_name in ({Sensor}))\r\n| where qtype_name in (\"AXFR\", \"IXFR\", \"ANY\", \"TXT\")\r\n| summarize unique_sessions=dcount(uid), query_list = strcat_array(make_list(query), \", \"), qtype_names = strcat_array(make_list(qtype_name), \", \") by id_orig_h, id_resp_h\r\n",
+                          "size": 0,
+                          "showAnalytics": true,
+                          "title": "Details of Unusual Qtypes",
+                          "noDataMessage": "No data found.",
+                          "timeContextFromParameter": "GlobalTimeRestriction",
+                          "showRefreshButton": true,
+                          "showExportToExcel": true,
+                          "queryType": 0,
+                          "resourceType": "microsoft.operationalinsights/workspaces",
+                          "visualization": "table",
+                          "gridSettings": {
+                            "rowLimit": 10000,
+                            "filter": true
+                          }
+                        },
+                        "conditionalVisibility": {
+                          "parameterName": "failed_count",
+                          "comparison": "isNotEqualTo",
+                          "value": "none"
+                        },
+                        "name": "query - 4",
+                        "styleSettings": {
+                          "showBorder": true
+                        }
+                      },
+                      {
+                        "type": 3,
+                        "content": {
+                          "version": "KqlItem/1.0",
+                          "query": "corelight_dns\r\n| where ('*' in ({Sensor}) or sensor_name in ({Sensor}))\r\n| extend iplocation=geo_info_from_ip_address(dest_ip)\r\n| extend latitude=iplocation.latitude, longitude=iplocation.longitude\r\n| extend Country = coalesce(iplocation.country, \"No Country\")\r\n| summarize Count = count() by tostring(latitude), tostring(longitude), Country\r\n| extend coordinates= iff(Country!=\"No Country\", strcat(\"Country: \",Country, \"\\nLatitude: \", latitude, \"\\nLongitude:\", longitude), Country)\r\n",
+                          "size": 3,
+                          "showAnalytics": true,
+                          "title": "Geolocation of DNS Responses",
+                          "noDataMessage": "No data found.",
+                          "timeContextFromParameter": "GlobalTimeRestriction",
+                          "showRefreshButton": true,
+                          "queryType": 0,
+                          "resourceType": "microsoft.operationalinsights/workspaces",
+                          "visualization": "map",
+                          "mapSettings": {
+                            "locInfo": "LatLong",
+                            "latitude": "latitude",
+                            "longitude": "longitude",
+                            "sizeSettings": "Count",
+                            "sizeAggregation": "Max",
+                            "labelSettings": "coordinates",
+                            "legendMetric": "Count",
+                            "numberOfMetrics": 0,
+                            "legendAggregation": "Sum",
+                            "itemColorSettings": {
+                              "nodeColorField": "Count",
+                              "colorAggregation": "Sum",
+                              "type": "heatmap",
+                              "heatmapPalette": "greenRed"
+                            }
+                          }
+                        },
+                        "name": "query - 0"
+                      }
+                    ]
+                  },
+                  "name": "DNS Hygiene"
+                },
+                {
+                  "type": 12,
+                  "content": {
+                    "version": "NotebookGroup/1.0",
+                    "groupType": "editable",
+                    "items": [
+                      {
+                        "type": 1,
+                        "content": {
+                          "json": "### Remote Management Hygiene\r\n---"
+                        },
+                        "name": "text - 4"
+                      },
+                      {
+                        "type": 3,
+                        "content": {
+                          "version": "KqlItem/1.0",
+                          "query": "let TopVPN=corelight_vpn\r\n| where ('*' in ({Sensor}) or sensor_name in ({Sensor}))\r\n| extend iplocation=geo_info_from_ip_address(dest_ip)\r\n| extend country=iplocation.country\r\n| extend Country=coalesce(country, \"No Country\")\r\n| summarize arg_max(TimeGenerated, *) by dest_ip, tostring(Country)\r\n| summarize Count=count() by Country;\r\nlet totalcount=(\r\nTopVPN\r\n| summarize TotalCount = sum(Count));\r\nTopVPN\r\n| extend Percentage=(Count * 100.0)/toscalar(totalcount)\r\n| sort by Percentage desc",
+                          "size": 0,
+                          "aggregation": 2,
+                          "showAnalytics": true,
+                          "title": "Top VPN destinations by Country",
+                          "noDataMessage": "No data found.",
+                          "timeContextFromParameter": "GlobalTimeRestriction",
+                          "showRefreshButton": true,
+                          "queryType": 0,
+                          "resourceType": "microsoft.operationalinsights/workspaces",
+                          "visualization": "barchart",
+                          "chartSettings": {
+                            "xAxis": "Country",
+                            "yAxis": [
+                              "Percentage",
+                              "Count"
+                            ],
+                            "showLegend": true,
+                            "seriesLabelSettings": [
+                              {
+                                "seriesName": "Percentage",
+                                "color": "green"
+                              },
+                              {
+                                "seriesName": "Count",
+                                "color": "greenDarkDark"
+                              }
+                            ],
+                            "ySettings": {
+                              "numberFormatSettings": {
+                                "unit": 17,
+                                "options": {
+                                  "style": "decimal",
+                                  "useGrouping": true
+                                }
+                              },
+                              "label": "Percentage"
+                            }
+                          }
+                        },
+                        "customWidth": "50",
+                        "name": "Top VPN destinations by Country"
+                      },
+                      {
+                        "type": 3,
+                        "content": {
+                          "version": "KqlItem/1.0",
+                          "query": "let interval_in_hrs= datetime_diff('hour', {GlobalTimeRestriction:end}, {GlobalTimeRestriction:start});\r\nlet interval_in_days= datetime_diff('day', {GlobalTimeRestriction:end}, {GlobalTimeRestriction:start});\r\nlet bin_duration=case(interval_in_hrs<=24, 1h, interval_in_days<=30, 1d, interval_in_days>=31 and interval_in_days<90, 7d, 31d);\r\ncorelight_vpn\r\n| where ('*' in ({Sensor}) or sensor_name in ({Sensor}))\r\n| where is_dest_internal_ip == \"false\"\r\n| make-series [\"Outbound VPN Connections\"]=count() default = 0 on TimeGenerated from {GlobalTimeRestriction:start} to {GlobalTimeRestriction:end} step bin_duration",
+                          "size": 0,
+                          "showAnalytics": true,
+                          "title": "Outbound VPN Connections",
+                          "color": "green",
+                          "noDataMessage": "No data found.",
+                          "timeContextFromParameter": "GlobalTimeRestriction",
+                          "showRefreshButton": true,
+                          "queryType": 0,
+                          "resourceType": "microsoft.operationalinsights/workspaces",
+                          "visualization": "linechart",
+                          "chartSettings": {
+                            "showLegend": true,
+                            "seriesLabelSettings": [
+                              {
+                                "seriesName": "Outbound VPN Connections",
+                                "color": "green"
+                              }
+                            ],
+                            "showDataPoints": true,
+                            "ySettings": {
+                              "numberFormatSettings": {
+                                "unit": 17,
+                                "options": {
+                                  "style": "decimal",
+                                  "useGrouping": true
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "customWidth": "50",
+                        "name": "query - 1"
+                      },
+                      {
+                        "type": 1,
+                        "content": {
+                          "json": "#### Metrics shows the count and percentage for the country with maximum value as default. To view the count or percentage for a particular country hover over the bar in Top VPN destinations by Country Panel.",
+                          "style": "upsell"
+                        },
+                        "name": "Tooltip for Top VPN destinations by Country Panel"
+                      },
+                      {
+                        "type": 3,
+                        "content": {
+                          "version": "KqlItem/1.0",
+                          "query": "let interval_in_hrs= datetime_diff('hour', {GlobalTimeRestriction:end}, {GlobalTimeRestriction:start});\r\nlet interval_in_days= datetime_diff('day', {GlobalTimeRestriction:end}, {GlobalTimeRestriction:start});\r\nlet bin_duration=case(interval_in_hrs<=24, 1h, interval_in_days<=30, 1d, interval_in_days>=31 and interval_in_days<=90, 7d, 31d);\r\ncorelight_rdp\r\n| where ('*' in ({Sensor}) or sensor_name in ({Sensor}))\r\n| where isnotempty(auth_success)\r\n| extend auth_result = iff(auth_success==\"true\",\"Success\",\"Failure\") \r\n| make-series Count=count() default = 0 on TimeGenerated from {GlobalTimeRestriction:start} to {GlobalTimeRestriction:end} step bin_duration by auth_result",
+                          "size": 0,
+                          "showAnalytics": true,
+                          "title": "RDP Authentication Attempts",
+                          "noDataMessage": "No data found.",
+                          "timeContextFromParameter": "GlobalTimeRestriction",
+                          "showRefreshButton": true,
+                          "exportFieldName": "series",
+                          "exportParameterName": "auth",
+                          "exportDefaultValue": "none",
+                          "queryType": 0,
+                          "resourceType": "microsoft.operationalinsights/workspaces",
+                          "visualization": "timechart",
+                          "chartSettings": {
+                            "group": "auth_result",
+                            "createOtherGroup": 0,
+                            "showLegend": true,
+                            "seriesLabelSettings": [
+                              {
+                                "seriesName": "Failure",
+                                "color": "redBright"
+                              },
+                              {
+                                "seriesName": "Success",
+                                "color": "green"
+                              }
+                            ],
+                            "showDataPoints": true
+                          }
+                        },
+                        "name": "query - 2"
+                      },
+                      {
+                        "type": 1,
+                        "content": {
+                          "json": "#### Click on the datapoints in the above panel **RDP Authentication Attempts** to view more information.",
+                          "style": "info"
+                        },
+                        "name": "text - 3"
+                      },
+                      {
+                        "type": 3,
+                        "content": {
+                          "version": "KqlItem/1.0",
+                          "query": "corelight_rdp\r\n| where ('*' in ({Sensor}) or sensor_name in ({Sensor}))\r\n| extend auth_result = iff(auth_success==\"true\",\"Success\",\"Failure\") \r\n| where auth_result == '{auth}'\r\n",
+                          "size": 0,
+                          "showAnalytics": true,
+                          "title": "Details of RDP Authentication Attempts",
+                          "noDataMessage": "No data found.",
+                          "timeContextFromParameter": "GlobalTimeRestriction",
+                          "showRefreshButton": true,
+                          "showExportToExcel": true,
+                          "queryType": 0,
+                          "resourceType": "microsoft.operationalinsights/workspaces",
+                          "visualization": "table",
+                          "gridSettings": {
+                            "rowLimit": 10000,
+                            "filter": true
+                          }
+                        },
+                        "conditionalVisibility": {
+                          "parameterName": "auth",
+                          "comparison": "isNotEqualTo",
+                          "value": "none"
+                        },
+                        "name": "query - 3",
+                        "styleSettings": {
+                          "showBorder": true
+                        }
+                      }
+                    ]
+                  },
+                  "name": "Remote Management Hygiene"
+                }
+              ]
+            },
+            "name": "group - 2"
+          }
+        ]
+      },
+      "conditionalVisibility": {
+        "parameterName": "Tab",
+        "comparison": "isEqualTo",
+        "value": "security_posture"
+      },
+      "name": "Security Posture"
+    },
+    {
+      "type": 1,
+      "content": {
+        "json": "📝 **Refresh the web page to fetch details of recently collected events**"
+      },
+      "name": "text - 5"
+    }
+  ],
+  "fromTemplateId": "sentinel-Corelight",
+  "$schema": "https://github.com/Microsoft/Application-Insights-Workbooks/blob/master/schema/workbook.json"
+}

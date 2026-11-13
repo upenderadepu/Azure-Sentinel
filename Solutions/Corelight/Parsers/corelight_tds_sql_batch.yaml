@@ -1,0 +1,25 @@
+id: 82f90f3b-9b4a-5d1f-be96-5f62f7182c92
+Function:
+  Title: corelight_tds_sql_batch parser for Corelight
+  Version: '2.0.0'
+  LastUpdated: '2026-08-17'
+Category: Microsoft Sentinel Parser
+FunctionName: corelight_tds_sql_batch
+FunctionAlias: corelight_tds_sql_batch
+FunctionQuery: |+
+  let dummy_table = datatable(TimeGenerated: datetime) [];
+  let corelight_tds_sql_batch = view () {
+      union isfuzzy=true Corelight_v3_tds_sql_batch_CL, dummy_table
+        | extend
+            _path=path,
+            _system_name=system_name,
+            _write_ts=write_ts
+      | extend
+          EventVendor="Corelight",
+          EventProduct="CorelightSensor",
+          EventType="tds_sql_batch",
+          ts=TimeGenerated
+  };
+  corelight_tds_sql_batch
+
+...

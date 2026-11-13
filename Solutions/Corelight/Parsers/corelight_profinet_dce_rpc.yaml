@@ -1,0 +1,25 @@
+id: 65bf0302-b53d-51c6-8714-05de6c9f316e
+Function:
+  Title: corelight_profinet_dce_rpc parser for Corelight
+  Version: '2.0.0'
+  LastUpdated: '2026-08-17'
+Category: Microsoft Sentinel Parser
+FunctionName: corelight_profinet_dce_rpc
+FunctionAlias: corelight_profinet_dce_rpc
+FunctionQuery: |+
+  let dummy_table = datatable(TimeGenerated: datetime) [];
+  let corelight_profinet_dce_rpc = view () {
+      union isfuzzy=true Corelight_v3_profinet_dce_rpc_CL, dummy_table
+        | extend
+            _path=path,
+            _system_name=system_name,
+            _write_ts=write_ts
+      | extend
+          EventVendor="Corelight",
+          EventProduct="CorelightSensor",
+          EventType="profinet_dce_rpc",
+          ts=TimeGenerated
+  };
+  corelight_profinet_dce_rpc
+
+...

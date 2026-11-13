@@ -1,0 +1,261 @@
+{
+    "Name": "dossier_atp_threat_CL",
+    "Properties": [
+        {
+            "Name": "batch_id",
+            "Type": "string"
+        },
+        {
+            "Name": "class",
+            "Type": "string"
+        },
+        {
+            "Name": "confidence",
+            "Type": "real"
+        },
+        {
+            "Name": "detected",
+            "Type": "datetime"
+        },
+        {
+            "Name": "dga",
+            "Type": "string"
+        },
+        {
+            "Name": "domain",
+            "Type": "string"
+        },
+        {
+            "Name": "expiration",
+            "Type": "datetime"
+        },
+        {
+            "Name": "full_profile",
+            "Type": "string"
+        },
+        {
+            "Name": "host",
+            "Type": "string"
+        },
+        {
+            "Name": "id_value",
+            "Type": "string"
+        },
+        {
+            "Name": "imported",
+            "Type": "datetime"
+        },
+        {
+            "Name": "profile",
+            "Type": "string"
+        },
+        {
+            "Name": "property",
+            "Type": "string"
+        },
+        {
+            "Name": "received",
+            "Type": "datetime"
+        },
+        {
+            "Name": "threat_level",
+            "Type": "real"
+        },
+        {
+            "Name": "tld",
+            "Type": "string"
+        },
+        {
+            "Name": "type_value",
+            "Type": "string"
+        },
+        {
+            "Name": "task_id",
+            "Type": "string"
+        },
+        {
+            "Name": "extended",
+            "Type": "dynamic"
+        },
+        {
+            "Name": "extended_surbl_list",
+            "Type": "string"
+        },
+        {
+            "Name": "extended_extended",
+            "Type": "string"
+        },
+        {
+            "Name": "extended_ais_consent",
+            "Type": "string"
+        },
+        {
+            "Name": "extended_cyberint_guid",
+            "Type": "string"
+        },
+        {
+            "Name": "extended_no_whitelist",
+            "Type": "string"
+        },
+        {
+            "Name": "extended_notes",
+            "Type": "string"
+        },
+        {
+            "Name": "extended_reason",
+            "Type": "string"
+        },
+        {
+            "Name": "extended_attack_chain",
+            "Type": "string"
+        },
+        {
+            "Name": "extended_protocol",
+            "Type": "string"
+        },
+        {
+            "Name": "extended_references",
+            "Type": "string"
+        },
+        {
+            "Name": "extended_confidence_score",
+            "Type": "string"
+        },
+        {
+            "Name": "extended_risk_score",
+            "Type": "string"
+        },
+        {
+            "Name": "extended_threat_score",
+            "Type": "string"
+        },
+        {
+            "Name": "extended_from_email",
+            "Type": "string"
+        },
+        {
+            "Name": "extended_subject_line",
+            "Type": "string"
+        },
+        {
+            "Name": "extended_email_id",
+            "Type": "string"
+        },
+        {
+            "Name": "extended_processor",
+            "Type": "string"
+        },
+        {
+            "Name": "extended_provider",
+            "Type": "string"
+        },
+        {
+            "Name": "extended_submitter",
+            "Type": "string"
+        },
+        {
+            "Name": "extended_sample_sha256",
+            "Type": "string"
+        },
+        {
+            "Name": "extended_comments",
+            "Type": "string"
+        },
+        {
+            "Name": "up",
+            "Type": "string"
+        },
+        {
+            "Name": "url",
+            "Type": "string"
+        },
+        {
+            "Name": "ip",
+            "Type": "string"
+        },
+        {
+            "Name": "tlp",
+            "Type": "string"
+        },
+        {
+            "Name": "confidence_score",
+            "Type": "real"
+        },
+        {
+            "Name": "confidence_score_rating",
+            "Type": "string"
+        },
+        {
+            "Name": "confidence_score_vector",
+            "Type": "string"
+        },
+        {
+            "Name": "risk_score",
+            "Type": "real"
+        },
+        {
+            "Name": "risk_score_rating",
+            "Type": "string"
+        },
+        {
+            "Name": "risk_score_vector",
+            "Type": "string"
+        },
+        {
+            "Name": "threat_score",
+            "Type": "real"
+        },
+        {
+            "Name": "threat_score_rating",
+            "Type": "string"
+        },
+        {
+            "Name": "threat_score_vector",
+            "Type": "string"
+        },
+        {
+            "Name": "target",
+            "Type": "string"
+        },
+        {
+            "Name": "origin",
+            "Type": "string"
+        },
+        {
+            "Name": "email",
+            "Type": "string"
+        },
+        {
+            "Name": "threat_label",
+            "Type": "string"
+        },
+        {
+            "Name": "hash",
+            "Type": "string"
+        },
+        {
+            "Name": "hash_type",
+            "Type": "string"
+        },
+        {
+            "Name": "TimeGenerated",
+            "Type": "datetime"
+        },
+        {
+            "Name": "RowData",
+            "Type": "dynamic"
+        },
+        {
+            "Name": "TenantId",
+            "Type": "string"
+        },
+        {
+            "Name": "Type",
+            "Type": "string"
+        },
+        {
+            "Name": "_ResourceId",
+            "Type": "string"
+        }
+    ]
+}

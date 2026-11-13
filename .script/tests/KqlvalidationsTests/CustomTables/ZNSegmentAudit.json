@@ -1,0 +1,65 @@
+{
+    "Name": "ZNSegmentAudit",
+    "Properties": [
+        {
+            "name": "TimeGenerated",
+            "type": "DateTime"
+        },
+        {
+            "name": "AuditType",
+            "type": "String"
+        },
+        {
+            "name": "AuditTypeId",
+            "type": "Int"
+        },
+        {
+            "name": "Platform",
+            "type": "String"
+        },
+        {
+            "name": "EnforcementSourceId",
+            "type": "Int"
+        },
+        {
+            "name": "InitiatedBy",
+            "type": "Dynamic"
+        },
+        {
+            "name": "AffectedEntity",
+            "type": "Dynamic"
+        },
+        {
+            "name": "Details",
+            "type": "String"
+        },
+        {
+            "name": "ReportedObjectId",
+            "type": "String"
+        },
+        {
+            "name": "ParentObjectId",
+            "type": "String"
+        },
+        {
+            "name": "onBehalfOfEmail",
+            "type": "String"
+        },
+        {
+            "name": "EventVendor",
+            "type": "String"
+        },
+        {
+            "name": "EventProduct",
+            "type": "String"
+        },
+        {
+            "name": "Rule",
+            "type": "Dynamic"
+        },
+        {
+            "name": "ReactivePolicy",
+            "type": "Dynamic"
+        }
+    ]
+}

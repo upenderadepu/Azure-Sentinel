@@ -1,0 +1,30 @@
+id: 356aa5a8-fa6f-4eb9-baa9-ffcf725e3e82
+name: AWSCloudTrail - S3 Bucket Deleted
+description: |
+  Identifies S3 bucket deletion events that may indicate data destruction or denial of service activity.
+severity: Low
+requiredDataConnectors:
+  - connectorId: AWS
+    dataTypes:
+      - AWSCloudTrail
+tactics:
+  - Impact
+relevantTechniques:
+  - T1485
+query: |
+  AWSCloudTrail
+  | where  EventName == "DeleteBucket" and isempty(ErrorCode) and isempty(ErrorMessage)
+  | project TimeGenerated, EventName, EventTypeName, UserIdentityAccountId, UserIdentityPrincipalid, UserAgent, 
+  UserIdentityUserName, UserIdentityArn, SessionMfaAuthenticated, SourceIpAddress, AWSRegion, EventSource, AdditionalEventData, ResponseElements, BucketName=tostring(parse_json(RequestParameters).bucketName)
+  | extend UserIdentityUserName = iff(isnotempty(UserIdentityUserName), UserIdentityUserName, tostring(split(UserIdentityArn,'/')[-1]))
+  | order by TimeGenerated desc
+entityMappings:
+  - entityType: Account
+    fieldMappings:
+      - identifier: FullName
+        columnName: UserIdentityUserName
+  - entityType: IP
+    fieldMappings:
+      - identifier: Address
+        columnName: SourceIpAddress
+version: 1.0.0

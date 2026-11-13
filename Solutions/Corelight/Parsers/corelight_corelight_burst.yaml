@@ -1,0 +1,25 @@
+id: cba93761-96ac-5f55-9e5c-c17d416ec1c5
+Function:
+  Title: corelight_corelight_burst parser for Corelight
+  Version: '2.0.0'
+  LastUpdated: '2026-08-17'
+Category: Microsoft Sentinel Parser
+FunctionName: corelight_corelight_burst
+FunctionAlias: corelight_corelight_burst
+FunctionQuery: |+
+  let dummy_table = datatable(TimeGenerated: datetime) [];
+  let corelight_corelight_burst = view () {
+      union isfuzzy=true Corelight_v3_corelight_burst_CL, dummy_table
+        | extend
+            _path=path,
+            _system_name=system_name,
+            _write_ts=write_ts
+      | extend
+          EventVendor="Corelight",
+          EventProduct="CorelightSensor",
+          EventType="corelight_burst",
+          ts=TimeGenerated
+  };
+  corelight_corelight_burst
+
+...

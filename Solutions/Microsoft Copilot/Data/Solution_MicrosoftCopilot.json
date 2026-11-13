@@ -1,0 +1,35 @@
+{
+  "Name": "Microsoft Copilot",
+  "Author": "Microsoft - support@microsoft.com",
+  "Logo": "<img src=\"https://raw.githubusercontent.com/Azure/Azure-Sentinel/master/Logos/Copilot_logo.svg\" width=\"75px\" height=\"75px\">",
+  "Description": "The [Microsoft Copilot](https://www.microsoft.com/en-us/microsoft-365/copilot) solution allows you to stream your Microsoft Copilot audit logs from M365 Copilot and Security Copilot into Microsoft Sentinel in order to track Copilot activities across your organization.\n\n**Underlying Microsoft Technologies used:**\n\nThis solution takes a dependency on the following technologies, and some of these dependencies either may be in [Preview](https://azure.microsoft.com/support/legal/preview-supplemental-terms/) state or might result in additional ingestion or operational costs:\n\n- [Office Management API](https://docs.microsoft.com/office/office-365-management-api/office-365-management-apis-overview)",
+  "Data Connectors": [
+    "Data Connectors/MicrosoftCopilot_ConnectorDefinition.json"
+  ],
+  "Analytic Rules": [
+    "Analytic Rules/CopilotFileUploadsDisabled.yaml",
+    "Analytic Rules/CopilotJailbreakAttempt.yaml",
+    "Analytic Rules/CopilotPluginCreatedByNonAdmin.yaml",
+    "Analytic Rules/CopilotPluginTampering.yaml"
+  ],
+  "Hunting Queries": [
+    "Hunting Queries/CopilotExternalIPAccess.yaml",
+    "Hunting Queries/CopilotPluginReEnabled.yaml"
+  ],
+  "Workbooks": [
+    "Workbooks/MicrosoftCopilotActivityMonitoring.json"
+  ],
+  "BasePath": "Solutions/Microsoft Copilot",
+  "Metadata": "SolutionMetadata.json",
+  "TemplateSpec": false,
+  "XDR Detections": [
+    "XDR Detections/CopilotFileUploadsDisabled.yaml",
+    "XDR Detections/CopilotJailbreakAttempt.yaml",
+    "XDR Detections/CopilotPluginCreatedByNonAdmin.yaml",
+    "XDR Detections/CopilotPluginTampering.yaml"
+  ],
+  "XDR Workbooks": [
+    "XDR Workbooks/MicrosoftCopilotActivityMonitoring.json"
+  ],
+  "Version": "3.2.2"
+}

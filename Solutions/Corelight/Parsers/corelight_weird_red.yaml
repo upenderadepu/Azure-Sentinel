@@ -1,0 +1,25 @@
+id: 3691cb4c-dace-560e-9ee7-d65b995af10b
+Function:
+  Title: corelight_weird_red parser for Corelight
+  Version: '2.0.0'
+  LastUpdated: '2026-08-17'
+Category: Microsoft Sentinel Parser
+FunctionName: corelight_weird_red
+FunctionAlias: corelight_weird_red
+FunctionQuery: |+
+  let dummy_table = datatable(TimeGenerated: datetime) [];
+  let corelight_weird_red = view () {
+      union isfuzzy=true Corelight_v3_weird_red_CL, dummy_table
+        | extend
+            _path=path,
+            _system_name=system_name,
+            _write_ts=write_ts
+      | extend
+          EventVendor="Corelight",
+          EventProduct="CorelightSensor",
+          EventType="weird_red",
+          ts=TimeGenerated
+  };
+  corelight_weird_red
+
+...

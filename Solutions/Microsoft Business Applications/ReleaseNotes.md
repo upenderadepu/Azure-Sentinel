@@ -1,0 +1,9 @@
+| **Version** | **Date Modified (DD-MM-YYYY)** | **Change History**                                                  |
+|-------------|--------------------------------|---------------------------------------------------------------------|
+| 3.2.5       | 26-10-2026                     | Restored **Power Automate**, **Dataverse**, and **Power Platform Admin** CCF **Data Connectors** and repackaged the solution. |
+| 3.2.4       | 25-10-2026                     | Migrated **Analytic Rules** to Defender XDR Custom Detection format and added **XDR Workbooks**. |
+| 3.2.3       | 23-02-2026                     | Updated **Dataverse - Activity after failed logons** hunting query to use valid Enterprise technique |
+| 3.2.2       | 22-04-2025                     |<ul><li>Updated solution description.</li></ul> |
+| 3.2.1       | 11-04-2025                     |<ul><li>Move solution and content to GA.</li><li>Minor analytic rule update.</li></ul> |
+| 3.2.0       | 15-11-2024                     | <ul><li>Renamed solution from Power Platform to Microsoft Business Applications.</li><li>Merge Dynamics 365 CE Apps and Dynamics 365 Finance & Operations into a unified solution.</li><li>New analytics rules, playbooks and hunting queries.</li><li>Replace Dynamics 365 Finance and Operations function app using Codeless Connector.</li><li>Retire PPInventory function app.</li></ul>|
+| 3.1.3       | 12-07-2024                     |<ul><li>Removal of Power Apps, Power Platform Connectors, Power Platform DLP data connectors. Associated logs are now ingested via Power Platform Admin Activity data connector.</li><li>Update of analytics rules to utilize PowerPlatfromAdminActivity table.</li><li>Update data connectors DCR properties.</li></ul> |

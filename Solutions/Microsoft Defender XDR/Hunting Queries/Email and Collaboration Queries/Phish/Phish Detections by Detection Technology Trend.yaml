@@ -1,0 +1,30 @@
+id: dd6efecd-7fe5-41b1-a122-8e0a15de9451
+name: Phish Detections by Detection technology Trend
+description: |
+  This query visualises total emails with Phish detections over time summarizing the data daily by various Phish Detection technologies/controls
+description-detailed: |
+  This query visualises total emails with Phish detections over time summarizing the data daily by various Phish Detection technologies/controls in Microsoft Defender for Office 365.
+  Messages are de-duplicated to the latest record per NetworkMessageId and recipient, and deliveries to the SecOps mailbox and by the phishing simulation system are excluded. A single mv-expand over the parsed detection methods replaces the previous per-technique union, so new detection technologies appear automatically.
+  Query is also included as part of the Defender for Office 365 solution in Sentinel: https://techcommunity.microsoft.com/blog/microsoftdefenderforoffice365blog/part-2-build-custom-email-security-reports-and-dashboards-with-workbooks-in-micr/4411303
+requiredDataConnectors:
+- connectorId: MicrosoftThreatProtection
+  dataTypes:
+  - EmailEvents
+tactics:
+  - InitialAccess
+relevantTechniques:
+  - T1566
+query: |
+  let TimeStart = startofday(ago(30d));
+  let TimeEnd = startofday(now());
+  EmailEvents
+  | where Timestamp >= TimeStart
+  | where OrgLevelPolicy != "Phishing simulation" and OrgLevelPolicy != "SecOps Mailbox"
+  | extend Key = strcat(NetworkMessageId, "-", RecipientEmailAddress)
+  | summarize arg_max(Timestamp, *) by Key
+  | where DetectionMethods has "Phish"
+  | mv-expand PhishMethod = parse_json(DetectionMethods).Phish to typeof(string)
+  | where isnotempty(PhishMethod)
+  | make-series Count = count() default = 0 on Timestamp from TimeStart to TimeEnd step 1d by PhishMethod
+  | render timechart
+version: 1.1.0

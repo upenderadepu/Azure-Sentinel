@@ -1,0 +1,33 @@
+id: 81a8880f-cc20-40ce-98d6-2fc6a1c5b9a4
+name: AWSCloudTrail - EC2 Instance Launched Without Key Pair
+description: |
+  Detects EC2 RunInstances events without a key pair and with user data present, which may indicate malicious startup script execution on newly provisioned instances.
+severity: High
+requiredDataConnectors:
+  - connectorId: AWS
+    dataTypes:
+      - AWSCloudTrail
+tactics:
+  - Execution
+relevantTechniques:
+  - T1204
+  - T1059
+query: |
+    AWSCloudTrail
+    | where EventName == "RunInstances" and isempty(ErrorCode) and isempty(ErrorMessage)
+    | extend items = tostring(parse_json(RequestParameters).instancesSet.items)
+    | mv-expand todynamic(items)
+    | extend keyName=tostring(todynamic(items.['keyName']))
+    | where isempty(keyName) and RequestParameters contains "userData" and SourceIpAddress !contains "amazonaws.com"
+    | extend UserIdentityUserName = iff(isnotempty(UserIdentityUserName), UserIdentityUserName, tostring(split(UserIdentityArn,'/')[-1]))
+    | order by TimeGenerated desc
+entityMappings:
+  - entityType: Account
+    fieldMappings:
+      - identifier: FullName
+        columnName: UserIdentityUserName
+  - entityType: IP
+    fieldMappings:
+      - identifier: Address
+        columnName: SourceIpAddress
+version: 1.0.0

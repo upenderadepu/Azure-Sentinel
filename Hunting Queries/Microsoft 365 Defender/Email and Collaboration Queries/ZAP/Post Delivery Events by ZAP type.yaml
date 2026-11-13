@@ -1,0 +1,25 @@
+id: c0efc072-fce7-46c2-83a1-51e8a9e6a1e1
+name: Post Delivery Events by ZAP type
+description: |
+  This query visualises the daily amount of emails that had a post delivery action from zero-hour auto purge, summarizing by phish,spam or malware detection action
+description-detailed: |
+  This query visualises the daily amount of emails that had a post delivery action from zero-hour auto purge, summarizing by phish,spam or malware detection action in Defender for Office 365
+  Query is also included as part of the Defender for Office 365 solution in Sentinel: https://techcommunity.microsoft.com/blog/microsoftdefenderforoffice365blog/part-2-build-custom-email-security-reports-and-dashboards-with-workbooks-in-micr/4411303
+requiredDataConnectors:
+  - connectorId: MicrosoftThreatProtection
+    dataTypes:
+      - EmailPostDeliveryEvents
+tactics:
+  - InitialAccess
+relevantTechniques:
+  - T1566
+query: |
+  let TimeStart = startofday(ago(30d));
+  let TimeEnd = startofday(now());
+  EmailPostDeliveryEvents
+  | where Timestamp >= TimeStart
+  | where ActionType has "ZAP"
+  | where Timestamp < TimeEnd
+  | make-series ['Spam ZAP'] = countif(ActionType has 'Spam ZAP'), ['Phish ZAP'] = countif(ActionType has 'Phish ZAP'), ['Malware ZAP'] = countif(ActionType has 'Malware ZAP') default = 0 on Timestamp from TimeStart to TimeEnd step 1d
+  | render timechart
+version: 1.1.0

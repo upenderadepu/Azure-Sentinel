@@ -1,0 +1,86 @@
+id: f6c76cc9-218c-5b76-9b82-8607f09ea1b4
+name: GreyNoise TI Map IP Entity to SigninLogs
+version: 1.0.2
+kind: Scheduled
+description: |
+  'This query maps any GreyNoise IP indicators of compromise (IOCs) from threat intelligence (TI), by searching for matches in SigninLogs.'
+severity: Medium
+requiredDataConnectors:
+  - connectorId: ThreatIntelligence
+    dataTypes:
+      - ThreatIntelIndicators
+  - connectorId: ThreatIntelligenceTaxii
+    dataTypes:
+      - ThreatIntelIndicators
+  - connectorId: AzureActiveDirectory
+    dataTypes:
+      - SigninLogs
+  - connectorId: AzureActiveDirectory
+    dataTypes:
+      - AADNonInteractiveUserSignInLogs
+  - connectorId: MicrosoftDefenderThreatIntelligence
+    dataTypes:
+      - ThreatIntelIndicators
+  - connectorId: GreyNoise2SentinelAPI
+    dataTypes:
+      - ThreatIntelIndicators
+queryFrequency: 1h
+queryPeriod: 14d
+triggerOperator: gt
+triggerThreshold: 0
+tactics:
+  - CommandAndControl
+relevantTechniques:
+  - T1071
+query: |
+  let dt_lookBack = 1h;
+  let ioc_lookBack = 14d;
+  // Fetch GreyNoise IPv4 indicators from the ThreatIntelIndicators (STIX 2.1) table.
+  // GreyNoise only publishes ipv4-addr patterns, so a single ObservableKey filter is sufficient.
+  // Materialized because the union below evaluates this branch twice.
+  let GreyNoise_IPs = materialize (
+    ThreatIntelIndicators
+    | where TimeGenerated >= ago(ioc_lookBack)
+    | where SourceSystem == 'GreyNoise'
+    | where ObservableKey == 'ipv4-addr:value'
+    // Take the latest row per indicator first, then evaluate its current state, so an
+    // indicator that has since been deactivated cannot be resurrected by an older row.
+    | summarize arg_max(TimeGenerated, *) by Id
+    | where IsActive == true and IsDeleted == false and ValidUntil > now()
+    | extend TI_ipEntity = ObservableValue
+    | where ipv4_is_private(TI_ipEntity) == false and TI_ipEntity !startswith "fe80" and TI_ipEntity !startswith "::" and TI_ipEntity !startswith "127."
+    // Explicit projection keeps TimeGenerated and Type off the left side of the join, avoiding column collisions.
+    | project IndicatorId = Id, TI_ipEntity, ThreatType = tostring(Data.indicator_types[0]), IoCDescription = tostring(Data.description), Tags, Confidence, ValidFrom, ValidUntil
+  );
+  let aadFunc = (tableName:string){
+  GreyNoise_IPs
+  // using innerunique to keep perf fast and result set low, we only need one match to indicate potential malicious activity that needs to be investigated
+  | join kind=innerunique (
+      table(tableName) | where TimeGenerated >= ago(dt_lookBack)
+      | extend Status = todynamic(Status), LocationDetails = todynamic(LocationDetails)
+      | extend StatusCode = tostring(Status.errorCode), StatusDetails = tostring(Status.additionalDetails), StatusReason = tostring(Status.failureReason)
+      | extend State = tostring(LocationDetails.state), City = tostring(LocationDetails.city), Region = tostring(LocationDetails.countryOrRegion)
+      // renaming time column so it is clear the log this came from
+      | extend SigninLogs_TimeGenerated = TimeGenerated
+  )
+  on $left.TI_ipEntity == $right.IPAddress
+  | where SigninLogs_TimeGenerated < ValidUntil
+  | summarize SigninLogs_TimeGenerated = arg_max(SigninLogs_TimeGenerated, *) by IndicatorId, IPAddress
+  | project SigninLogs_TimeGenerated, IoCDescription, IndicatorId, ThreatType, ValidFrom, ValidUntil, Confidence, Tags,
+  TI_ipEntity, IPAddress, UserPrincipalName, AppDisplayName, StatusCode, StatusDetails, StatusReason, Type
+  | extend timestamp = SigninLogs_TimeGenerated, Name = tostring(split(UserPrincipalName, '@', 0)[0]), UPNSuffix = tostring(split(UserPrincipalName, '@', 1)[0])
+  };
+  let aadSignin = aadFunc("SigninLogs");
+  let aadNonInt = aadFunc("AADNonInteractiveUserSignInLogs");
+  union isfuzzy=true aadSignin, aadNonInt
+entityMappings:
+  - entityType: Account
+    fieldMappings:
+      - identifier: Name
+        columnName: Name
+      - identifier: UPNSuffix
+        columnName: UPNSuffix
+  - entityType: IP
+    fieldMappings:
+      - identifier: Address
+        columnName: IPAddress

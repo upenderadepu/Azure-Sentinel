@@ -1,0 +1,109 @@
+id: d342ae37-8b5f-4c49-bd3d-6914e1a7818a
+Function:
+  Title: Corelight Files Events
+  Version: '2.0.0'
+  LastUpdated: '2026-08-17'
+Category: Microsoft Sentinel Parser
+FunctionName: corelight_files
+FunctionAlias: corelight_files
+FunctionQuery: |
+    let dummy_table = datatable(TimeGenerated: datetime, uid: string) [];
+    let corelight_files = view () {
+        union isfuzzy=true
+            (Corelight_v3_files_CL
+                | extend extracted=tostring(extracted), num=toreal(num), ts=todatetime(ts)),
+            (Corelight_v3_files_red_CL
+                | extend extracted=tostring(extracted), num=toreal(num), ts=todatetime(ts)),
+            dummy_table
+        | summarize arg_max(TimeGenerated, *) by uid
+        | join kind=leftouter 
+        ( corelight_conn
+        | project uid, local_resp
+        ) on $left.uid == $right.uid
+        | project-away uid1
+        | extend
+            mime_type = iff(isempty(mime_type), dynamic([]), pack_array(mime_type))
+        | extend
+            EventVendor = "Corelight",
+            EventProduct = "CorelightSensor",
+            EventType = "files",
+            ts = TimeGenerated,
+            dest_host = rx_hosts,
+            bytes = seen_bytes,
+            file_size = total_bytes,
+            src_host = tx_hosts,
+            file_name = filename,
+            object = filename,
+            src = id_orig_h,
+            src_ip = id_orig_h,
+            src_port = id_orig_p,
+            dest = id_resp_h,
+            dest_ip = id_resp_h,
+            dest_port = id_resp_p,
+            app = source,
+            file_hash = coalesce(md5, sha1, sha256, "unknown"),
+            sensor_name = coalesce(system_name, "unknown")
+        | extend
+            is_broadcast =iff(src in("0.0.0.0", "255.255.255.255") or dest in("255.255.255.255", "0.0.0.0"),"true","false"),
+            is_dest_internal_ip = iff(local_resp == true, "true", "false"),
+            is_src_internal_ip = iff(local_orig == true, "true", "false")
+        | project
+            TimeGenerated,
+            path,
+            system_name,
+            write_ts,
+            analyzers,
+            conn_uids,
+            depth,
+            duration,
+            fuid,
+            is_orig,
+            local_orig,
+            md5,
+            mime_type,
+            missing_bytes,
+            overflow_bytes,
+            rx_hosts,
+            seen_bytes,
+            sha1,
+            sha256,
+            source,
+            timedout,
+            total_bytes,
+            tx_hosts,
+            vlan,
+            filename,
+            parent_fuid,
+            extracted,
+            extracted_cutoff,
+            extracted_size,
+            id_orig_h,
+            id_orig_p,
+            id_resp_h,
+            id_resp_p,
+            num,
+            EventVendor,
+            EventProduct,
+            EventType,
+            ts,
+            uid,
+            dest_host,
+            bytes,
+            file_size,
+            src_host,
+            file_name,
+            object,
+            src,
+            src_ip,
+            src_port,
+            dest,
+            dest_ip,
+            dest_port,
+            app,
+            file_hash,
+            sensor_name,
+            is_broadcast,
+            is_dest_internal_ip,
+            is_src_internal_ip
+    };
+    corelight_files

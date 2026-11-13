@@ -1,0 +1,566 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "author": "Wiz - support@wiz.io",
+    "comments": "Solution template for Wiz"
+  },
+  "parameters": {
+    "location": {
+      "type": "string",
+      "minLength": 1,
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "Not used, but needed to pass arm-ttk test `Location-Should-Not-Be-Hardcoded`.  We instead use the `workspace-location` which is derived from the LA workspace"
+      }
+    },
+    "workspace-location": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "[concat('Region to deploy solution resources -- separate from location selection',parameters('location'))]"
+      }
+    },
+    "workspace": {
+      "defaultValue": "",
+      "type": "string",
+      "metadata": {
+        "description": "Workspace name for Log Analytics where Microsoft Sentinel is setup"
+      }
+    },
+    "workbook1-name": {
+      "type": "string",
+      "defaultValue": "Wiz Findings overview",
+      "minLength": 1,
+      "metadata": {
+        "description": "Name for the workbook"
+      }
+    }
+  },
+  "variables": {
+    "email": "support@wiz.io",
+    "_email": "[variables('email')]",
+    "_solutionName": "Wiz",
+    "_solutionVersion": "3.0.2",
+    "solutionId": "wizinc1627338511749.wizinc1627338511749_wiz_mss-sentinel",
+    "_solutionId": "[variables('solutionId')]",
+    "uiConfigId1": "WizSentinel",
+    "_uiConfigId1": "[variables('uiConfigId1')]",
+    "dataConnectorContentId1": "WizSentinel",
+    "_dataConnectorContentId1": "[variables('dataConnectorContentId1')]",
+    "dataConnectorId1": "[extensionResourceId(resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspace')), 'Microsoft.SecurityInsights/dataConnectors', variables('_dataConnectorContentId1'))]",
+    "_dataConnectorId1": "[variables('dataConnectorId1')]",
+    "dataConnectorTemplateSpecName1": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/',concat(parameters('workspace'),'-dc-',uniquestring(variables('_dataConnectorContentId1'))))]",
+    "dataConnectorVersion1": "1.0.0",
+    "_dataConnectorcontentProductId1": "[concat(take(variables('_solutionId'),50),'-','dc','-', uniqueString(concat(variables('_solutionId'),'-','DataConnector','-',variables('_dataConnectorContentId1'),'-', variables('dataConnectorVersion1'))))]",
+    "workbookVersion1": "3.0.0",
+    "workbookContentId1": "WizFindingsWorkbook",
+    "workbookId1": "[resourceId('Microsoft.Insights/workbooks', variables('workbookContentId1'))]",
+    "workbookTemplateSpecName1": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/',concat(parameters('workspace'),'-wb-',uniquestring(variables('_workbookContentId1'))))]",
+    "_workbookContentId1": "[variables('workbookContentId1')]",
+    "workspaceResourceId": "[resourceId('microsoft.OperationalInsights/Workspaces', parameters('workspace'))]",
+    "_workbookcontentProductId1": "[concat(take(variables('_solutionId'),50),'-','wb','-', uniqueString(concat(variables('_solutionId'),'-','Workbook','-',variables('_workbookContentId1'),'-', variables('workbookVersion1'))))]",
+    "_solutioncontentProductId": "[concat(take(variables('_solutionId'),50),'-','sl','-', uniqueString(concat(variables('_solutionId'),'-','Solution','-',variables('_solutionId'),'-', variables('_solutionVersion'))))]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/providers/contentTemplates",
+      "apiVersion": "2023-04-01-preview",
+      "name": "[variables('dataConnectorTemplateSpecName1')]",
+      "location": "[parameters('workspace-location')]",
+      "dependsOn": [
+        "[extensionResourceId(resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspace')), 'Microsoft.SecurityInsights/contentPackages', variables('_solutionId'))]"
+      ],
+      "properties": {
+        "description": "Wiz data connector with template version 3.0.2",
+        "mainTemplate": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "[variables('dataConnectorVersion1')]",
+          "parameters": {},
+          "variables": {},
+          "resources": [
+            {
+              "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/',variables('_dataConnectorContentId1'))]",
+              "apiVersion": "2021-03-01-preview",
+              "type": "Microsoft.OperationalInsights/workspaces/providers/dataConnectors",
+              "location": "[parameters('workspace-location')]",
+              "kind": "GenericUI",
+              "properties": {
+                "connectorUiConfig": {
+                  "id": "[variables('_uiConfigId1')]",
+                  "title": "Wiz for Microsoft Sentinel",
+                  "publisher": "Wiz",
+                  "descriptionMarkdown": "The Wiz integration pushes Wiz **Issues**, **Detections**, and **Audit Logs** into Microsoft Sentinel in real time. Wiz sends data to a Data Collection Endpoint using the Wiz service principal, so there is no Azure Function to host and no shared keys to manage. This connector grants that service principal the least-privilege RBAC it needs; Wiz then creates the data collection rule and tables and begins pushing once you configure the integration in the Wiz portal.",
+                  "logo": "Wiz.svg",
+                  "graphQueries": [
+                    {
+                      "metricName": "Total Issues received",
+                      "legend": "WizIssuesV3_CL",
+                      "baseQuery": "WizIssuesV3_CL"
+                    },
+                    {
+                      "metricName": "Total Detections received",
+                      "legend": "WizDetectionsV3_CL",
+                      "baseQuery": "WizDetectionsV3_CL"
+                    },
+                    {
+                      "metricName": "Total Audit Logs received",
+                      "legend": "WizAuditLogsV3_CL",
+                      "baseQuery": "WizAuditLogsV3_CL"
+                    }
+                  ],
+                  "sampleQueries": [
+                    {
+                      "description": "All Wiz Issues",
+                      "query": "WizIssuesV3_CL\n | sort by TimeGenerated desc"
+                    },
+                    {
+                      "description": "All Wiz Detections",
+                      "query": "WizDetectionsV3_CL\n | sort by TimeGenerated desc"
+                    }
+                  ],
+                  "connectivityCriterias": [
+                    {
+                      "type": "IsConnectedQuery",
+                      "value": [
+                        "union isfuzzy=true (WizIssuesV3_CL), (WizDetectionsV3_CL), (WizAuditLogsV3_CL)\n            | summarize LastLogReceived = max(TimeGenerated)\n            | project IsConnected = LastLogReceived > ago(30d)"
+                      ]
+                    }
+                  ],
+                  "dataTypes": [
+                    {
+                      "name": "WizIssuesV3_CL",
+                      "lastDataReceivedQuery": "WizIssuesV3_CL\n            | summarize Time = max(TimeGenerated)\n            | where isnotempty(Time)"
+                    },
+                    {
+                      "name": "WizDetectionsV3_CL",
+                      "lastDataReceivedQuery": "WizDetectionsV3_CL\n            | summarize Time = max(TimeGenerated)\n            | where isnotempty(Time)"
+                    },
+                    {
+                      "name": "WizAuditLogsV3_CL",
+                      "lastDataReceivedQuery": "WizAuditLogsV3_CL\n            | summarize Time = max(TimeGenerated)\n            | where isnotempty(Time)"
+                    }
+                  ],
+                  "availability": {
+                    "status": 1,
+                    "isPreview": false
+                  },
+                  "permissions": {
+                    "resourceProvider": [
+                      {
+                        "provider": "Microsoft.OperationalInsights/workspaces",
+                        "permissionsDisplayText": "read and write permissions are required.",
+                        "providerDisplayName": "Workspace",
+                        "scope": "Workspace",
+                        "requiredPermissions": {
+                          "write": true,
+                          "read": true,
+                          "delete": true
+                        }
+                      },
+                      {
+                        "provider": "Microsoft.OperationalInsights/workspaces/sharedKeys",
+                        "permissionsDisplayText": "read permissions to shared keys for the workspace are required. [See the documentation to learn more about workspace keys](https://docs.microsoft.com/azure/azure-monitor/platform/agent-windows#obtain-workspace-id-and-key).",
+                        "providerDisplayName": "Keys",
+                        "scope": "Workspace",
+                        "requiredPermissions": {
+                          "action": true
+                        }
+                      }
+                    ],
+                    "customs": [
+                      {
+                        "name": "Subscription permissions",
+                        "description": "**Owner** or **User Access Administrator** at the subscription is required to create the custom role definition (Microsoft.Authorization/roleDefinitions/write)."
+                      },
+                      {
+                        "name": "Microsoft Entra permissions",
+                        "description": "Permission to read (and, if the Wiz enterprise application is not yet consented, create) the Wiz service principal in Microsoft Entra ID."
+                      }
+                    ]
+                  },
+                  "instructionSteps": [
+                    {
+                      "description": "ARM cannot resolve a Microsoft Entra object, so you supply the Wiz service principal **object ID**. This app registration is unique to your Wiz tenant — find your **Application (client) ID** on the Microsoft Sentinel integration setup screen in Wiz (**Settings > Integrations > Add > Microsoft Sentinel**), then substitute it for `WIZ_APP_ID_HERE` below. In Azure Cloud Shell (no local install required; creating the service principal needs permission to register enterprise applications in Microsoft Entra ID) run the line below. It prints the **service principal object ID** — copy that value into the deployment parameter. It creates the service principal first if it does not yet exist in your tenant:\n\n```bash\nWIZ_APP_ID=\"WIZ_APP_ID_HERE\"  # Application (client) ID from the Wiz Microsoft Sentinel integration setup screen\naz ad sp show --id \"$WIZ_APP_ID\" --query id -o tsv 2>/dev/null \\\n  || az ad sp create --id \"$WIZ_APP_ID\" --query id -o tsv\n```\n\nIf the command fails, rerun it without `2>/dev/null` to see the full error.",
+                      "title": "STEP 1 - Get the Wiz service principal object ID"
+                    },
+                    {
+                      "description": "Deploy the custom role and assignment into the resource group that hosts this workspace. Paste the object ID from Step 1 (and, optionally, a Data Collection Endpoint resource ID).\n\n1. Click **Deploy the Wiz RBAC role**: \n\n\t[![Deploy the Wiz RBAC role](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FAzure%2FAzure-Sentinel%2Fmaster%2FSolutions%2FWiz%2FData%20Connectors%2Fazuredeploy_WizSentinelIntegration.json) \n2. Select the **Subscription** and the **Resource group** that hosts this workspace. \n3. Enter **wizPrincipalObjectId** (from Step 1); optionally **dataCollectionEndpointId**. \n4. **Review + create**.",
+                      "instructions": [
+                        {
+                          "parameters": {
+                            "fillWith": [
+                              "WorkspaceResourceId"
+                            ],
+                            "label": "Workspace Resource ID"
+                          },
+                          "type": "CopyableLabel"
+                        }
+                      ],
+                      "title": "STEP 2 - Grant Wiz the RBAC"
+                    },
+                    {
+                      "description": "In Wiz, go to **Settings > Integrations > Add > Microsoft Sentinel**. Paste your **Tenant ID**, **Workspace Resource ID**, and **Data Collection Endpoint Resource ID**, tick *Deployment completed*, and save. Wiz then creates the data collection rule and tables and begins pushing Issues, Detections, and Audit Logs into this workspace.",
+                      "title": "STEP 3 - Configure the integration in Wiz"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "type": "Microsoft.OperationalInsights/workspaces/providers/metadata",
+              "apiVersion": "2023-04-01-preview",
+              "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/',concat('DataConnector-', last(split(variables('_dataConnectorId1'),'/'))))]",
+              "properties": {
+                "parentId": "[extensionResourceId(resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspace')), 'Microsoft.SecurityInsights/dataConnectors', variables('_dataConnectorContentId1'))]",
+                "contentId": "[variables('_dataConnectorContentId1')]",
+                "kind": "DataConnector",
+                "version": "[variables('dataConnectorVersion1')]",
+                "source": {
+                  "kind": "Solution",
+                  "name": "Wiz",
+                  "sourceId": "[variables('_solutionId')]"
+                },
+                "author": {
+                  "name": "Wiz",
+                  "email": "[variables('_email')]"
+                },
+                "support": {
+                  "name": "Wiz",
+                  "tier": "Partner",
+                  "email": "support@wiz.io",
+                  "link": "https://support.wiz.io/"
+                }
+              }
+            }
+          ]
+        },
+        "packageKind": "Solution",
+        "packageVersion": "[variables('_solutionVersion')]",
+        "packageName": "[variables('_solutionName')]",
+        "packageId": "[variables('_solutionId')]",
+        "contentSchemaVersion": "3.0.0",
+        "contentId": "[variables('_dataConnectorContentId1')]",
+        "contentKind": "DataConnector",
+        "displayName": "Wiz for Microsoft Sentinel",
+        "contentProductId": "[variables('_dataConnectorcontentProductId1')]",
+        "id": "[variables('_dataConnectorcontentProductId1')]",
+        "version": "[variables('dataConnectorVersion1')]"
+      }
+    },
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/providers/metadata",
+      "apiVersion": "2023-04-01-preview",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/',concat('DataConnector-', last(split(variables('_dataConnectorId1'),'/'))))]",
+      "dependsOn": [
+        "[variables('_dataConnectorId1')]"
+      ],
+      "location": "[parameters('workspace-location')]",
+      "properties": {
+        "parentId": "[extensionResourceId(resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspace')), 'Microsoft.SecurityInsights/dataConnectors', variables('_dataConnectorContentId1'))]",
+        "contentId": "[variables('_dataConnectorContentId1')]",
+        "kind": "DataConnector",
+        "version": "[variables('dataConnectorVersion1')]",
+        "source": {
+          "kind": "Solution",
+          "name": "Wiz",
+          "sourceId": "[variables('_solutionId')]"
+        },
+        "author": {
+          "name": "Wiz",
+          "email": "[variables('_email')]"
+        },
+        "support": {
+          "name": "Wiz",
+          "tier": "Partner",
+          "email": "support@wiz.io",
+          "link": "https://support.wiz.io/"
+        }
+      }
+    },
+    {
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/',variables('_dataConnectorContentId1'))]",
+      "apiVersion": "2021-03-01-preview",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/dataConnectors",
+      "location": "[parameters('workspace-location')]",
+      "kind": "GenericUI",
+      "properties": {
+        "connectorUiConfig": {
+          "title": "Wiz for Microsoft Sentinel",
+          "publisher": "Wiz",
+          "descriptionMarkdown": "The Wiz integration pushes Wiz **Issues**, **Detections**, and **Audit Logs** into Microsoft Sentinel in real time. Wiz sends data to a Data Collection Endpoint using the Wiz service principal, so there is no Azure Function to host and no shared keys to manage. This connector grants that service principal the least-privilege RBAC it needs; Wiz then creates the data collection rule and tables and begins pushing once you configure the integration in the Wiz portal.",
+          "graphQueries": [
+            {
+              "metricName": "Total Issues received",
+              "legend": "WizIssuesV3_CL",
+              "baseQuery": "WizIssuesV3_CL"
+            },
+            {
+              "metricName": "Total Detections received",
+              "legend": "WizDetectionsV3_CL",
+              "baseQuery": "WizDetectionsV3_CL"
+            },
+            {
+              "metricName": "Total Audit Logs received",
+              "legend": "WizAuditLogsV3_CL",
+              "baseQuery": "WizAuditLogsV3_CL"
+            }
+          ],
+          "dataTypes": [
+            {
+              "name": "WizIssuesV3_CL",
+              "lastDataReceivedQuery": "WizIssuesV3_CL\n            | summarize Time = max(TimeGenerated)\n            | where isnotempty(Time)"
+            },
+            {
+              "name": "WizDetectionsV3_CL",
+              "lastDataReceivedQuery": "WizDetectionsV3_CL\n            | summarize Time = max(TimeGenerated)\n            | where isnotempty(Time)"
+            },
+            {
+              "name": "WizAuditLogsV3_CL",
+              "lastDataReceivedQuery": "WizAuditLogsV3_CL\n            | summarize Time = max(TimeGenerated)\n            | where isnotempty(Time)"
+            }
+          ],
+          "connectivityCriterias": [
+            {
+              "type": "IsConnectedQuery",
+              "value": [
+                "union isfuzzy=true (WizIssuesV3_CL), (WizDetectionsV3_CL), (WizAuditLogsV3_CL)\n            | summarize LastLogReceived = max(TimeGenerated)\n            | project IsConnected = LastLogReceived > ago(30d)"
+              ]
+            }
+          ],
+          "sampleQueries": [
+            {
+              "description": "All Wiz Issues",
+              "query": "WizIssuesV3_CL\n | sort by TimeGenerated desc"
+            },
+            {
+              "description": "All Wiz Detections",
+              "query": "WizDetectionsV3_CL\n | sort by TimeGenerated desc"
+            }
+          ],
+          "availability": {
+            "status": 1,
+            "isPreview": false
+          },
+          "permissions": {
+            "resourceProvider": [
+              {
+                "provider": "Microsoft.OperationalInsights/workspaces",
+                "permissionsDisplayText": "read and write permissions are required.",
+                "providerDisplayName": "Workspace",
+                "scope": "Workspace",
+                "requiredPermissions": {
+                  "write": true,
+                  "read": true,
+                  "delete": true
+                }
+              },
+              {
+                "provider": "Microsoft.OperationalInsights/workspaces/sharedKeys",
+                "permissionsDisplayText": "read permissions to shared keys for the workspace are required. [See the documentation to learn more about workspace keys](https://docs.microsoft.com/azure/azure-monitor/platform/agent-windows#obtain-workspace-id-and-key).",
+                "providerDisplayName": "Keys",
+                "scope": "Workspace",
+                "requiredPermissions": {
+                  "action": true
+                }
+              }
+            ],
+            "customs": [
+              {
+                "name": "Subscription permissions",
+                "description": "**Owner** or **User Access Administrator** at the subscription is required to create the custom role definition (Microsoft.Authorization/roleDefinitions/write)."
+              },
+              {
+                "name": "Microsoft Entra permissions",
+                "description": "Permission to read (and, if the Wiz enterprise application is not yet consented, create) the Wiz service principal in Microsoft Entra ID."
+              }
+            ]
+          },
+          "instructionSteps": [
+            {
+              "description": "ARM cannot resolve a Microsoft Entra object, so you supply the Wiz service principal **object ID**. This app registration is unique to your Wiz tenant — find your **Application (client) ID** on the Microsoft Sentinel integration setup screen in Wiz (**Settings > Integrations > Add > Microsoft Sentinel**), then substitute it for `WIZ_APP_ID_HERE` below. In Azure Cloud Shell (no local install required; creating the service principal needs permission to register enterprise applications in Microsoft Entra ID) run the line below. It prints the **service principal object ID** — copy that value into the deployment parameter. It creates the service principal first if it does not yet exist in your tenant:\n\n```bash\nWIZ_APP_ID=\"WIZ_APP_ID_HERE\"  # Application (client) ID from the Wiz Microsoft Sentinel integration setup screen\naz ad sp show --id \"$WIZ_APP_ID\" --query id -o tsv 2>/dev/null \\\n  || az ad sp create --id \"$WIZ_APP_ID\" --query id -o tsv\n```\n\nIf the command fails, rerun it without `2>/dev/null` to see the full error.",
+              "title": "STEP 1 - Get the Wiz service principal object ID"
+            },
+            {
+              "description": "Deploy the custom role and assignment into the resource group that hosts this workspace. Paste the object ID from Step 1 (and, optionally, a Data Collection Endpoint resource ID).\n\n1. Click **Deploy the Wiz RBAC role**: \n\n\t[![Deploy the Wiz RBAC role](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FAzure%2FAzure-Sentinel%2Fmaster%2FSolutions%2FWiz%2FData%20Connectors%2Fazuredeploy_WizSentinelIntegration.json) \n2. Select the **Subscription** and the **Resource group** that hosts this workspace. \n3. Enter **wizPrincipalObjectId** (from Step 1); optionally **dataCollectionEndpointId**. \n4. **Review + create**.",
+              "instructions": [
+                {
+                  "parameters": {
+                    "fillWith": [
+                      "WorkspaceResourceId"
+                    ],
+                    "label": "Workspace Resource ID"
+                  },
+                  "type": "CopyableLabel"
+                }
+              ],
+              "title": "STEP 2 - Grant Wiz the RBAC"
+            },
+            {
+              "description": "In Wiz, go to **Settings > Integrations > Add > Microsoft Sentinel**. Paste your **Tenant ID**, **Workspace Resource ID**, and **Data Collection Endpoint Resource ID**, tick *Deployment completed*, and save. Wiz then creates the data collection rule and tables and begins pushing Issues, Detections, and Audit Logs into this workspace.",
+              "title": "STEP 3 - Configure the integration in Wiz"
+            }
+          ],
+          "id": "[variables('_uiConfigId1')]"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/providers/contentTemplates",
+      "apiVersion": "2023-04-01-preview",
+      "name": "[variables('workbookTemplateSpecName1')]",
+      "location": "[parameters('workspace-location')]",
+      "dependsOn": [
+        "[extensionResourceId(resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspace')), 'Microsoft.SecurityInsights/contentPackages', variables('_solutionId'))]"
+      ],
+      "properties": {
+        "description": "WizFindings Workbook with template version 3.0.2",
+        "mainTemplate": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "[variables('workbookVersion1')]",
+          "parameters": {},
+          "variables": {},
+          "resources": [
+            {
+              "type": "Microsoft.Insights/workbooks",
+              "name": "[variables('workbookContentId1')]",
+              "location": "[parameters('workspace-location')]",
+              "kind": "shared",
+              "apiVersion": "2021-08-01",
+              "metadata": {
+                "description": "A visualized overview of Wiz Issues, Detections and Audit Logs.\nExplore, analyze and learn about your security posture using the Wiz Findings overview"
+              },
+              "properties": {
+                "displayName": "[parameters('workbook1-name')]",
+                "serializedData": "{\"version\":\"Notebook/1.0\",\"items\":[{\"type\":3,\"content\":{\"version\":\"KqlItem/1.0\",\"query\":\"WizIssuesV3_CL \\n| summarize count() by bin(TimeGenerated, 1h)\",\"title\":\"Issues over time\",\"size\":3,\"queryType\":0,\"resourceType\":\"microsoft.operationalinsights/workspaces\",\"visualization\":\"linechart\"},\"name\":\"Issues over time\"},{\"type\":3,\"content\":{\"version\":\"KqlItem/1.0\",\"query\":\"WizDetectionsV3_CL \\n| summarize count() by bin(TimeGenerated, 1h)\",\"title\":\"Detections over time\",\"size\":3,\"queryType\":0,\"resourceType\":\"microsoft.operationalinsights/workspaces\",\"visualization\":\"linechart\"},\"name\":\"Detections over time\"},{\"type\":3,\"content\":{\"version\":\"KqlItem/1.0\",\"query\":\"WizAuditLogsV3_CL \\n| summarize count() by bin(TimeGenerated, 1h)\",\"title\":\"Audit logs over time\",\"size\":3,\"queryType\":0,\"resourceType\":\"microsoft.operationalinsights/workspaces\",\"visualization\":\"linechart\"},\"name\":\"Audit logs over time\"},{\"type\":3,\"content\":{\"version\":\"KqlItem/1.0\",\"query\":\"WizIssuesV3_CL \\n| summarize arg_max(TimeGenerated, *) by issueId\\n| summarize count() by severity\",\"title\":\"Issues by severity\",\"size\":3,\"queryType\":0,\"resourceType\":\"microsoft.operationalinsights/workspaces\",\"visualization\":\"piechart\"},\"customWidth\":\"33\",\"name\":\"Issues by severity\"},{\"type\":3,\"content\":{\"version\":\"KqlItem/1.0\",\"query\":\"WizIssuesV3_CL \\n| summarize arg_max(TimeGenerated, *) by issueId\\n| summarize count() by status\",\"title\":\"Issues by status\",\"size\":3,\"queryType\":0,\"resourceType\":\"microsoft.operationalinsights/workspaces\",\"visualization\":\"piechart\"},\"customWidth\":\"33\",\"name\":\"Issues by status\"},{\"type\":3,\"content\":{\"version\":\"KqlItem/1.0\",\"query\":\"WizIssuesV3_CL \\n| summarize arg_max(TimeGenerated, *) by issueId\\n| summarize count() by tostring(entitySnapshot.cloudPlatform)\",\"title\":\"Issues by cloud platform\",\"size\":3,\"queryType\":0,\"resourceType\":\"microsoft.operationalinsights/workspaces\",\"visualization\":\"piechart\"},\"customWidth\":\"33\",\"name\":\"Issues by cloud platform\"},{\"type\":3,\"content\":{\"version\":\"KqlItem/1.0\",\"query\":\"WizDetectionsV3_CL \\n| summarize arg_max(TimeGenerated, *) by detectionId\\n| summarize count() by severity\",\"title\":\"Detections by severity\",\"size\":3,\"queryType\":0,\"resourceType\":\"microsoft.operationalinsights/workspaces\",\"visualization\":\"piechart\"},\"customWidth\":\"33\",\"name\":\"Detections by severity\"},{\"type\":3,\"content\":{\"version\":\"KqlItem/1.0\",\"query\":\"WizDetectionsV3_CL \\n| summarize arg_max(TimeGenerated, *) by detectionId\\n| summarize count() by tdrSource\",\"title\":\"Detections by TDR source\",\"size\":3,\"queryType\":0,\"resourceType\":\"microsoft.operationalinsights/workspaces\",\"visualization\":\"piechart\"},\"customWidth\":\"33\",\"name\":\"Detections by TDR source\"},{\"type\":3,\"content\":{\"version\":\"KqlItem/1.0\",\"query\":\"WizAuditLogsV3_CL \\n| summarize arg_max(TimeGenerated, *) by auditlogId\\n| summarize count() by action\",\"title\":\"Audit logs by action\",\"size\":3,\"queryType\":0,\"resourceType\":\"microsoft.operationalinsights/workspaces\",\"visualization\":\"piechart\"},\"customWidth\":\"33\",\"name\":\"Audit logs by action\"},{\"type\":3,\"content\":{\"version\":\"KqlItem/1.0\",\"query\":\"WizAuditLogsV3_CL \\n| summarize arg_max(TimeGenerated, *) by auditlogId\\n| summarize count() by status\",\"title\":\"Audit logs by status\",\"size\":3,\"queryType\":0,\"resourceType\":\"microsoft.operationalinsights/workspaces\",\"visualization\":\"piechart\"},\"customWidth\":\"33\",\"name\":\"Audit logs by status\"}],\"fromTemplateId\":\"sentinel-WizFindings\",\"$schema\":\"https://github.com/Microsoft/Application-Insights-Workbooks/blob/master/schema/workbook.json\"}\n",
+                "version": "1.0",
+                "sourceId": "[variables('workspaceResourceId')]",
+                "category": "sentinel"
+              }
+            },
+            {
+              "type": "Microsoft.OperationalInsights/workspaces/providers/metadata",
+              "apiVersion": "2022-01-01-preview",
+              "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/',concat('Workbook-', last(split(variables('workbookId1'),'/'))))]",
+              "properties": {
+                "description": "@{workbookKey=WizFindingsWorkbook; logoFileName=Wiz_logo.svg; description=A visualized overview of Wiz Issues, Detections and Audit Logs.\nExplore, analyze and learn about your security posture using the Wiz Findings overview; dataTypesDependencies=System.Object[]; dataConnectorsDependencies=System.Object[]; previewImagesFileNames=System.Object[]; version=3.0.0; title=Wiz Findings overview; templateRelativePath=WizFindings.json; subtitle=; provider=Wiz}.description",
+                "parentId": "[variables('workbookId1')]",
+                "contentId": "[variables('_workbookContentId1')]",
+                "kind": "Workbook",
+                "version": "[variables('workbookVersion1')]",
+                "source": {
+                  "kind": "Solution",
+                  "name": "Wiz",
+                  "sourceId": "[variables('_solutionId')]"
+                },
+                "author": {
+                  "name": "Wiz",
+                  "email": "[variables('_email')]"
+                },
+                "support": {
+                  "name": "Wiz",
+                  "tier": "Partner",
+                  "email": "support@wiz.io",
+                  "link": "https://support.wiz.io/"
+                },
+                "dependencies": {
+                  "operator": "AND",
+                  "criteria": [
+                    {
+                      "contentId": "WizIssuesV3_CL",
+                      "kind": "DataType"
+                    },
+                    {
+                      "contentId": "WizDetectionsV3_CL",
+                      "kind": "DataType"
+                    },
+                    {
+                      "contentId": "WizAuditLogsV3_CL",
+                      "kind": "DataType"
+                    },
+                    {
+                      "contentId": "WizSentinel",
+                      "kind": "DataConnector"
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        "packageKind": "Solution",
+        "packageVersion": "[variables('_solutionVersion')]",
+        "packageName": "[variables('_solutionName')]",
+        "packageId": "[variables('_solutionId')]",
+        "contentSchemaVersion": "3.0.0",
+        "contentId": "[variables('_workbookContentId1')]",
+        "contentKind": "Workbook",
+        "displayName": "[parameters('workbook1-name')]",
+        "contentProductId": "[variables('_workbookcontentProductId1')]",
+        "id": "[variables('_workbookcontentProductId1')]",
+        "version": "[variables('workbookVersion1')]"
+      }
+    },
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/providers/contentPackages",
+      "apiVersion": "2023-04-01-preview",
+      "location": "[parameters('workspace-location')]",
+      "properties": {
+        "version": "3.0.2",
+        "kind": "Solution",
+        "contentSchemaVersion": "3.0.0",
+        "displayName": "Wiz",
+        "publisherDisplayName": "Wiz",
+        "descriptionHtml": "<p><strong>Note:</strong> Please refer to the following before installing the solution:</p>\n<p>• Review the solution <a href=\"https://github.com/Azure/Azure-Sentinel/tree/master/Solutions/Wiz/ReleaseNotes.md\">Release Notes</a></p>\n<p>• There may be <a href=\"https://aka.ms/sentinelsolutionsknownissues\">known issues</a> pertaining to this Solution, please refer to them before installing.</p>\n<p>The <a href=\"https://wiz.io/\">Wiz</a> solution for Microsoft Sentinel lets Wiz push <a href=\"https://docs.wiz.io/wiz-docs/docs/issues\">Wiz Issues</a>, Wiz Detections, and <a href=\"https://docs.wiz.io/wiz-docs/docs/audit-log-settings\">Wiz Audit Logs</a> into Microsoft Sentinel in real time. Wiz sends data to a Data Collection Endpoint (DCE) using the Wiz service principal; this solution grants that service principal the least-privilege RBAC it needs, and Wiz then creates the data collection rule and tables. There is no Azure Function to host and no workspace shared keys to manage.</p>\n<p><strong>Underlying Microsoft Technologies used:</strong></p>\n<p>This solution takes a dependency on the following technologies, and some of these dependencies either may be in <a href=\"https://azure.microsoft.com/support/legal/preview-supplemental-terms/\">Preview</a> state or might result in additional ingestion or operational costs:</p>\n<ol type=\"a\">\n<li><a href=\"https://learn.microsoft.com/azure/azure-monitor/logs/logs-ingestion-api-overview\">Data Collection Rules and the Logs Ingestion API</a></li>\n</ol>\n<p><strong>Data Connectors:</strong> 1, <strong>Workbooks:</strong> 1</p>\n<p><a href=\"https://aka.ms/azuresentinel\">Learn more about Microsoft Sentinel</a> | <a href=\"https://aka.ms/azuresentinelsolutionsdoc\">Learn more about Solutions</a></p>\n",
+        "contentKind": "Solution",
+        "contentProductId": "[variables('_solutioncontentProductId')]",
+        "id": "[variables('_solutioncontentProductId')]",
+        "icon": "<img src=\"https://raw.githubusercontent.com/Azure/Azure-Sentinel/master/Logos/Wiz.svg\" width=\"75px\" height=\"75px\">",
+        "contentId": "[variables('_solutionId')]",
+        "parentId": "[variables('_solutionId')]",
+        "source": {
+          "kind": "Solution",
+          "name": "Wiz",
+          "sourceId": "[variables('_solutionId')]"
+        },
+        "author": {
+          "name": "Wiz",
+          "email": "[variables('_email')]"
+        },
+        "support": {
+          "name": "Wiz",
+          "email": "support@wiz.io",
+          "tier": "Partner",
+          "link": "https://support.wiz.io/"
+        },
+        "dependencies": {
+          "operator": "AND",
+          "criteria": [
+            {
+              "kind": "DataConnector",
+              "contentId": "[variables('_dataConnectorContentId1')]",
+              "version": "[variables('dataConnectorVersion1')]"
+            },
+            {
+              "kind": "Workbook",
+              "contentId": "[variables('_workbookContentId1')]",
+              "version": "[variables('workbookVersion1')]"
+            }
+          ]
+        },
+        "firstPublishDate": "2023-06-20",
+        "providers": [
+          "Wiz"
+        ],
+        "categories": {
+          "domains": [
+            "Security - Cloud Security",
+            "Security - Threat Protection"
+          ]
+        }
+      },
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/', variables('_solutionId'))]"
+    }
+  ],
+  "outputs": {}
+}

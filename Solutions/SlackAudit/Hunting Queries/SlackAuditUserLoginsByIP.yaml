@@ -1,0 +1,28 @@
+id: 85850974-acbf-47bd-a635-4e3511b553c0
+name: SlackAudit - User logins by IP
+description: |
+  'This hunt surfaces Slack user login activity by source IP to identify unusual account access patterns and credential abuse.'
+severity: Medium
+requiredDataConnectors:
+  - connectorId: SlackAuditAPI
+    dataTypes:
+      - SlackAudit_CL
+tactics:
+  - InitialAccess
+  - Persistence
+  - DefenseEvasion
+relevantTechniques:
+  - T1078
+  - T1078.001
+  - T1078.003
+query: |
+  SlackAudit
+  | where TimeGenerated > ago(24h)
+  | where DvcAction =~ 'user_login'
+  | summarize makeset(SrcIpAddr) by SrcUserName
+  | extend AccountCustomEntity = SrcUserName
+entityMappings:
+  - entityType: Account
+    fieldMappings:
+      - identifier: FullName
+        columnName: AccountCustomEntity

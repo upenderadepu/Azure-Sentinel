@@ -1,0 +1,58 @@
+id: c7bfadd4-34a6-4fa5-82f8-3691a32261e8
+name: AWSCloudTrail - Changes to AWS Elastic Load Balancer security groups
+description: |
+  Detects AWS CloudTrail events that modify Elastic Load Balancer security group associations. Unauthorized
+  changes can expose services to unintended network access or weaken cloud boundary protections. Validate these
+  updates against approved change control and deployment activity.
+severity: Low
+status: Available
+requiredDataConnectors:
+  - connectorId: AWS
+    dataTypes:
+      - AWSCloudTrail
+  - connectorId: AWSS3
+    dataTypes:
+      - AWSCloudTrail
+queryFrequency: 1d
+queryPeriod: 1d
+triggerOperator: gt
+triggerThreshold: 0
+tactics:
+  - DefenseEvasion
+relevantTechniques:
+  - T1562.007
+query: |
+  let EventNameList = dynamic(["ApplySecurityGroupsToLoadBalancer", "SetSecurityGroups"]);
+  AWSCloudTrail
+  | where EventName in~ (EventNameList)
+  | extend UserIdentityArn = iif(isempty(UserIdentityArn), tostring(parse_json(Resources)[0].ARN), UserIdentityArn)
+  | extend UserName = tostring(split(UserIdentityArn, '/')[-1])
+  | extend AccountName = case( UserIdentityPrincipalid == "Anonymous", "Anonymous", isempty(UserIdentityUserName), UserName, UserIdentityUserName)
+  | extend AccountName = iif(AccountName contains "@", tostring(split(AccountName, '@', 0)[0]), AccountName),
+    AccountUPNSuffix = iif(AccountName contains "@", tostring(split(AccountName, '@', 1)[0]), "")
+  | summarize EventCount=count(), StartTimeUtc = min(TimeGenerated), EndTimeUtc = max(TimeGenerated)
+  by EventSource, EventName, UserIdentityType,  SourceIpAddress, UserAgent, SessionMfaAuthenticated, AWSRegion,
+  AdditionalEventData, RecipientAccountId, AccountName, AccountUPNSuffix, UserIdentityAccountId, UserIdentityPrincipalid, ResponseElements
+entityMappings:
+  - entityType: Account
+    fieldMappings:
+      - identifier: Name
+        columnName: AccountName
+      - identifier: UPNSuffix
+        columnName: AccountUPNSuffix
+      - identifier: CloudAppAccountId
+        columnName: RecipientAccountId
+  - entityType: IP
+    fieldMappings:
+      - identifier: Address
+        columnName: SourceIpAddress
+customDetails:
+  EventName: EventName
+  EventSource: EventSource
+  AWSRegion: AWSRegion
+  UserAgent: UserAgent
+alertDetailsOverride:
+  alertDisplayNameFormat: 'AWS ELB security group change by {{AccountName}} in {{AWSRegion}}'
+  alertDescriptionFormat: 'Detected {{EventName}} from {{SourceIpAddress}} for account {{RecipientAccountId}} affecting ELB security group settings.'
+version: 1.0.5
+kind: Scheduled

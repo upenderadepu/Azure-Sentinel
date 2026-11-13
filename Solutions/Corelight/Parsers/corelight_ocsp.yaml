@@ -1,0 +1,25 @@
+id: 218fb7a4-41c2-5ef9-99f9-b60668d0a94f
+Function:
+  Title: corelight_ocsp parser for Corelight
+  Version: '2.0.0'
+  LastUpdated: '2026-08-17'
+Category: Microsoft Sentinel Parser
+FunctionName: corelight_ocsp
+FunctionAlias: corelight_ocsp
+FunctionQuery: |+
+  let dummy_table = datatable(TimeGenerated: datetime) [];
+  let corelight_ocsp = view () {
+      union isfuzzy=true Corelight_v3_ocsp_CL, dummy_table
+        | extend
+            _path=path,
+            _system_name=system_name,
+            _write_ts=write_ts
+      | extend
+          EventVendor="Corelight",
+          EventProduct="CorelightSensor",
+          EventType="ocsp",
+          ts=TimeGenerated
+  };
+  corelight_ocsp
+
+...

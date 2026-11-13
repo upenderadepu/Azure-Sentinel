@@ -1,0 +1,1291 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "author": "Microsoft - support@microsoft.com",
+    "comments": "Solution template for AtlassianConfluenceAudit"
+  },
+  "parameters": {
+    "location": {
+      "type": "string",
+      "minLength": 1,
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "Not used, but needed to pass arm-ttk test `Location-Should-Not-Be-Hardcoded`.  We instead use the `workspace-location` which is derived from the LA workspace"
+      }
+    },
+    "workspace-location": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "[concat('Region to deploy solution resources -- separate from location selection',parameters('location'))]"
+      }
+    },
+    "workspace": {
+      "defaultValue": "",
+      "type": "string",
+      "metadata": {
+        "description": "Workspace name for Log Analytics where Microsoft Sentinel is setup"
+      }
+    },
+    "resourceGroupName": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().name]",
+      "metadata": {
+        "description": "resource group name where Microsoft Sentinel is setup"
+      }
+    },
+    "subscription": {
+      "type": "string",
+      "defaultValue": "[last(split(subscription().id, '/'))]",
+      "metadata": {
+        "description": "subscription id where Microsoft Sentinel is setup"
+      }
+    }
+  },
+  "variables": {
+    "email": "support@microsoft.com",
+    "_email": "[variables('email')]",
+    "_solutionName": "AtlassianConfluenceAudit",
+    "_solutionVersion": "3.0.8",
+    "solutionId": "azuresentinel.azure-sentinel-solution-atlassianconfluenceaudit",
+    "_solutionId": "[variables('solutionId')]",
+    "workspaceResourceId": "[resourceId('microsoft.OperationalInsights/Workspaces', parameters('workspace'))]",
+    "dataConnectorCCPVersion": "3.0.8",
+    "_dataConnectorContentIdConnectorDefinition1": "AtlassianConfluenceConnector",
+    "dataConnectorTemplateNameConnectorDefinition1": "[concat(parameters('workspace'),'-dc-',uniquestring(variables('_dataConnectorContentIdConnectorDefinition1')))]",
+    "_dataConnectorContentIdConnections1": "AtlassianConfluenceConnectorConnections",
+    "dataConnectorTemplateNameConnections1": "[concat(parameters('workspace'),'-dc-',uniquestring(variables('_dataConnectorContentIdConnections1')))]",
+    "dataCollectionEndpointId1": "[concat('/subscriptions/',parameters('subscription'),'/resourceGroups/',parameters('resourceGroupName'),'/providers/Microsoft.Insights/dataCollectionEndpoints/',parameters('workspace'))]",
+    "blanks": "[replace('b', 'b', '')]",
+    "parserObject1": {
+      "_parserName1": "[concat(parameters('workspace'),'/','ConfluenceAudit')]",
+      "_parserId1": "[resourceId('Microsoft.OperationalInsights/workspaces/savedSearches', parameters('workspace'), 'ConfluenceAudit')]",
+      "parserTemplateSpecName1": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/',concat(parameters('workspace'),'-pr-',uniquestring('ConfluenceAudit-Parser')))]",
+      "parserVersion1": "1.0.0",
+      "parserContentId1": "ConfluenceAudit-Parser"
+    },
+    "parserObject2": {
+      "_parserName2": "[concat(parameters('workspace'),'/','ConfluenceAuditLogs')]",
+      "_parserId2": "[resourceId('Microsoft.OperationalInsights/workspaces/savedSearches', parameters('workspace'), 'ConfluenceAuditLogs')]",
+      "parserTemplateSpecName2": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/',concat(parameters('workspace'),'-pr-',uniquestring('ConfluenceAuditLogs-Parser')))]",
+      "parserVersion2": "1.0.0",
+      "parserContentId2": "ConfluenceAuditLogs-Parser"
+    },
+    "_solutioncontentProductId": "[concat(take(variables('_solutionId'),50),'-','sl','-', uniqueString(concat(variables('_solutionId'),'-','Solution','-',variables('_solutionId'),'-', variables('_solutionVersion'))))]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/providers/contentTemplates",
+      "apiVersion": "2023-04-01-preview",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/', variables('dataConnectorTemplateNameConnectorDefinition1'), variables('dataConnectorCCPVersion'))]",
+      "location": "[parameters('workspace-location')]",
+      "dependsOn": [
+        "[extensionResourceId(resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspace')), 'Microsoft.SecurityInsights/contentPackages', variables('_solutionId'))]"
+      ],
+      "properties": {
+        "contentId": "[variables('_dataConnectorContentIdConnectorDefinition1')]",
+        "displayName": "Atlassian Confluence Audit (via Codeless Connector Framework)",
+        "contentKind": "DataConnector",
+        "mainTemplate": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "[variables('dataConnectorCCPVersion')]",
+          "parameters": {},
+          "variables": {},
+          "resources": [
+            {
+              "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/',variables('_dataConnectorContentIdConnectorDefinition1'))]",
+              "apiVersion": "2022-09-01-preview",
+              "type": "Microsoft.OperationalInsights/workspaces/providers/dataConnectorDefinitions",
+              "location": "[parameters('workspace-location')]",
+              "kind": "Customizable",
+              "properties": {
+                "connectorUiConfig": {
+                  "id": "AtlassianConfluenceConnector",
+                  "title": "Atlassian Confluence Audit (via Codeless Connector Framework)",
+                  "publisher": "Microsoft",
+                  "descriptionMarkdown": "The [Atlassian Confluence](https://www.atlassian.com/software/confluence) Audit data connector provides the capability to ingest [Confluence Audit Records](https://support.atlassian.com/confluence-cloud/docs/view-the-audit-log/) events into Microsoft Sentinel through the REST API. Refer to [API documentation](https://support.atlassian.com/confluence-cloud/docs/view-the-audit-log/) for more information. The connector provides ability to get events which helps to examine potential security risks, analyze your team's use of collaboration, diagnose configuration problems and more.",
+                  "graphQueriesTableName": "ConfluenceAuditLogs",
+                  "graphQueries": [
+                    {
+                      "metricName": "Total data received",
+                      "legend": "Confluence Audit Events",
+                      "baseQuery": "ConfluenceAuditLogs"
+                    }
+                  ],
+                  "sampleQueries": [
+                    {
+                      "description": "All Atlassian Confluence Audit logs",
+                      "query": "ConfluenceAuditLogs\n| sort by TimeGenerated desc"
+                    },
+                    {
+                      "description": "Events by Category",
+                      "query": "ConfluenceAuditLogs\n | summarize count() by Category"
+                    }
+                  ],
+                  "dataTypes": [
+                    {
+                      "name": "ConfluenceAuditLogs",
+                      "lastDataReceivedQuery": "ConfluenceAuditLogs | summarize Time = max  (TimeGenerated)\n|where isnotempty(Time)"
+                    }
+                  ],
+                  "connectivityCriteria": [
+                    {
+                      "type": "HasDataConnectors"
+                    }
+                  ],
+                  "availability": {
+                    "isPreview": false,
+                    "status": 1
+                  },
+                  "permissions": {
+                    "resourceProvider": [
+                      {
+                        "provider": "Microsoft.OperationalInsights/workspaces",
+                        "permissionsDisplayText": "Read and Write permissions are required.",
+                        "providerDisplayName": "Workspace",
+                        "scope": "Workspace",
+                        "requiredPermissions": {
+                          "write": true,
+                          "read": true,
+                          "delete": true,
+                          "action": false
+                        }
+                      }
+                    ],
+                    "customs": [
+                      {
+                        "name": "Atlassian Confluence API access",
+                        "description": "The account requires the [Confluence Administrator global permission](https://developer.atlassian.com/cloud/confluence/rest/v1/api-group-audit/#api-wiki-rest-api-audit-get). Scoped API tokens also require the `read:audit-log:confluence` scope."
+                      }
+                    ]
+                  },
+                  "instructionSteps": [
+                    {
+                      "title": "Connect Atlassian Confluence to Microsoft Sentinel",
+                      "description": "Add one connection per Atlassian Confluence site. Follow the [Atlassian API token instructions](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/) to create an API token.",
+                      "instructions": [
+                        {
+                          "type": "DataConnectorsGrid",
+                          "parameters": {
+                            "mapping": [
+                              {
+                                "columnName": "Connection Alias",
+                                "columnValue": "properties.addOnAttributes.friendlyName"
+                              },
+                              {
+                                "columnName": "Confluence API Base Path",
+                                "columnValue": "properties.addOnAttributes.apiUrl"
+                              },
+                              {
+                                "columnName": "Data Type",
+                                "columnValue": "properties.addOnAttributes.dataType"
+                              }
+                            ],
+                            "menuItems": [
+                              "DeleteConnector"
+                            ],
+                            "isMultiSelect": true
+                          }
+                        },
+                        {
+                          "type": "ContextPane",
+                          "parameters": {
+                            "isPrimary": true,
+                            "label": "Add Connection",
+                            "title": "Add Atlassian Confluence Connection",
+                            "subtitle": "Connect to an Atlassian Confluence site to ingest audit logs",
+                            "contextPaneType": "DataConnectorsContextPane",
+                            "instructionSteps": [
+                              {
+                                "title": "Connection Details",
+                                "description": "Enter the details for this Atlassian Confluence connection.",
+                                "instructions": [
+                                  {
+                                    "type": "Textbox",
+                                    "parameters": {
+                                      "label": "Connection Alias",
+                                      "placeholder": "e.g. Contoso Production",
+                                      "type": "text",
+                                      "name": "friendlyName",
+                                      "validations": {
+                                        "required": true
+                                      }
+                                    }
+                                  },
+                                  {
+                                    "type": "InfoMessage",
+                                    "parameters": {
+                                      "text": "Enter a unique alias to identify this Atlassian connection. **Important:** Use a different alias for each connection. To update an existing connection, delete it and recreate it with the same alias.",
+                                      "visible": true,
+                                      "inline": true
+                                    }
+                                  },
+                                  {
+                                    "type": "Textbox",
+                                    "parameters": {
+                                      "label": "Atlassian Confluence API Base Path",
+                                      "placeholder": "<tenant>.atlassian.net",
+                                      "type": "text",
+                                      "name": "confluenceorganizationurl",
+                                      "validations": {
+                                        "required": true
+                                      }
+                                    }
+                                  },
+                                  {
+                                    "type": "InfoMessage",
+                                    "parameters": {
+                                      "text": "For an unscoped token, enter `<tenant>.atlassian.net`. For a scoped token, get the Cloud ID from `https://<tenant>.atlassian.net/_edge/tenant_info`, then enter `api.atlassian.com/ex/confluence/<cloudId>`. Do not include `https://` or a trailing slash.",
+                                      "visible": true,
+                                      "inline": true
+                                    }
+                                  },
+                                  {
+                                    "type": "Textbox",
+                                    "parameters": {
+                                      "label": "Atlassian Account Email",
+                                      "placeholder": "user@example.com",
+                                      "type": "text",
+                                      "name": "userid",
+                                      "validations": {
+                                        "required": true
+                                      }
+                                    }
+                                  },
+                                  {
+                                    "type": "InfoMessage",
+                                    "parameters": {
+                                      "text": "Enter the exact email address of the Atlassian account that created the API token.",
+                                      "visible": true,
+                                      "inline": true
+                                    }
+                                  },
+                                  {
+                                    "type": "Textbox",
+                                    "parameters": {
+                                      "label": "API Token",
+                                      "placeholder": "Enter your Atlassian API token",
+                                      "type": "password",
+                                      "name": "apikey",
+                                      "validations": {
+                                        "required": true
+                                      }
+                                    }
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/',concat('DataConnector-', variables('_dataConnectorContentIdConnectorDefinition1')))]",
+              "apiVersion": "2022-01-01-preview",
+              "type": "Microsoft.OperationalInsights/workspaces/providers/metadata",
+              "properties": {
+                "parentId": "[extensionResourceId(resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspace')), 'Microsoft.SecurityInsights/dataConnectorDefinitions', variables('_dataConnectorContentIdConnectorDefinition1'))]",
+                "contentId": "[variables('_dataConnectorContentIdConnectorDefinition1')]",
+                "kind": "DataConnector",
+                "version": "[variables('dataConnectorCCPVersion')]",
+                "source": {
+                  "sourceId": "[variables('_solutionId')]",
+                  "name": "[variables('_solutionName')]",
+                  "kind": "Solution"
+                },
+                "author": {
+                  "name": "Microsoft",
+                  "email": "[variables('_email')]"
+                },
+                "support": {
+                  "name": "Microsoft Corporation",
+                  "email": "support@microsoft.com",
+                  "tier": "Microsoft",
+                  "link": "https://support.microsoft.com"
+                },
+                "dependencies": {
+                  "criteria": [
+                    {
+                      "version": "[variables('dataConnectorCCPVersion')]",
+                      "contentId": "[variables('_dataConnectorContentIdConnections1')]",
+                      "kind": "ResourcesDataConnector"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "AtlassianConfluenceDCR",
+              "apiVersion": "2022-06-01",
+              "type": "Microsoft.Insights/dataCollectionRules",
+              "location": "[parameters('workspace-location')]",
+              "kind": "[variables('blanks')]",
+              "properties": {
+                "dataCollectionEndpointId": "[variables('dataCollectionEndpointId1')]",
+                "streamDeclarations": {
+                  "Custom-ConfluenceAuditLogs_CL": {
+                    "columns": [
+                      {
+                        "name": "remoteAddress",
+                        "type": "string"
+                      },
+                      {
+                        "name": "creationDate",
+                        "type": "long"
+                      },
+                      {
+                        "name": "summary",
+                        "type": "string"
+                      },
+                      {
+                        "name": "description",
+                        "type": "string"
+                      },
+                      {
+                        "name": "category",
+                        "type": "string"
+                      },
+                      {
+                        "name": "sysAdmin",
+                        "type": "boolean"
+                      },
+                      {
+                        "name": "superAdmin",
+                        "type": "boolean"
+                      },
+                      {
+                        "name": "changedValues",
+                        "type": "dynamic"
+                      },
+                      {
+                        "name": "associatedObjects",
+                        "type": "dynamic"
+                      },
+                      {
+                        "name": "author",
+                        "type": "dynamic"
+                      },
+                      {
+                        "name": "affectedObject",
+                        "type": "dynamic"
+                      }
+                    ]
+                  }
+                },
+                "destinations": {
+                  "logAnalytics": [
+                    {
+                      "workspaceResourceId": "[variables('workspaceResourceId')]",
+                      "name": "clv2ws1"
+                    }
+                  ]
+                },
+                "dataFlows": [
+                  {
+                    "streams": [
+                      "Custom-ConfluenceAuditLogs_CL"
+                    ],
+                    "destinations": [
+                      "clv2ws1"
+                    ],
+                    "outputStream": "Custom-ConfluenceAuditLogs_CL",
+                    "transformKql": "source | extend TimeGenerated = iff(isnull(creationDate), now(), datetime(1970-01-01) + (creationDate * 1ms)) , EventVendor = \"Atlassian\" , EventProduct = \"Confluence Audit\" , AuthorUsername = tostring(author.username) , AuthorAccountId = tostring(author.accountId) , AuthorType = tostring(author.type) , AuthorDisplayName = tostring(author.displayName) , AuthorIsExternalCollaborator = tobool(author.isExternalCollaborator) , AuthorUserKey = tostring(author.userKey) , AuthorAccountType = tostring(author.accountType) , AuthorPublicName = tostring(author.publicName) , AuthorExternalCollaborator = tobool(author.externalCollaborator) , RemoteAddress = ['remoteAddress'] , CreationDate = ['creationDate'] , Summary = ['summary'] , Description = ['description'] , Category = ['category'] , SysAdmin = ['sysAdmin'] , SuperAdmin = ['superAdmin'] , AffectedObjectName = tostring(affectedObject.name) , AffectedObjectObjectType = tostring(affectedObject.objectType) , ChangedValues = ['changedValues'] , AssociatedObjects = ['associatedObjects'] , UserIdentity = tostring(author.accountId) , SrcUserName = tostring(author.displayName) , DstUserSid = tostring(author.userKey) , SrcIpAddr = tostring(remoteAddress) , EventCreationTime = tolong(creationDate) , EventMessage = tostring(summary) , EventCategoryType = tostring(affectedObject.objectType) | project TimeGenerated , EventVendor , EventProduct , AuthorUsername , AuthorAccountId , AuthorType , AuthorDisplayName , AuthorIsExternalCollaborator , AuthorUserKey , AuthorAccountType , AuthorPublicName , AuthorExternalCollaborator , RemoteAddress , CreationDate , Summary , Description , Category , SysAdmin , SuperAdmin , AffectedObjectName , AffectedObjectObjectType , ChangedValues , AssociatedObjects , UserIdentity , SrcUserName , DstUserSid , SrcIpAddr , EventCreationTime , EventMessage , EventCategoryType"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "ConfluenceAuditLogs_CL",
+              "apiVersion": "2022-10-01",
+              "type": "Microsoft.OperationalInsights/workspaces/tables",
+              "location": "[parameters('workspace-location')]",
+              "kind": null,
+              "properties": {
+                "schema": {
+                  "name": "ConfluenceAuditLogs_CL",
+                  "description": "The Atlassian Confluence Audit Logs table contains audit logs from Atlassian Confluence that have been ingested into Microsoft Sentinel.",
+                  "columns": [
+                    {
+                      "name": "TimeGenerated",
+                      "type": "datetime",
+                      "description": "The timestamp (in UTC) when the log entry was generated.",
+                      "isDefaultDisplay": true
+                    },
+                    {
+                      "name": "EventVendor",
+                      "type": "string",
+                      "description": "The vendor of the event."
+                    },
+                    {
+                      "name": "EventProduct",
+                      "type": "string",
+                      "description": "The product of the event."
+                    },
+                    {
+                      "name": "AuthorUsername",
+                      "type": "string",
+                      "description": "The username of the author."
+                    },
+                    {
+                      "name": "AuthorAccountId",
+                      "type": "string",
+                      "description": "The account ID of the author."
+                    },
+                    {
+                      "name": "AuthorType",
+                      "type": "string",
+                      "description": "The type of the author."
+                    },
+                    {
+                      "name": "AuthorDisplayName",
+                      "type": "string",
+                      "description": "The display name of the author."
+                    },
+                    {
+                      "name": "AuthorIsExternalCollaborator",
+                      "type": "boolean",
+                      "description": "Indicates whether the author is an external collaborator."
+                    },
+                    {
+                      "name": "AuthorUserKey",
+                      "type": "string",
+                      "description": "The user key of the author."
+                    },
+                    {
+                      "name": "AuthorAccountType",
+                      "type": "string",
+                      "description": "The account type of the author."
+                    },
+                    {
+                      "name": "AuthorPublicName",
+                      "type": "string",
+                      "description": "The public name of the author."
+                    },
+                    {
+                      "name": "AuthorExternalCollaborator",
+                      "type": "boolean",
+                      "description": "Indicates whether the author is an external collaborator."
+                    },
+                    {
+                      "name": "RemoteAddress",
+                      "type": "string",
+                      "description": "The remote address of the author."
+                    },
+                    {
+                      "name": "CreationDate",
+                      "type": "long",
+                      "description": "The creation date of the audit log entry."
+                    },
+                    {
+                      "name": "Summary",
+                      "type": "string",
+                      "description": "The summary of the audit log entry."
+                    },
+                    {
+                      "name": "Description",
+                      "type": "string",
+                      "description": "The description of the audit log entry."
+                    },
+                    {
+                      "name": "Category",
+                      "type": "string",
+                      "description": "The category of the audit log entry."
+                    },
+                    {
+                      "name": "SysAdmin",
+                      "type": "boolean",
+                      "description": "Indicates whether the author is a system administrator."
+                    },
+                    {
+                      "name": "SuperAdmin",
+                      "type": "boolean",
+                      "description": "Indicates whether the author is a super administrator."
+                    },
+                    {
+                      "name": "AffectedObjectName",
+                      "type": "string",
+                      "description": "The name of the affected object."
+                    },
+                    {
+                      "name": "AffectedObjectObjectType",
+                      "type": "string",
+                      "description": "The type of the affected object."
+                    },
+                    {
+                      "name": "ChangedValues",
+                      "type": "dynamic",
+                      "description": "The changed values of the audit log entry."
+                    },
+                    {
+                      "name": "AssociatedObjects",
+                      "type": "dynamic",
+                      "description": "The associated objects of the audit log entry."
+                    },
+                    {
+                      "name": "UserIdentity",
+                      "type": "string",
+                      "description": "The identity of the user."
+                    },
+                    {
+                      "name": "SrcUserName",
+                      "type": "string",
+                      "description": "The source username."
+                    },
+                    {
+                      "name": "DstUserSid",
+                      "type": "string",
+                      "description": "The destination user SID."
+                    },
+                    {
+                      "name": "SrcIpAddr",
+                      "type": "string",
+                      "description": "The source IP address."
+                    },
+                    {
+                      "name": "EventCreationTime",
+                      "type": "long",
+                      "description": "The creation time of the event."
+                    },
+                    {
+                      "name": "EventMessage",
+                      "type": "string",
+                      "description": "The message of the event."
+                    },
+                    {
+                      "name": "EventCategoryType",
+                      "type": "string",
+                      "description": "The category type of the event."
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        "packageKind": "Solution",
+        "packageVersion": "[variables('_solutionVersion')]",
+        "packageName": "[variables('_solutionName')]",
+        "contentProductId": "[concat(take(variables('_solutionId'), 50),'-','dc','-', uniqueString(concat(variables('_solutionId'),'-','DataConnector','-',variables('_dataConnectorContentIdConnectorDefinition1'),'-', variables('dataConnectorCCPVersion'))))]",
+        "packageId": "[variables('_solutionId')]",
+        "contentSchemaVersion": "3.0.0",
+        "version": "[variables('dataConnectorCCPVersion')]"
+      }
+    },
+    {
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/',variables('_dataConnectorContentIdConnectorDefinition1'))]",
+      "apiVersion": "2022-09-01-preview",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/dataConnectorDefinitions",
+      "location": "[parameters('workspace-location')]",
+      "kind": "Customizable",
+      "properties": {
+        "connectorUiConfig": {
+          "id": "AtlassianConfluenceConnector",
+          "title": "Atlassian Confluence Audit (via Codeless Connector Framework)",
+          "publisher": "Microsoft",
+          "descriptionMarkdown": "The [Atlassian Confluence](https://www.atlassian.com/software/confluence) Audit data connector provides the capability to ingest [Confluence Audit Records](https://support.atlassian.com/confluence-cloud/docs/view-the-audit-log/) events into Microsoft Sentinel through the REST API. Refer to [API documentation](https://support.atlassian.com/confluence-cloud/docs/view-the-audit-log/) for more information. The connector provides ability to get events which helps to examine potential security risks, analyze your team's use of collaboration, diagnose configuration problems and more.",
+          "graphQueriesTableName": "ConfluenceAuditLogs",
+          "graphQueries": [
+            {
+              "metricName": "Total data received",
+              "legend": "Confluence Audit Events",
+              "baseQuery": "ConfluenceAuditLogs"
+            }
+          ],
+          "sampleQueries": [
+            {
+              "description": "All Atlassian Confluence Audit logs",
+              "query": "ConfluenceAuditLogs\n| sort by TimeGenerated desc"
+            },
+            {
+              "description": "Events by Category",
+              "query": "ConfluenceAuditLogs\n | summarize count() by Category"
+            }
+          ],
+          "dataTypes": [
+            {
+              "name": "ConfluenceAuditLogs",
+              "lastDataReceivedQuery": "ConfluenceAuditLogs | summarize Time = max  (TimeGenerated)\n|where isnotempty(Time)"
+            }
+          ],
+          "connectivityCriteria": [
+            {
+              "type": "HasDataConnectors"
+            }
+          ],
+          "availability": {
+            "isPreview": false,
+            "status": 1
+          },
+          "permissions": {
+            "resourceProvider": [
+              {
+                "provider": "Microsoft.OperationalInsights/workspaces",
+                "permissionsDisplayText": "Read and Write permissions are required.",
+                "providerDisplayName": "Workspace",
+                "scope": "Workspace",
+                "requiredPermissions": {
+                  "write": true,
+                  "read": true,
+                  "delete": true,
+                  "action": false
+                }
+              }
+            ],
+            "customs": [
+              {
+                "name": "Atlassian Confluence API access",
+                "description": "The account requires the [Confluence Administrator global permission](https://developer.atlassian.com/cloud/confluence/rest/v1/api-group-audit/#api-wiki-rest-api-audit-get). Scoped API tokens also require the `read:audit-log:confluence` scope."
+              }
+            ]
+          },
+          "instructionSteps": [
+            {
+              "title": "Connect Atlassian Confluence to Microsoft Sentinel",
+              "description": "Add one connection per Atlassian Confluence site. Follow the [Atlassian API token instructions](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/) to create an API token.",
+              "instructions": [
+                {
+                  "type": "DataConnectorsGrid",
+                  "parameters": {
+                    "mapping": [
+                      {
+                        "columnName": "Connection Alias",
+                        "columnValue": "properties.addOnAttributes.friendlyName"
+                      },
+                      {
+                        "columnName": "Confluence API Base Path",
+                        "columnValue": "properties.addOnAttributes.apiUrl"
+                      },
+                      {
+                        "columnName": "Data Type",
+                        "columnValue": "properties.addOnAttributes.dataType"
+                      }
+                    ],
+                    "menuItems": [
+                      "DeleteConnector"
+                    ],
+                    "isMultiSelect": true
+                  }
+                },
+                {
+                  "type": "ContextPane",
+                  "parameters": {
+                    "isPrimary": true,
+                    "label": "Add Connection",
+                    "title": "Add Atlassian Confluence Connection",
+                    "subtitle": "Connect to an Atlassian Confluence site to ingest audit logs",
+                    "contextPaneType": "DataConnectorsContextPane",
+                    "instructionSteps": [
+                      {
+                        "title": "Connection Details",
+                        "description": "Enter the details for this Atlassian Confluence connection.",
+                        "instructions": [
+                          {
+                            "type": "Textbox",
+                            "parameters": {
+                              "label": "Connection Alias",
+                              "placeholder": "e.g. Contoso Production",
+                              "type": "text",
+                              "name": "friendlyName",
+                              "validations": {
+                                "required": true
+                              }
+                            }
+                          },
+                          {
+                            "type": "InfoMessage",
+                            "parameters": {
+                              "text": "Enter a unique alias to identify this Atlassian connection. **Important:** Use a different alias for each connection. To update an existing connection, delete it and recreate it with the same alias.",
+                              "visible": true,
+                              "inline": true
+                            }
+                          },
+                          {
+                            "type": "Textbox",
+                            "parameters": {
+                              "label": "Atlassian Confluence API Base Path",
+                              "placeholder": "<tenant>.atlassian.net",
+                              "type": "text",
+                              "name": "confluenceorganizationurl",
+                              "validations": {
+                                "required": true
+                              }
+                            }
+                          },
+                          {
+                            "type": "InfoMessage",
+                            "parameters": {
+                              "text": "For an unscoped token, enter `<tenant>.atlassian.net`. For a scoped token, get the Cloud ID from `https://<tenant>.atlassian.net/_edge/tenant_info`, then enter `api.atlassian.com/ex/confluence/<cloudId>`. Do not include `https://` or a trailing slash.",
+                              "visible": true,
+                              "inline": true
+                            }
+                          },
+                          {
+                            "type": "Textbox",
+                            "parameters": {
+                              "label": "Atlassian Account Email",
+                              "placeholder": "user@example.com",
+                              "type": "text",
+                              "name": "userid",
+                              "validations": {
+                                "required": true
+                              }
+                            }
+                          },
+                          {
+                            "type": "InfoMessage",
+                            "parameters": {
+                              "text": "Enter the exact email address of the Atlassian account that created the API token.",
+                              "visible": true,
+                              "inline": true
+                            }
+                          },
+                          {
+                            "type": "Textbox",
+                            "parameters": {
+                              "label": "API Token",
+                              "placeholder": "Enter your Atlassian API token",
+                              "type": "password",
+                              "name": "apikey",
+                              "validations": {
+                                "required": true
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/',concat('DataConnector-', variables('_dataConnectorContentIdConnectorDefinition1')))]",
+      "apiVersion": "2022-01-01-preview",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/metadata",
+      "properties": {
+        "parentId": "[extensionResourceId(resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspace')), 'Microsoft.SecurityInsights/dataConnectorDefinitions', variables('_dataConnectorContentIdConnectorDefinition1'))]",
+        "contentId": "[variables('_dataConnectorContentIdConnectorDefinition1')]",
+        "kind": "DataConnector",
+        "version": "[variables('dataConnectorCCPVersion')]",
+        "source": {
+          "sourceId": "[variables('_solutionId')]",
+          "name": "[variables('_solutionName')]",
+          "kind": "Solution"
+        },
+        "author": {
+          "name": "Microsoft",
+          "email": "[variables('_email')]"
+        },
+        "support": {
+          "name": "Microsoft Corporation",
+          "email": "support@microsoft.com",
+          "tier": "Microsoft",
+          "link": "https://support.microsoft.com"
+        },
+        "dependencies": {
+          "criteria": [
+            {
+              "version": "[variables('dataConnectorCCPVersion')]",
+              "contentId": "[variables('_dataConnectorContentIdConnections1')]",
+              "kind": "ResourcesDataConnector"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/providers/contentTemplates",
+      "apiVersion": "2023-04-01-preview",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/', variables('dataConnectorTemplateNameConnections1'), variables('dataConnectorCCPVersion'))]",
+      "location": "[parameters('workspace-location')]",
+      "dependsOn": [
+        "[extensionResourceId(resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspace')), 'Microsoft.SecurityInsights/contentPackages', variables('_solutionId'))]"
+      ],
+      "properties": {
+        "contentId": "[variables('_dataConnectorContentIdConnections1')]",
+        "displayName": "Atlassian Confluence Audit (via Codeless Connector Framework)",
+        "contentKind": "ResourcesDataConnector",
+        "mainTemplate": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "[variables('dataConnectorCCPVersion')]",
+          "parameters": {
+            "guidValue": {
+              "defaultValue": "[[newGuid()]",
+              "type": "securestring"
+            },
+            "innerWorkspace": {
+              "defaultValue": "[parameters('workspace')]",
+              "type": "securestring"
+            },
+            "connectorDefinitionName": {
+              "defaultValue": "Atlassian Confluence Audit (via Codeless Connector Framework)",
+              "type": "securestring",
+              "minLength": 1
+            },
+            "workspace": {
+              "defaultValue": "[parameters('workspace')]",
+              "type": "securestring"
+            },
+            "dcrConfig": {
+              "defaultValue": {
+                "dataCollectionEndpoint": "data collection Endpoint",
+                "dataCollectionRuleImmutableId": "data collection rule immutableId"
+              },
+              "type": "object"
+            },
+            "friendlyName": {
+              "defaultValue": "friendlyName",
+              "type": "securestring",
+              "minLength": 1
+            },
+            "confluenceorganizationurl": {
+              "defaultValue": "confluenceorganizationurl",
+              "type": "securestring",
+              "minLength": 1
+            },
+            "userid": {
+              "defaultValue": "userid",
+              "type": "securestring",
+              "minLength": 1
+            },
+            "apikey": {
+              "defaultValue": "apikey",
+              "type": "securestring",
+              "minLength": 1
+            }
+          },
+          "variables": {
+            "_dataConnectorContentIdConnections1": "[variables('_dataConnectorContentIdConnections1')]"
+          },
+          "resources": [
+            {
+              "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/',concat('DataConnector-', variables('_dataConnectorContentIdConnections1')))]",
+              "apiVersion": "2022-01-01-preview",
+              "type": "Microsoft.OperationalInsights/workspaces/providers/metadata",
+              "properties": {
+                "parentId": "[extensionResourceId(resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspace')), 'Microsoft.SecurityInsights/dataConnectors', variables('_dataConnectorContentIdConnections1'))]",
+                "contentId": "[variables('_dataConnectorContentIdConnections1')]",
+                "kind": "ResourcesDataConnector",
+                "version": "[variables('dataConnectorCCPVersion')]",
+                "source": {
+                  "sourceId": "[variables('_solutionId')]",
+                  "name": "[variables('_solutionName')]",
+                  "kind": "Solution"
+                },
+                "author": {
+                  "name": "Microsoft",
+                  "email": "[variables('_email')]"
+                },
+                "support": {
+                  "name": "Microsoft Corporation",
+                  "email": "support@microsoft.com",
+                  "tier": "Microsoft",
+                  "link": "https://support.microsoft.com"
+                }
+              }
+            },
+            {
+              "name": "[[concat('parameters('workspace')', '/Microsoft.SecurityInsights/','ConfluenceAuditLogs' , uniqueString(parameters('friendlyName')) )]",
+              "apiVersion": "2023-02-01-preview",
+              "type": "Microsoft.OperationalInsights/workspaces/providers/dataConnectors",
+              "location": "[parameters('workspace-location')]",
+              "kind": "RestApiPoller",
+              "properties": {
+                "auth": {
+                  "type": "Basic",
+                  "UserName": "[[parameters('userid')]",
+                  "Password": "[[parameters('apikey')]"
+                },
+                "request": {
+                  "apiEndpoint": "[[concat('https://',parameters('confluenceorganizationurl'),'/wiki/rest/api/audit')]",
+                  "httpMethod": "GET",
+                  "queryWindowInMin": 5,
+                  "queryTimeFormat": "UnixTimestampInMills",
+                  "retryCount": 3,
+                  "timeoutInSeconds": 60,
+                  "headers": {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json",
+                    "User-Agent": "Scuba"
+                  },
+                  "startTimeAttributeName": "startDate",
+                  "endTimeAttributeName": "endDate"
+                },
+                "response": {
+                  "eventsJsonPaths": [
+                    "$.results"
+                  ],
+                  "format": "json"
+                },
+                "paging": {
+                  "pagingType": "Offset",
+                  "offsetParaName": "start",
+                  "pageSize": 1000,
+                  "pageSizeParameterName": "limit"
+                },
+                "connectorDefinitionName": "AtlassianConfluenceConnector",
+                "dataType": "ConfluenceAuditLogs",
+                "dcrConfig": {
+                  "streamName": "Custom-ConfluenceAuditLogs_CL",
+                  "dataCollectionEndpoint": "[[parameters('dcrConfig').dataCollectionEndpoint]",
+                  "dataCollectionRuleImmutableId": "[[parameters('dcrConfig').dataCollectionRuleImmutableId]"
+                },
+                "addOnAttributes": {
+                  "friendlyName": "[[parameters('friendlyName')]",
+                  "apiUrl": "[[parameters('confluenceorganizationurl')]",
+                  "dataType": "ConfluenceAuditLogs"
+                }
+              }
+            }
+          ]
+        },
+        "packageKind": "Solution",
+        "packageVersion": "[variables('_solutionVersion')]",
+        "packageName": "[variables('_solutionName')]",
+        "contentProductId": "[concat(take(variables('_solutionId'), 50),'-','rdc','-', uniqueString(concat(variables('_solutionId'),'-','ResourcesDataConnector','-',variables('_dataConnectorContentIdConnections1'),'-', variables('dataConnectorCCPVersion'))))]",
+        "packageId": "[variables('_solutionId')]",
+        "contentSchemaVersion": "3.0.0",
+        "version": "[variables('dataConnectorCCPVersion')]"
+      }
+    },
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/providers/contentTemplates",
+      "apiVersion": "2023-04-01-preview",
+      "name": "[variables('parserObject1').parserTemplateSpecName1]",
+      "location": "[parameters('workspace-location')]",
+      "dependsOn": [
+        "[extensionResourceId(resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspace')), 'Microsoft.SecurityInsights/contentPackages', variables('_solutionId'))]"
+      ],
+      "properties": {
+        "description": "ConfluenceAudit Data Parser with template version 3.0.8",
+        "mainTemplate": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "[variables('parserObject1').parserVersion1]",
+          "parameters": {},
+          "variables": {},
+          "resources": [
+            {
+              "name": "[variables('parserObject1')._parserName1]",
+              "apiVersion": "2025-07-01",
+              "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+              "location": "[parameters('workspace-location')]",
+              "properties": {
+                "eTag": "*",
+                "displayName": "ConfluenceAudit",
+                "category": "Microsoft Sentinel Parser",
+                "functionAlias": "ConfluenceAudit",
+                "query": "let ConfluenceAuditLogs  = view () { \nunion isfuzzy=true\n   (Confluence_Audit_CL // Schema created by Azure Function App Connector\n   | extend \n       EventVendor=\"Atlassian\",\n       EventProduct=\"Confluence\",\n       AuthorUsername=column_ifexists('author_username_s', ''),\n       AuthorUserKey=column_ifexists('author_userKey_g', ''),\n       AuthorAccountId=column_ifexists('author_accountId_s', ''),\n       AuthorType=column_ifexists('author_type_s', ''),\n       AuthorDisplayName=column_ifexists('author_displayName_s', ''),\n       AuthorIsExternalCollaborator=column_ifexists('author_isExternalCollaborator_b', ''),\n       AuthorAccountType=column_ifexists('author_accountType_s', ''),\n       AuthorPublicName=column_ifexists('author_publicName_s', ''),\n       AuthorExternalCollaborator=column_ifexists('author_externalCollaborator_b', ''),\n       RemoteAddress=column_ifexists('remoteAddress_s', ''),\n       CreationDate=column_ifexists('creationDate_d', ''),\n       Summary=column_ifexists('summary_s', ''),\n       Description=column_ifexists('description_s', ''),\n       Category=column_ifexists('Category', ''),\n       SysAdmin=column_ifexists('sysAdmin_b', ''),\n       SuperAdmin=column_ifexists('superAdmin_b', ''),\n       AffectedObjectName=column_ifexists('affectedObject_name_s', ''),\n       AffectedObjectObjectType=column_ifexists('affectedObject_objectType_s', ''),\n       ChangedValues=column_ifexists('changedValues_s', ''),\n       AssociatedObjects=column_ifexists('associatedObjects_s', ''),\n       UserIdentity=column_ifexists('author_accountId_s', ''),\n       SrcUserName=column_ifexists('author_displayName_s', ''),\n       DstUserSid=column_ifexists('author_userKey_s', ''),\n       SrcIpAddr=column_ifexists('remoteAddress_s', ''),\n       EventCreationTime=column_ifexists('creationDate_d', ''),\n       EventMessage=column_ifexists('summary_s', ''),\n       EventCategoryType =column_ifexists('Category', '')             \n   | project\n       TimeGenerated, \n       EventVendor,\n       EventProduct,\n       AuthorUsername,\n       AuthorAccountId,\n       AuthorType,\n       AuthorDisplayName,\n       AuthorIsExternalCollaborator,\n       AuthorUserKey,\n       AuthorAccountType,\n       AuthorPublicName,\n       AuthorExternalCollaborator,\n       RemoteAddress,\n       CreationDate,\n       Summary,\n       Description,\n       Category,\n       SysAdmin,\n       SuperAdmin,\n       AffectedObjectName,\n       AffectedObjectObjectType,\n       ChangedValues,\n       AssociatedObjects,\n       UserIdentity,\n       SrcUserName,\n       DstUserSid,\n       SrcIpAddr,\n       EventCreationTime,\n       EventMessage,\n       EventCategoryType),\n   (ConfluenceAuditLogs_CL // Schema created by CCP Connector\n   | extend TimeGenerated = unixtime_milliseconds_todatetime(CreationDate))};\n ConfluenceAuditLogs\n",
+                "functionParameters": "",
+                "version": 2,
+                "tags": [
+                  {
+                    "name": "description",
+                    "value": ""
+                  }
+                ]
+              }
+            },
+            {
+              "type": "Microsoft.OperationalInsights/workspaces/providers/metadata",
+              "apiVersion": "2022-01-01-preview",
+              "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/',concat('Parser-', last(split(variables('parserObject1')._parserId1,'/'))))]",
+              "dependsOn": [
+                "[variables('parserObject1')._parserId1]"
+              ],
+              "properties": {
+                "parentId": "[resourceId('Microsoft.OperationalInsights/workspaces/savedSearches', parameters('workspace'), 'ConfluenceAudit')]",
+                "contentId": "[variables('parserObject1').parserContentId1]",
+                "kind": "Parser",
+                "version": "[variables('parserObject1').parserVersion1]",
+                "source": {
+                  "name": "AtlassianConfluenceAudit",
+                  "kind": "Solution",
+                  "sourceId": "[variables('_solutionId')]"
+                },
+                "author": {
+                  "name": "Microsoft",
+                  "email": "[variables('_email')]"
+                },
+                "support": {
+                  "name": "Microsoft Corporation",
+                  "email": "support@microsoft.com",
+                  "tier": "Microsoft",
+                  "link": "https://support.microsoft.com"
+                }
+              }
+            }
+          ]
+        },
+        "packageKind": "Solution",
+        "packageVersion": "[variables('_solutionVersion')]",
+        "packageName": "[variables('_solutionName')]",
+        "packageId": "[variables('_solutionId')]",
+        "contentSchemaVersion": "3.0.0",
+        "contentId": "[variables('parserObject1').parserContentId1]",
+        "contentKind": "Parser",
+        "displayName": "ConfluenceAudit",
+        "contentProductId": "[concat(take(variables('_solutionId'),50),'-','pr','-', uniqueString(concat(variables('_solutionId'),'-','Parser','-',variables('parserObject1').parserContentId1,'-', '1.0.0')))]",
+        "id": "[concat(take(variables('_solutionId'),50),'-','pr','-', uniqueString(concat(variables('_solutionId'),'-','Parser','-',variables('parserObject1').parserContentId1,'-', '1.0.0')))]",
+        "version": "[variables('parserObject1').parserVersion1]"
+      }
+    },
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2025-07-01",
+      "name": "[variables('parserObject1')._parserName1]",
+      "location": "[parameters('workspace-location')]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "ConfluenceAudit",
+        "category": "Microsoft Sentinel Parser",
+        "functionAlias": "ConfluenceAudit",
+        "query": "let ConfluenceAuditLogs  = view () { \nunion isfuzzy=true\n   (Confluence_Audit_CL // Schema created by Azure Function App Connector\n   | extend \n       EventVendor=\"Atlassian\",\n       EventProduct=\"Confluence\",\n       AuthorUsername=column_ifexists('author_username_s', ''),\n       AuthorUserKey=column_ifexists('author_userKey_g', ''),\n       AuthorAccountId=column_ifexists('author_accountId_s', ''),\n       AuthorType=column_ifexists('author_type_s', ''),\n       AuthorDisplayName=column_ifexists('author_displayName_s', ''),\n       AuthorIsExternalCollaborator=column_ifexists('author_isExternalCollaborator_b', ''),\n       AuthorAccountType=column_ifexists('author_accountType_s', ''),\n       AuthorPublicName=column_ifexists('author_publicName_s', ''),\n       AuthorExternalCollaborator=column_ifexists('author_externalCollaborator_b', ''),\n       RemoteAddress=column_ifexists('remoteAddress_s', ''),\n       CreationDate=column_ifexists('creationDate_d', ''),\n       Summary=column_ifexists('summary_s', ''),\n       Description=column_ifexists('description_s', ''),\n       Category=column_ifexists('Category', ''),\n       SysAdmin=column_ifexists('sysAdmin_b', ''),\n       SuperAdmin=column_ifexists('superAdmin_b', ''),\n       AffectedObjectName=column_ifexists('affectedObject_name_s', ''),\n       AffectedObjectObjectType=column_ifexists('affectedObject_objectType_s', ''),\n       ChangedValues=column_ifexists('changedValues_s', ''),\n       AssociatedObjects=column_ifexists('associatedObjects_s', ''),\n       UserIdentity=column_ifexists('author_accountId_s', ''),\n       SrcUserName=column_ifexists('author_displayName_s', ''),\n       DstUserSid=column_ifexists('author_userKey_s', ''),\n       SrcIpAddr=column_ifexists('remoteAddress_s', ''),\n       EventCreationTime=column_ifexists('creationDate_d', ''),\n       EventMessage=column_ifexists('summary_s', ''),\n       EventCategoryType =column_ifexists('Category', '')             \n   | project\n       TimeGenerated, \n       EventVendor,\n       EventProduct,\n       AuthorUsername,\n       AuthorAccountId,\n       AuthorType,\n       AuthorDisplayName,\n       AuthorIsExternalCollaborator,\n       AuthorUserKey,\n       AuthorAccountType,\n       AuthorPublicName,\n       AuthorExternalCollaborator,\n       RemoteAddress,\n       CreationDate,\n       Summary,\n       Description,\n       Category,\n       SysAdmin,\n       SuperAdmin,\n       AffectedObjectName,\n       AffectedObjectObjectType,\n       ChangedValues,\n       AssociatedObjects,\n       UserIdentity,\n       SrcUserName,\n       DstUserSid,\n       SrcIpAddr,\n       EventCreationTime,\n       EventMessage,\n       EventCategoryType),\n   (ConfluenceAuditLogs_CL // Schema created by CCP Connector\n   | extend TimeGenerated = unixtime_milliseconds_todatetime(CreationDate))};\n ConfluenceAuditLogs\n",
+        "functionParameters": "",
+        "version": 2,
+        "tags": [
+          {
+            "name": "description",
+            "value": ""
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/providers/metadata",
+      "apiVersion": "2022-01-01-preview",
+      "location": "[parameters('workspace-location')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/',concat('Parser-', last(split(variables('parserObject1')._parserId1,'/'))))]",
+      "dependsOn": [
+        "[variables('parserObject1')._parserId1]"
+      ],
+      "properties": {
+        "parentId": "[resourceId('Microsoft.OperationalInsights/workspaces/savedSearches', parameters('workspace'), 'ConfluenceAudit')]",
+        "contentId": "[variables('parserObject1').parserContentId1]",
+        "kind": "Parser",
+        "version": "[variables('parserObject1').parserVersion1]",
+        "source": {
+          "kind": "Solution",
+          "name": "AtlassianConfluenceAudit",
+          "sourceId": "[variables('_solutionId')]"
+        },
+        "author": {
+          "name": "Microsoft",
+          "email": "[variables('_email')]"
+        },
+        "support": {
+          "name": "Microsoft Corporation",
+          "email": "support@microsoft.com",
+          "tier": "Microsoft",
+          "link": "https://support.microsoft.com"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/providers/contentTemplates",
+      "apiVersion": "2023-04-01-preview",
+      "name": "[variables('parserObject2').parserTemplateSpecName2]",
+      "location": "[parameters('workspace-location')]",
+      "dependsOn": [
+        "[extensionResourceId(resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspace')), 'Microsoft.SecurityInsights/contentPackages', variables('_solutionId'))]"
+      ],
+      "properties": {
+        "description": "parser_ConfluenceAuditLogsAliasFunction Data Parser with template version 3.0.8",
+        "mainTemplate": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "[variables('parserObject2').parserVersion2]",
+          "parameters": {},
+          "variables": {},
+          "resources": [
+            {
+              "name": "[variables('parserObject2')._parserName2]",
+              "apiVersion": "2025-07-01",
+              "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+              "location": "[parameters('workspace-location')]",
+              "properties": {
+                "eTag": "*",
+                "displayName": "ConfluenceAuditLogs",
+                "category": "Microsoft Sentinel Parser",
+                "functionAlias": "ConfluenceAuditLogs",
+                "query": "union isfuzzy=true ConfluenceAuditLogs_CL, SentinelConfluenceAuditLogs",
+                "functionParameters": "",
+                "version": 2,
+                "tags": [
+                  {
+                    "name": "description",
+                    "value": "ConfluenceAuditLogs"
+                  }
+                ]
+              }
+            },
+            {
+              "type": "Microsoft.OperationalInsights/workspaces/providers/metadata",
+              "apiVersion": "2022-01-01-preview",
+              "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/',concat('Parser-', last(split(variables('parserObject2')._parserId2,'/'))))]",
+              "dependsOn": [
+                "[variables('parserObject2')._parserId2]"
+              ],
+              "properties": {
+                "parentId": "[resourceId('Microsoft.OperationalInsights/workspaces/savedSearches', parameters('workspace'), 'ConfluenceAuditLogs')]",
+                "contentId": "[variables('parserObject2').parserContentId2]",
+                "kind": "Parser",
+                "version": "[variables('parserObject2').parserVersion2]",
+                "source": {
+                  "name": "AtlassianConfluenceAudit",
+                  "kind": "Solution",
+                  "sourceId": "[variables('_solutionId')]"
+                },
+                "author": {
+                  "name": "Microsoft",
+                  "email": "[variables('_email')]"
+                },
+                "support": {
+                  "name": "Microsoft Corporation",
+                  "email": "support@microsoft.com",
+                  "tier": "Microsoft",
+                  "link": "https://support.microsoft.com"
+                }
+              }
+            }
+          ]
+        },
+        "packageKind": "Solution",
+        "packageVersion": "[variables('_solutionVersion')]",
+        "packageName": "[variables('_solutionName')]",
+        "packageId": "[variables('_solutionId')]",
+        "contentSchemaVersion": "3.0.0",
+        "contentId": "[variables('parserObject2').parserContentId2]",
+        "contentKind": "Parser",
+        "displayName": "ConfluenceAuditLogs",
+        "contentProductId": "[concat(take(variables('_solutionId'),50),'-','pr','-', uniqueString(concat(variables('_solutionId'),'-','Parser','-',variables('parserObject2').parserContentId2,'-', '1.0.0')))]",
+        "id": "[concat(take(variables('_solutionId'),50),'-','pr','-', uniqueString(concat(variables('_solutionId'),'-','Parser','-',variables('parserObject2').parserContentId2,'-', '1.0.0')))]",
+        "version": "[variables('parserObject2').parserVersion2]"
+      }
+    },
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2025-07-01",
+      "name": "[variables('parserObject2')._parserName2]",
+      "location": "[parameters('workspace-location')]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "ConfluenceAuditLogs",
+        "category": "Microsoft Sentinel Parser",
+        "functionAlias": "ConfluenceAuditLogs",
+        "query": "union isfuzzy=true ConfluenceAuditLogs_CL, SentinelConfluenceAuditLogs",
+        "functionParameters": "",
+        "version": 2,
+        "tags": [
+          {
+            "name": "description",
+            "value": "ConfluenceAuditLogs"
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/providers/metadata",
+      "apiVersion": "2022-01-01-preview",
+      "location": "[parameters('workspace-location')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/',concat('Parser-', last(split(variables('parserObject2')._parserId2,'/'))))]",
+      "dependsOn": [
+        "[variables('parserObject2')._parserId2]"
+      ],
+      "properties": {
+        "parentId": "[resourceId('Microsoft.OperationalInsights/workspaces/savedSearches', parameters('workspace'), 'ConfluenceAuditLogs')]",
+        "contentId": "[variables('parserObject2').parserContentId2]",
+        "kind": "Parser",
+        "version": "[variables('parserObject2').parserVersion2]",
+        "source": {
+          "kind": "Solution",
+          "name": "AtlassianConfluenceAudit",
+          "sourceId": "[variables('_solutionId')]"
+        },
+        "author": {
+          "name": "Microsoft",
+          "email": "[variables('_email')]"
+        },
+        "support": {
+          "name": "Microsoft Corporation",
+          "email": "support@microsoft.com",
+          "tier": "Microsoft",
+          "link": "https://support.microsoft.com"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/providers/contentPackages",
+      "apiVersion": "2023-04-01-preview",
+      "location": "[parameters('workspace-location')]",
+      "properties": {
+        "version": "3.0.8",
+        "kind": "Solution",
+        "contentSchemaVersion": "3.0.0",
+        "displayName": "AtlassianConfluenceAudit",
+        "publisherDisplayName": "Microsoft Sentinel, Microsoft Corporation",
+        "descriptionHtml": "<p><strong>Note:</strong> Please refer to the following before installing the solution:</p>\n<p>• Review the solution <a href=\"https://github.com/Azure/Azure-Sentinel/tree/master/Solutions/AtlassianConfluenceAudit/ReleaseNotes.md\">Release Notes</a></p>\n<p>• There may be <a href=\"https://aka.ms/sentinelsolutionsknownissues\">known issues</a> pertaining to this Solution, please refer to them before installing.</p>\n<p>The <a href=\"https://www.atlassian.com/software/confluence\">Atlassian Confluence Audit</a> solution provides the capability to ingest <a href=\"https://support.atlassian.com/confluence-cloud/docs/view-the-audit-log/\">Confluence Audit Records</a> into Microsoft Sentinel.</p>\n<p><strong>Underlying Microsoft Technologies used:</strong></p>\n<p>This solution takes a dependency on the following technologies, and some of these dependencies either may be in <a href=\"https://azure.microsoft.com/support/legal/preview-supplemental-terms/\">Preview</a> state or might result in additional ingestion or operational costs:</p>\n<p>• <a href=\"https://aka.ms/Sentinel-CCP_Platform\">Microsoft Sentinel Codeless Connector Framework</a></p>\n<p><strong>Data Connectors:</strong> 1, <strong>Parsers:</strong> 2</p>\n<p><a href=\"https://aka.ms/azuresentinel\">Learn more about Microsoft Sentinel</a> | <a href=\"https://aka.ms/azuresentinelsolutionsdoc\">Learn more about Solutions</a></p>\n",
+        "contentKind": "Solution",
+        "contentProductId": "[variables('_solutioncontentProductId')]",
+        "id": "[variables('_solutioncontentProductId')]",
+        "icon": "<img src=\"https://raw.githubusercontent.com/Azure/Azure-Sentinel/master/Workbooks/Images/Logos/Azure_Sentinel.svg\"width=\"75px\"height=\"75px\">",
+        "contentId": "[variables('_solutionId')]",
+        "parentId": "[variables('_solutionId')]",
+        "source": {
+          "kind": "Solution",
+          "name": "AtlassianConfluenceAudit",
+          "sourceId": "[variables('_solutionId')]"
+        },
+        "author": {
+          "name": "Microsoft",
+          "email": "[variables('_email')]"
+        },
+        "support": {
+          "name": "Microsoft Corporation",
+          "email": "support@microsoft.com",
+          "tier": "Microsoft",
+          "link": "https://support.microsoft.com"
+        },
+        "dependencies": {
+          "operator": "AND",
+          "criteria": [
+            {
+              "kind": "DataConnector",
+              "contentId": "[variables('_dataConnectorContentIdConnections1')]",
+              "version": "[variables('dataConnectorCCPVersion')]"
+            },
+            {
+              "kind": "Parser",
+              "contentId": "[variables('parserObject1').parserContentId1]",
+              "version": "[variables('parserObject1').parserVersion1]"
+            },
+            {
+              "kind": "Parser",
+              "contentId": "[variables('parserObject2').parserContentId2]",
+              "version": "[variables('parserObject2').parserVersion2]"
+            }
+          ]
+        },
+        "firstPublishDate": "2022-01-24",
+        "providers": [
+          "Atlassian"
+        ],
+        "categories": {
+          "domains": [
+            "IT Operations",
+            "Application"
+          ]
+        }
+      },
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/', variables('_solutionId'))]"
+    }
+  ],
+  "outputs": {}
+}

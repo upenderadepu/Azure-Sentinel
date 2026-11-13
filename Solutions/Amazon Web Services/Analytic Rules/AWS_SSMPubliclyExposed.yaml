@@ -1,0 +1,51 @@
+id: 75647b58-bcc8-4eb5-9658-46698d3fa153
+name: AWSCloudTrail - SSM document is publicly exposed
+description: |
+  Detects an AWS Systems Manager (SSM) document that has been made publicly accessible, which could lead to sensitive information exposure. Verify the document configurations and confirm the change was authorized.
+severity: Medium
+status: Available
+requiredDataConnectors:
+  - connectorId: AWS
+    dataTypes:
+      - AWSCloudTrail
+queryFrequency: 1d
+queryPeriod: 1d
+triggerOperator: gt
+triggerThreshold: 0
+tactics:
+  - Discovery
+relevantTechniques:
+  - T1526
+query: |
+  AWSCloudTrail
+  | where  EventName == "ModifyDocumentPermission" and isempty(ErrorCode) and isempty(ErrorMessage)
+  | where todynamic(parse_json(RequestParameters).["accountIdsToAdd"]) == '["all"]'
+  | extend UserIdentityArn = iif(isempty(UserIdentityArn), tostring(parse_json(Resources)[0].ARN), UserIdentityArn)
+  | extend UserName = tostring(split(UserIdentityArn, '/')[-1])
+  | extend AccountName = case( UserIdentityPrincipalid == "Anonymous", "Anonymous", isempty(UserIdentityUserName), UserName, UserIdentityUserName)
+  | extend AccountName = iif(AccountName contains "@", tostring(split(AccountName, '@', 0)[0]), AccountName),
+    AccountUPNSuffix = iif(AccountName contains "@", tostring(split(AccountName, '@', 1)[0]), "")  
+  | project TimeGenerated, EventName, EventTypeName, UserIdentityAccountId, UserIdentityPrincipalid, UserAgent,UserIdentityUserName, SessionMfaAuthenticated, RecipientAccountId, AccountName, AccountUPNSuffix, SourceIpAddress, AWSRegion, EventSource, AdditionalEventData, RequestParameters, ResponseElements, UserIdentityArn
+entityMappings:
+  - entityType: Account
+    fieldMappings:
+      - identifier: Name
+        columnName: AccountName
+      - identifier: UPNSuffix
+        columnName: AccountUPNSuffix
+      - identifier: CloudAppAccountId
+        columnName: RecipientAccountId
+  - entityType: IP
+    fieldMappings:
+      - identifier: Address
+        columnName: SourceIpAddress
+customDetails:
+  EventName: EventName
+  AWSRegion: AWSRegion
+  UserAgent: UserAgent
+  RequestParameters: RequestParameters
+alertDetailsOverride:
+  alertDisplayNameFormat: SSM document publicly exposed by {{AccountName}} in {{AWSRegion}}
+  alertDescriptionFormat: User {{AccountName}} modified SSM document permissions to expose it publicly from {{SourceIpAddress}} in region {{AWSRegion}}.
+version: 1.0.2
+kind: Scheduled

@@ -1,0 +1,25 @@
+id: 0b9e6030-9274-50dc-b680-d4226f3b09b4
+Function:
+  Title: corelight_signatures parser for Corelight
+  Version: '2.0.0'
+  LastUpdated: '2026-08-17'
+Category: Microsoft Sentinel Parser
+FunctionName: corelight_signatures
+FunctionAlias: corelight_signatures
+FunctionQuery: |+
+  let dummy_table = datatable(TimeGenerated: datetime) [];
+  let corelight_signatures = view () {
+      union isfuzzy=true Corelight_v3_signatures_CL, dummy_table
+        | extend
+            _path=path,
+            _system_name=system_name,
+            _write_ts=write_ts
+      | extend
+          EventVendor="Corelight",
+          EventProduct="CorelightSensor",
+          EventType="signatures",
+          ts=TimeGenerated
+  };
+  corelight_signatures
+
+...

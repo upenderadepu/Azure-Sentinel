@@ -1,0 +1,25 @@
+id: 459a9a64-c19b-5407-b484-537505538b7b
+Function:
+  Title: corelight_icmp_specific_tunnels parser for Corelight
+  Version: '2.0.0'
+  LastUpdated: '2026-08-17'
+Category: Microsoft Sentinel Parser
+FunctionName: corelight_icmp_specific_tunnels
+FunctionAlias: corelight_icmp_specific_tunnels
+FunctionQuery: |+
+  let dummy_table = datatable(TimeGenerated: datetime) [];
+  let corelight_icmp_specific_tunnels = view () {
+      union isfuzzy=true Corelight_v3_icmp_specific_tunnels_CL, dummy_table
+        | extend
+            _path=path,
+            _system_name=system_name,
+            _write_ts=write_ts
+      | extend
+          EventVendor="Corelight",
+          EventProduct="CorelightSensor",
+          EventType="icmp_specific_tunnels",
+          ts=TimeGenerated
+  };
+  corelight_icmp_specific_tunnels
+
+...

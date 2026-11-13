@@ -1,0 +1,33 @@
+id: d944d564-b6fa-470d-b5ab-a1a141878c5e
+name: Valence Security Alerts
+description: |
+  'Valence Security Alerts'
+severity: High
+requiredDataConnectors:
+  - connectorId: ValenceSecurityCcfPush
+    dataTypes:
+      - ValenceAlerts_CL
+queryFrequency: 5m
+queryPeriod: 5m
+triggerOperator: gt
+triggerThreshold: 0
+eventGroupingSettings:
+  aggregationKind: SingleAlert
+status: Available
+tactics: []
+relevantTechniques: []
+query: |
+  ValenceAlerts_CL
+alertDetailsOverride:
+  alertDisplayNameFormat: 'Valence Alert: {{alertType}}'
+  alertDescriptionFormat: '{{summaryLine}}'
+  alertSeverityColumnName: sentinelSeverity
+  alertDynamicProperties: []
+customDetails:
+  ValenceAlertType: alertType
+  ValenceSummary: summaryLine
+  ValenceSeverity: severity
+  ValenceStatus: status
+  ValenceCreatedTS: creationTimestamp
+version: 1.0.1
+kind: Scheduled

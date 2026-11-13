@@ -1,0 +1,15 @@
+{
+	"publisherId": "azuresentinel",
+	"offerId": "azure-sentinel-solution-agari",
+	"firstPublishDate": "2026-05-14",
+	"providers": ["Agari"],
+	"categories": {
+		"domains" : ["Security - Threat Protection"]
+	},
+	"support": {
+	  "name": "Microsoft Corporation",
+	  "email": "support@microsoft.com",
+	  "tier": "Microsoft",
+	  "link": "https://support.microsoft.com"
+	}
+}

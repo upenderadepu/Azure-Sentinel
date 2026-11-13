@@ -1,0 +1,502 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "metadata": {
+        "title": "Infoblox-IQ-for-TD-Import-Indicators-TI",
+        "description": "Imports each Indicator of a Microsoft Sentinel Incident triggered by an Infoblox IQ for TD Insight into the ThreatIntelligenceIndicator table. You must run the Infoblox-IQ-for-TD-Get-Insight-Details playbook on a IQ for TD Insight Incident before running this playbook.",
+        "prerequisites": [
+            "1. Workspace Name"
+        ],
+        "postDeployment": [
+            "**a. Authorize connections**",
+            "Once deployment is complete, authorize each connection.",
+            "1. Go to your logic app -> API connections -> Select azuremonitorlogs connection resource",
+            "2. Go to General -> edit API connection",
+            "3. Click Authorize",
+            "4. Sign in",
+            "5. Click Save",
+            "6. Repeat steps for other connections",
+            "\n**b. Assign role to this playbook**",
+            "1. Go to Log Analytics Workspace → *select your workspace* → Access Control → Add",
+            "2. Add role assignment",
+            "3. Assignment type: Job function roles -> Add 'Microsoft Sentinel Contributor' as a Role",
+            "4. Members: select managed identity for assigned access to and add your logic app as member",
+            "5. Click on review+assign",
+            "\n**c. Configure playbook permissions (required for automation rules to run this playbook)**",
+            "1. Go to Microsoft Sentinel → *select your workspace* → Settings",
+            "2. Select the Settings tab → Playbook permissions → Configure permissions",
+            "3. Select the subscription containing this playbook",
+            "4. Click Apply"
+        ],
+        "prerequisitesDeployTemplateFile": "",
+        "entities": [
+            "securitygroup",
+            "malware"
+        ],
+        "tags": [],
+        "lastUpdateTime": "2026-07-08T16:15:48.355Z",
+        "support": {
+            "tier": "Community",
+            "armtemplate": "Generated from https://github.com/Azure/Azure-Sentinel/tree/master/Tools/Playbook-ARM-Template-Generator"
+        },
+        "author": {
+            "name": "Infoblox"
+        }
+    },
+    "parameters": {
+        "PlaybookName": {
+            "defaultValue": "Infoblox-IQ-for-TD-Import-Indicators-TI",
+            "type": "string"
+        },
+        "Workspace Name": {
+            "minLength": 1,
+            "type": "string",
+            "metadata": {
+                "description": "Enter workspace name in which Incident is created"
+            }
+        }
+    },
+    "variables": {
+        "AzuremonitorlogsConnectionName": "[concat('Azuremonitorlogs-', parameters('PlaybookName'))]",
+        "MicrosoftSentinelConnectionName": "[concat('MicrosoftSentinel-', parameters('PlaybookName'))]"
+    },
+    "resources": [
+        {
+            "properties": {
+                "provisioningState": "Succeeded",
+                "state": "Enabled",
+                "definition": {
+                    "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {
+                        "$connections": {
+                            "defaultValue": {},
+                            "type": "Object"
+                        },
+                        "WorkspaceID": {
+                            "defaultValue": "[reference(resourceId('Microsoft.OperationalInsights/workspaces', trim(parameters('Workspace Name'))), '2025-07-01').customerId]",
+                            "type": "string"
+                        }
+                    },
+                    "triggers": {
+                        "Microsoft_Sentinel_incident": {
+                            "type": "ApiConnectionWebhook",
+                            "inputs": {
+                                "body": {
+                                    "callback_url": "@{listCallbackUrl()}"
+                                },
+                                "host": {
+                                    "connection": {
+                                        "name": "@parameters('$connections')['azuresentinel']['connectionId']"
+                                    }
+                                },
+                                "path": "/incident-creation"
+                            }
+                        }
+                    },
+                    "actions": {
+                        "For_each_Alerts": {
+                            "foreach": "@triggerBody()?['object']?['properties']?['Alerts']",
+                            "actions": {
+                                "Parse_JSON_For_Custom_Entities_Mapping_Data": {
+                                    "type": "ParseJson",
+                                    "inputs": {
+                                        "content": "@items('For_each_Alerts')['properties']?['additionalData']?['Custom Details']",
+                                        "schema": {
+                                            "type": "object",
+                                            "properties": {
+                                                "InfobloxInsightID": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
+                                "Compose_Insight_ID": {
+                                    "runAfter": {
+                                        "Parse_JSON_For_Custom_Entities_Mapping_Data": [
+                                            "Succeeded"
+                                        ]
+                                    },
+                                    "type": "Compose",
+                                    "inputs": "@body('Parse_JSON_For_Custom_Entities_Mapping_Data')?['InfobloxInsightID']"
+                                },
+                                "For_each_Insight_ID": {
+                                    "foreach": "@outputs('Compose_Insight_ID')",
+                                    "actions": {
+                                        "Get_Domains": {
+                                            "type": "ApiConnection",
+                                            "inputs": {
+                                                "host": {
+                                                    "connection": {
+                                                        "name": "@parameters('$connections')['azuremonitorlogs']['connectionId']"
+                                                    }
+                                                },
+                                                "method": "post",
+                                                "body": {
+                                                    "query": "InfobloxInsightIndicators\n| where InfobloxInsightID == \"@{items('For_each_Insight_ID')}\"\n| where isIP == false\n| summarize arg_max(TimeGenerated, *) by ThreatIndicator",
+                                                    "timerangetype": "2",
+                                                    "timerange": {
+                                                        "relativeTimeRange": "Last 7 days"
+                                                    }
+                                                },
+                                                "path": "/queryDataV2",
+                                                "queries": {
+                                                    "resourcegroups": "[resourceGroup().name]",
+                                                    "resourcename": "[trim(parameters('Workspace Name'))]",
+                                                    "resourcetype": "Log Analytics Workspace",
+                                                    "subscriptions": "[subscription().subscriptionId]"
+                                                }
+                                            }
+                                        },
+                                        "Parse_Domains": {
+                                            "runAfter": {
+                                                "Get_Domains": [
+                                                    "Succeeded"
+                                                ]
+                                            },
+                                            "type": "ParseJson",
+                                            "inputs": {
+                                                "content": "@body('Get_Domains')",
+                                                "schema": {
+                                                    "properties": {
+                                                        "value": {
+                                                            "items": {
+                                                                "properties": {
+                                                                    "Description": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "EventCount": {
+                                                                        "type": "integer"
+                                                                    },
+                                                                    "FirstSeen": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "InfobloxB1PolicyAction": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "InfobloxInsightID": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "LastSeen": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "ThreatActor": {
+                                                                        "type": [
+                                                                            "string",
+                                                                            "null"
+                                                                        ]
+                                                                    },
+                                                                    "ThreatConfidence": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "ThreatIndicator": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "ThreatLevel": {
+                                                                        "type": "string"
+                                                                    }
+                                                                },
+                                                                "required": [],
+                                                                "type": "object"
+                                                            },
+                                                            "type": "array"
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                }
+                                            }
+                                        },
+                                        "For_each_Domain": {
+                                            "foreach": "@body('Parse_Domains')?['value']",
+                                            "actions": {
+                                                "Threat_Intelligence_-_Upload_STIX_Objects_(Preview)": {
+                                                    "type": "ApiConnection",
+                                                    "inputs": {
+                                                        "host": {
+                                                            "connection": {
+                                                                "name": "@parameters('$connections')['azuresentinel']['connectionId']"
+                                                            }
+                                                        },
+                                                        "method": "post",
+                                                        "body": {
+                                                            "sourcesystem": "Infoblox IQ for TD Insights",
+                                                            "stixobjects": [
+                                                                {
+                                                                    "type": "indicator",
+                                                                    "spec_version": "2.1",
+                                                                    "id": "@{concat('indicator--', guid())}",
+                                                                    "created": "@{if(empty(items('For_each_Domain')?['FirstSeen']), utcNow(), items('For_each_Domain')?['FirstSeen'])}",
+                                                                    "modified": "@{utcNow()}",
+                                                                    "name": "Infoblox - HOST - @{items('For_each_Domain')?['ThreatIndicator']}",
+                                                                    "description": "Infoblox - HOST - @{items('For_each_Domain')?['Description']}",
+                                                                    "indicator_types": [
+                                                                        "malicious-activity"
+                                                                    ],
+                                                                    "pattern": "[[domain-name:value = '@{items('For_each_Domain')?['ThreatIndicator']}']",
+                                                                    "pattern_type": "stix",
+                                                                    "pattern_version": "2.1",
+                                                                    "valid_from": "@{if(empty(items('For_each_Domain')?['FirstSeen']), utcNow(), items('For_each_Domain')?['FirstSeen'])}",
+                                                                    "valid_until": "@{addDays(utcNow(), 14)}",
+                                                                    "labels": [
+                                                                        "FirstSeen: @{items('For_each_Domain')?['FirstSeen']}",
+                                                                        "LastSeen: @{items('For_each_Domain')?['LastSeen']}",
+                                                                        "Threat Confidence: @{items('For_each_Domain')?['ThreatConfidence']}",
+                                                                        "Action: @{items('For_each_Domain')?['InfobloxB1PolicyAction']}",
+                                                                        "Actor: @{items('For_each_Domain')?['ThreatActor']}",
+                                                                        "Event Count: @{items('For_each_Domain')?['EventCount']}",
+                                                                        "Threat Level: @{items('For_each_Domain')?['ThreatLevel']}",
+                                                                        "HOST"
+                                                                    ],
+                                                                    "external_references": [
+                                                                        {
+                                                                            "source_name": "Infoblox IQ for TD Insights",
+                                                                            "external_id": "@{items('For_each_Domain')?['InfobloxInsightID']}"
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        },
+                                                        "path": "/ThreatIntelligence/@{encodeURIComponent(parameters('WorkspaceID'))}/UploadStixObjects/"
+                                                    }
+                                                }
+                                            },
+                                            "runAfter": {
+                                                "Parse_Domains": [
+                                                    "Succeeded"
+                                                ]
+                                            },
+                                            "type": "Foreach"
+                                        },
+                                        "Get_IPs": {
+                                            "type": "ApiConnection",
+                                            "inputs": {
+                                                "host": {
+                                                    "connection": {
+                                                        "name": "@parameters('$connections')['azuremonitorlogs']['connectionId']"
+                                                    }
+                                                },
+                                                "method": "post",
+                                                "body": {
+                                                    "query": "InfobloxInsightIndicators\n| where InfobloxInsightID == \"@{items('For_each_Insight_ID')}\"\n| where isIP == true\n| summarize arg_max(TimeGenerated, *) by ThreatIndicator",
+                                                    "timerangetype": "2",
+                                                    "timerange": {
+                                                        "relativeTimeRange": "Last 7 days"
+                                                    }
+                                                },
+                                                "path": "/queryDataV2",
+                                                "queries": {
+                                                    "resourcegroups": "[resourceGroup().name]",
+                                                    "resourcename": "[trim(parameters('Workspace Name'))]",
+                                                    "resourcetype": "Log Analytics Workspace",
+                                                    "subscriptions": "[subscription().subscriptionId]"
+                                                }
+                                            }
+                                        },
+                                        "Parse_IPs": {
+                                            "runAfter": {
+                                                "Get_IPs": [
+                                                    "Succeeded"
+                                                ]
+                                            },
+                                            "type": "ParseJson",
+                                            "inputs": {
+                                                "content": "@body('Get_IPs')",
+                                                "schema": {
+                                                    "properties": {
+                                                        "value": {
+                                                            "items": {
+                                                                "properties": {
+                                                                    "Description": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "EventCount": {
+                                                                        "type": "integer"
+                                                                    },
+                                                                    "FirstSeen": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "InfobloxB1PolicyAction": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "InfobloxInsightID": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "LastSeen": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "ThreatActor": {
+                                                                        "type": [
+                                                                            "string",
+                                                                            "null"
+                                                                        ]
+                                                                    },
+                                                                    "ThreatConfidence": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "ThreatIndicator": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "ThreatLevel": {
+                                                                        "type": "string"
+                                                                    }
+                                                                },
+                                                                "required": [],
+                                                                "type": "object"
+                                                            },
+                                                            "type": "array"
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                }
+                                            }
+                                        },
+                                        "For_each_IP": {
+                                            "foreach": "@body('Parse_IPs')?['value']",
+                                            "actions": {
+                                                "Threat_Intelligence_-_Upload_STIX_Objects_(Preview)_1": {
+                                                    "type": "ApiConnection",
+                                                    "inputs": {
+                                                        "host": {
+                                                            "connection": {
+                                                                "name": "@parameters('$connections')['azuresentinel']['connectionId']"
+                                                            }
+                                                        },
+                                                        "method": "post",
+                                                        "body": {
+                                                            "sourcesystem": "Infoblox IQ for TD Insights",
+                                                            "stixobjects": [
+                                                                {
+                                                                    "type": "indicator",
+                                                                    "spec_version": "2.1",
+                                                                    "id": "@{concat('indicator--', guid())}",
+                                                                    "created": "@{if(empty(items('For_each_IP')?['FirstSeen']), utcNow(), items('For_each_IP')?['FirstSeen'])}",
+                                                                    "modified": "@{utcNow()}",
+                                                                    "name": "Infoblox - IP - @{items('For_each_IP')?['ThreatIndicator']}",
+                                                                    "description": "Infoblox - IP - @{items('For_each_IP')?['Description']}",
+                                                                    "indicator_types": [
+                                                                        "malicious-activity"
+                                                                    ],
+                                                                    "pattern": "[[ipv4-addr:value = '@{items('For_each_IP')?['ThreatIndicator']}']",
+                                                                    "pattern_type": "stix",
+                                                                    "pattern_version": "2.1",
+                                                                    "valid_from": "@{if(empty(items('For_each_IP')?['FirstSeen']), utcNow(), items('For_each_IP')?['FirstSeen'])}",
+                                                                    "valid_until": "@{addDays(utcNow(), 14)}",
+                                                                    "labels": [
+                                                                        "FirstSeen: @{items('For_each_IP')?['FirstSeen']}",
+                                                                        "LastSeen: @{items('For_each_IP')?['LastSeen']}",
+                                                                        "Threat Confidence: @{items('For_each_IP')?['ThreatConfidence']}",
+                                                                        "Action: @{items('For_each_IP')?['InfobloxB1PolicyAction']}",
+                                                                        "Actor: @{items('For_each_IP')?['ThreatActor']}",
+                                                                        "Event Count: @{items('For_each_IP')?['EventCount']}",
+                                                                        "Threat Level: @{items('For_each_IP')?['ThreatLevel']}",
+                                                                        "IP"
+                                                                    ],
+                                                                    "external_references": [
+                                                                        {
+                                                                            "source_name": "Infoblox IQ for TD Insights",
+                                                                            "external_id": "@{items('For_each_IP')?['InfobloxInsightID']}"
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        },
+                                                        "path": "/ThreatIntelligence/@{encodeURIComponent(parameters('WorkspaceID'))}/UploadStixObjects/"
+                                                    }
+                                                }
+                                            },
+                                            "runAfter": {
+                                                "Parse_IPs": [
+                                                    "Succeeded"
+                                                ]
+                                            },
+                                            "type": "Foreach"
+                                        }
+                                    },
+                                    "runAfter": {
+                                        "Compose_Insight_ID": [
+                                            "Succeeded"
+                                        ]
+                                    },
+                                    "type": "Foreach"
+                                }
+                            },
+                            "runAfter": {},
+                            "type": "Foreach"
+                        }
+                    }
+                },
+                "parameters": {
+                    "$connections": {
+                        "type": "Object",
+                        "value": {
+                            "azuresentinel": {
+                                "connectionId": "[resourceId('Microsoft.Web/connections', variables('MicrosoftSentinelConnectionName'))]",
+                                "connectionName": "[variables('MicrosoftSentinelConnectionName')]",
+                                "id": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Web/locations/', resourceGroup().location, '/managedApis/Azuresentinel')]",
+                                "connectionProperties": {
+                                    "authentication": {
+                                        "type": "ManagedServiceIdentity"
+                                    }
+                                }
+                            },
+                            "azuremonitorlogs": {
+                                "connectionId": "[resourceId('Microsoft.Web/connections', variables('AzuremonitorlogsConnectionName'))]",
+                                "connectionName": "[variables('AzuremonitorlogsConnectionName')]",
+                                "id": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Web/locations/', resourceGroup().location, '/managedApis/Azuremonitorlogs')]",
+                                "connectionProperties": {}
+                            }
+                        }
+                    }
+                }
+            },
+            "name": "[parameters('PlaybookName')]",
+            "type": "Microsoft.Logic/workflows",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "hidden-SentinelTemplateName": "Infoblox-IQ-for-TD-Import-Indicators-TI",
+                "hidden-SentinelTemplateVersion": "1.0"
+            },
+            "identity": {
+                "type": "SystemAssigned"
+            },
+            "apiVersion": "2019-05-01",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/connections', variables('MicrosoftSentinelConnectionName'))]",
+                "[resourceId('Microsoft.Web/connections', variables('AzuremonitorlogsConnectionName'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Web/connections",
+            "apiVersion": "2016-06-01",
+            "name": "[variables('MicrosoftSentinelConnectionName')]",
+            "location": "[resourceGroup().location]",
+            "kind": "V1",
+            "properties": {
+                "displayName": "[variables('MicrosoftSentinelConnectionName')]",
+                "customParameterValues": {},
+                "parameterValueType": "Alternative",
+                "api": {
+                    "id": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Web/locations/', resourceGroup().location, '/managedApis/Azuresentinel')]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Web/connections",
+            "apiVersion": "2016-06-01",
+            "name": "[variables('AzuremonitorlogsConnectionName')]",
+            "location": "[resourceGroup().location]",
+            "kind": "V1",
+            "properties": {
+                "displayName": "[variables('AzuremonitorlogsConnectionName')]",
+                "customParameterValues": {},
+                "api": {
+                    "id": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Web/locations/', resourceGroup().location, '/managedApis/Azuremonitorlogs')]"
+                }
+            }
+        }
+    ]
+}

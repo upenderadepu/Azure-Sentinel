@@ -1,0 +1,25 @@
+id: defef1eb-7410-58ac-8672-8568553281c9
+Function:
+  Title: corelight_dhcp parser for Corelight
+  Version: '2.0.0'
+  LastUpdated: '2026-08-17'
+Category: Microsoft Sentinel Parser
+FunctionName: corelight_dhcp
+FunctionAlias: corelight_dhcp
+FunctionQuery: |+
+  let dummy_table = datatable(TimeGenerated: datetime) [];
+  let corelight_dhcp = view () {
+      union isfuzzy=true Corelight_v3_dhcp_CL, dummy_table
+        | extend
+            _path=path,
+            _system_name=system_name,
+            _write_ts=write_ts
+      | extend
+          EventVendor="Corelight",
+          EventProduct="CorelightSensor",
+          EventType="dhcp",
+          ts=TimeGenerated
+  };
+  corelight_dhcp
+
+...

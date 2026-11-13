@@ -1,0 +1,71 @@
+{
+  "Name": "GitHub",
+  "Author": "Microsoft - support@microsoft.com",
+  "Logo": "<img src=\"https://raw.githubusercontent.com/Azure/Azure-Sentinel/master/Logos/GitHub.svg\"width=\"75px\"height=\"75px\">",
+  "Description": "The [GitHub](https://github.com/) Enterprise Audit Log solution for Microsoft Sentinel enables you to ingest GitHub Audit Logs into Microsoft Sentinel using the GitHub Enterprise Audit Log API, to view the data in Workbooks, query it to create custom alerts, and improve your investigation process. The solution also includes 13 XDR Detection rules for Microsoft Defender XDR.\n\n**Underlying Microsoft Technologies used:**\n\nThis solution takes a dependency on the following technologies, and some of these dependencies either may be in [Preview](https://azure.microsoft.com/support/legal/preview-supplemental-terms/) state or might result in additional ingestion or operational costs\n- [Azure Monitor HTTP Data Collector API](https://docs.microsoft.com/azure/azure-monitor/logs/data-collector-api)\n- [Azure Functions](https://azure.microsoft.com/services/functions/#overview)",
+  "Workbooks": [
+    "Workbooks/GitHubAdvancedSecurity.json",
+    "Workbooks/GitHub.json"
+  ],
+  "Analytic Rules": [
+    "Analytic Rules/GitHub - A payment method was removed.yaml",
+    "Analytic Rules/GitHub - Activities from Infrequent Country.yaml",
+    "Analytic Rules/GitHub - Oauth application - a client secret was removed.yaml",
+    "Analytic Rules/GitHub - Repository was created.yaml",
+    "Analytic Rules/GitHub - Repository was destroyed.yaml",
+    "Analytic Rules/GitHub - Two Factor Authentication Disabled in GitHub.yaml",
+    "Analytic Rules/GitHub - User visibility Was changed.yaml",
+    "Analytic Rules/GitHub - User was added to the organization.yaml",
+    "Analytic Rules/GitHub - User was blocked.yaml",
+    "Analytic Rules/GitHub - User was invited to the repository.yaml",
+    "Analytic Rules/GitHub - pull request was created.yaml",
+    "Analytic Rules/GitHub - pull request was merged.yaml",
+    "Analytic Rules/NRT Two Factor Authentication Disabled.yaml",
+    "Analytic Rules/Security Vulnerability in Repo.yaml"
+  ],
+  "Hunting Queries": [
+    "Hunting Queries/First Time User Invite and Add Member to Org.yaml",
+    "Hunting Queries/Inactive or New Account Usage.yaml",
+    "Hunting Queries/Mass Deletion of Repositories .yaml",
+    "Hunting Queries/Oauth App Restrictions Disabled.yaml",
+    "Hunting Queries/Org Repositories Default Permissions Change.yaml",
+    "Hunting Queries/Repository Permission Switched to Public.yaml",
+    "Hunting Queries/User First Time Repository Delete Activity.yaml",
+    "Hunting Queries/User Grant Access and Grants Other Access.yaml"
+  ],
+  "Parsers": [
+    "Parsers/GitHubAuditData.yaml",
+    "Parsers/GitHubCodeScanningData.yaml",
+    "Parsers/GitHubDependabotData.yaml",
+    "Parsers/GitHubSecretScanningData.yaml",
+    "Parsers/GitHubScanAudit.yaml"
+  ],
+  "Data Connectors": [
+    "Data Connectors/GitHubAuditLogs_AzStorage/ConnectorDefinition.json",
+    "Data Connectors/GitHubAuditLogs_CCF/GitHubAuditLogs_ConnectorDefinition.json",
+    "Data Connectors/azuredeploy_GitHub_native_poller_connector.json",
+    "Data Connectors/GithubWebhook/GithubWebhook_API_FunctionApp.json",
+    "Data Connectors/GithubWebhookV2/GithubWebhookV2_API_FunctionApp.json"
+  ],
+  "Metadata": "SolutionMetadata.json",
+  "BasePath": "C:\\GitHub\\Azure-Sentinel\\Solutions\\GitHub",
+  "TemplateSpec": true,
+  "Is1PConnector": false,
+  "XDR Detections": [
+    "XDR Detections/GitHub - A payment method was removed.yaml",
+    "XDR Detections/GitHub - Activities from Infrequent Country.yaml",
+    "XDR Detections/GitHub - Oauth application - a client secret was removed.yaml",
+    "XDR Detections/GitHub - Repository was created.yaml",
+    "XDR Detections/GitHub - Repository was destroyed.yaml",
+    "XDR Detections/GitHub - Two Factor Authentication Disabled in GitHub.yaml",
+    "XDR Detections/GitHub - User visibility Was changed.yaml",
+    "XDR Detections/GitHub - User was added to the organization.yaml",
+    "XDR Detections/GitHub - User was blocked.yaml",
+    "XDR Detections/GitHub - User was invited to the repository.yaml",
+    "XDR Detections/GitHub - pull request was created.yaml",
+    "XDR Detections/GitHub - pull request was merged.yaml",
+    "XDR Detections/NRT Two Factor Authentication Disabled.yaml"
+  ],
+  "XDR Workbooks": [],
+  "Version": "3.5.4"
+}

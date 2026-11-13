@@ -1,0 +1,53 @@
+{
+  "Name":"SentinelOneAlerts_CL",
+  "Properties":[
+  {
+      "name": "TimeGenerated",
+      "type": "datetime"
+  },
+  {
+      "name": "SourceProcessInfo",
+      "type": "string"
+  },
+  {
+      "name": "AlertInfo",
+      "type": "string"
+  },
+  {
+      "name": "AgentDetectionInfo",
+      "type": "string"
+  },
+  {
+      "name": "RuleInfo",
+      "type": "string"
+  },
+  {
+      "name": "ContainerInfo",
+      "type": "string"
+  },
+  {
+      "name": "SourceParentProcessInfo",
+      "type": "string"
+  },
+  {
+      "name": "TargetProcessInfo",
+      "type": "string"
+  },
+  {
+      "name": "KubernetesInfo",
+      "type": "string"
+  },
+  {
+      "name": "TenantId",
+      "type": "string"
+  },
+  {
+      "name": "Type",
+      "type": "string"
+  },
+  {
+      "name": "_ResourceId",
+      "type": "string"
+  }
+  ]
+}

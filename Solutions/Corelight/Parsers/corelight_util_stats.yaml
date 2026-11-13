@@ -1,0 +1,25 @@
+id: c40ec4c5-2f01-5dd6-846f-c0eeff7a55e6
+Function:
+  Title: corelight_util_stats parser for Corelight
+  Version: '2.0.0'
+  LastUpdated: '2026-08-17'
+Category: Microsoft Sentinel Parser
+FunctionName: corelight_util_stats
+FunctionAlias: corelight_util_stats
+FunctionQuery: |+
+  let dummy_table = datatable(TimeGenerated: datetime) [];
+  let corelight_util_stats = view () {
+      union isfuzzy=true Corelight_v3_util_stats_CL, dummy_table
+        | extend
+            _path=path,
+            _system_name=system_name,
+            _write_ts=write_ts
+      | extend
+          EventVendor="Corelight",
+          EventProduct="CorelightSensor",
+          EventType="util_stats",
+          ts=TimeGenerated
+  };
+  corelight_util_stats
+
+...

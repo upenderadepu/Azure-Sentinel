@@ -1,0 +1,25 @@
+id: 372c59f0-7016-5f21-a7ff-b7fc31de4f63
+Function:
+  Title: corelight_socks parser for Corelight
+  Version: '2.0.0'
+  LastUpdated: '2026-08-17'
+Category: Microsoft Sentinel Parser
+FunctionName: corelight_socks
+FunctionAlias: corelight_socks
+FunctionQuery: |+
+  let dummy_table = datatable(TimeGenerated: datetime) [];
+  let corelight_socks = view () {
+      union isfuzzy=true Corelight_v3_socks_CL, dummy_table
+        | extend
+            _path=path,
+            _system_name=system_name,
+            _write_ts=write_ts
+      | extend
+          EventVendor="Corelight",
+          EventProduct="CorelightSensor",
+          EventType="socks",
+          ts=TimeGenerated
+  };
+  corelight_socks
+
+...

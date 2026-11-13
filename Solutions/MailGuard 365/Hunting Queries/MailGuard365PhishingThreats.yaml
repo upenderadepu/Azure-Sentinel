@@ -1,0 +1,27 @@
+id: ee15ed10-d355-474e-b8ad-a8bbb76f6d38
+name: MailGuard 365 - Phishing Threats
+description: |
+  Query searches for phishing threats stopped by MailGuard 365.
+requiredDataConnectors:
+  - connectorId: MailGuard365
+    dataTypes:
+      - MG365ThreatData_CL
+tactics:
+  - InitialAccess
+  - Reconnaissance
+  - CredentialAccess
+relevantTechniques:
+  - T1598
+  - T1566
+query: |
+  MG365ThreatData_CL
+  | where Category == "Phishing"
+entityMappings:
+  - entityType: MailMessage
+    fieldMappings:
+      - identifier: NetworkMessageId
+        columnName: MessageId
+      - identifier: Recipient
+        columnName: Email
+version: 1.0.0
+kind: Scheduled

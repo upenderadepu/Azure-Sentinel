@@ -1,0 +1,21 @@
+{
+  "trackingId": "pid-42e6c7f6-d0bd-4a07-bc6b-449926eb4290-partnercenter",
+  "publisherId": "azuresentinel",
+  "offerId": "azure-sentinel-solution-dpdp-compliance",
+  "firstPublishDate": "2026-01-26",
+  "providers": [
+    "Microsoft"
+  ],
+  "categories": {
+    "domains": [
+      "Compliance"
+    ]
+  },
+  "support": {
+    "name": "Microsoft Corporation",
+    "email": "support@microsoft.com",
+    "tier": "Microsoft",
+    "link": "https://support.microsoft.com"
+  },
+  "version": "3.2.2"
+}

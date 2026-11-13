@@ -1,0 +1,41 @@
+id: 87754d3a-0077-4ff9-b46e-6336b8d02287
+name: Quarantine releases by Detection Types
+description: |
+  This query visualises emails released from quarantine and summarizing the result by the original filter verdict
+description-detailed: |
+  This query visualises emails released from quarantine and summarizing the result by the original filter verdict
+  Query is also included as part of the Defender for Office 365 solution in Sentinel: https://techcommunity.microsoft.com/blog/microsoftdefenderforoffice365blog/part-2-build-custom-email-security-reports-and-dashboards-with-workbooks-in-micr/4411303
+requiredDataConnectors:
+- connectorId: MicrosoftThreatProtection
+  dataTypes:
+  - EmailEvents
+  - EmailPostDeliveryEvents
+tactics:
+  - InitialAccess
+relevantTechniques:
+  - T1566
+query: |
+  //Per detection technology: the share of its quarantined emails that were later released from quarantine.
+  //Release % = released / quarantined for that detection technology. A high rate flags a detector that may be
+  //over-flagging legitimate mail. Detectors with fewer than 10 quarantined emails are excluded so the rate is
+  //statistically meaningful rather than driven by one or two messages.
+  EmailEvents
+  | where Timestamp > ago(30d)
+  | where DeliveryLocation == "Quarantine"
+  | extend MDO_detection = parse_json(DetectionMethods)
+  | extend FirstDetection = iif(isempty(MDO_detection), "Clean", tostring(bag_keys(MDO_detection)[0]))
+  | extend FirstSubcategory = iif(FirstDetection != "Clean" and array_length(MDO_detection[FirstDetection]) > 0, strcat(FirstDetection, ": ", tostring(MDO_detection[FirstDetection][0])), "No Detection (clean)")
+  | where FirstSubcategory contains "Malware" or FirstSubcategory contains "Phish" or FirstSubcategory contains "Spam"
+  | join kind=leftouter (
+      EmailPostDeliveryEvents
+      | where Timestamp > ago(30d)
+      | where Action == "Quarantine release"
+      | distinct NetworkMessageId
+      | extend ReleasedFlag = "yes"
+    ) on NetworkMessageId
+  | summarize Quarantined = dcount(NetworkMessageId), Released = dcountif(NetworkMessageId, ReleasedFlag == "yes") by FirstSubcategory
+  | where Quarantined >= 10
+  | extend ReleaseRate = round(Released * 100.0 / Quarantined, 2)
+  | project ['Detection Type']=FirstSubcategory, ['Quarantined Emails']=Quarantined, ['Released']=Released, ['Release %']=ReleaseRate
+  | order by ['Release %'] desc
+version: 1.1.0

@@ -1,0 +1,36 @@
+id: e73ebd34-4f04-4684-a5f0-dba820127ce8
+name: AWSCloudTrail - IAM Policy with Excessive Wildcard Permissions
+description: |
+  Identifies CreatePolicyVersion operations that grant wildcard-allow permissions, which may indicate privilege escalation or unauthorized policy tampering.
+severity: Medium
+requiredDataConnectors:
+  - connectorId: AWS
+    dataTypes:
+      - AWSCloudTrail
+tactics:
+  - PrivilegeEscalation
+relevantTechniques:
+  - T1484
+query: |
+    let check_actions = AWSCloudTrail
+    | where EventName == "CreatePolicyVersion" and isempty(ErrorCode) and isempty(ErrorMessage)
+    | extend state=parse_json(parse_json(replace_string(tostring(parse_json(RequestParameters)['policyDocument']),'\\"','"')).['Statement'])
+    | mv-expand state
+    | extend Action= tostring(parse_json(state.['Action'][0])), Effect=tostring(parse_json(state.['Effect']))
+    | where Action has "*" and Effect == 'Allow'
+    | distinct AwsEventId;
+    AWSCloudTrail
+    | where EventName == "CreatePolicyVersion" and isempty(ErrorCode) and isempty(ErrorMessage)
+    | join kind=inner (check_actions) on AwsEventId
+    | extend UserIdentityUserName = iff(isnotempty(UserIdentityUserName), UserIdentityUserName, tostring(split(UserIdentityArn,'/')[-1]))
+    | project-away AwsEventId1
+entityMappings:
+  - entityType: Account
+    fieldMappings:
+      - identifier: FullName
+        columnName: UserIdentityUserName
+  - entityType: IP
+    fieldMappings:
+      - identifier: Address
+        columnName: SourceIpAddress
+version: 1.0.0

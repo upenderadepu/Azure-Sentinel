@@ -1,0 +1,29 @@
+id: 21bafecb-ae8f-4667-b7d6-144e047cb602
+name: Post Delivery Events by Admin
+description: |
+  This query visualises the daily amount of emails that had an admin post delivery action, summarizing the data by action type
+description-detailed: |
+  This query visualises the daily amount of emails that had an admin post delivery action, summarizing the data by action type
+  Query is also included as part of the Defender for Office 365 solution in Sentinel: https://techcommunity.microsoft.com/blog/microsoftdefenderforoffice365blog/part-2-build-custom-email-security-reports-and-dashboards-with-workbooks-in-micr/4411303
+requiredDataConnectors:
+- connectorId: MicrosoftThreatProtection
+  dataTypes:
+  - EmailPostDeliveryEvents
+tactics:
+  - InitialAccess
+relevantTechniques:
+  - T1566
+query: |
+  let gran = 1d;
+  let minTime = startofday(ago(30d));
+  let maxTime = startofday(now());
+  let agg = materialize(EmailPostDeliveryEvents
+      | where Timestamp >= minTime and Timestamp < maxTime
+      | where ActionTrigger has "AdminAction"
+      | summarize ["Soft Delete"] = countif(Action has 'Soft Delete'), ["Hard Delete"] = countif(Action has 'Hard Delete'), ["Moved to junk folder"] = countif(Action has 'Moved to junk folder'), ["Moved to inbox"] = countif(Action has 'Moved to inbox'), ["Quarantine release"] = countif(Action has 'Quarantine release') by Timestamp = bin(Timestamp, gran));
+  range Timestamp from minTime to maxTime - 1d step gran
+  | join kind=leftouter (agg) on Timestamp
+  | project Timestamp, ["Soft Delete"] = coalesce(["Soft Delete"], 0), ["Hard Delete"] = coalesce(["Hard Delete"], 0), ["Moved to junk folder"] = coalesce(["Moved to junk folder"], 0), ["Moved to inbox"] = coalesce(["Moved to inbox"], 0), ["Quarantine release"] = coalesce(["Quarantine release"], 0)
+  | sort by Timestamp asc
+  | render timechart
+version: 1.1.0

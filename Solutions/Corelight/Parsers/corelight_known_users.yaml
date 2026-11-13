@@ -1,0 +1,25 @@
+id: 5dc264b8-d40b-5b95-8a0c-8adb998d0bfa
+Function:
+  Title: corelight_known_users parser for Corelight
+  Version: '2.0.0'
+  LastUpdated: '2026-08-17'
+Category: Microsoft Sentinel Parser
+FunctionName: corelight_known_users
+FunctionAlias: corelight_known_users
+FunctionQuery: |+
+  let dummy_table = datatable(TimeGenerated: datetime) [];
+  let corelight_known_users = view () {
+      union isfuzzy=true Corelight_v3_known_users_CL, dummy_table
+        | extend
+            _path=path,
+            _system_name=system_name,
+            _write_ts=write_ts
+      | extend
+          EventVendor="Corelight",
+          EventProduct="CorelightSensor",
+          EventType="known_users",
+          ts=TimeGenerated
+  };
+  corelight_known_users
+
+...

@@ -1,0 +1,26 @@
+id: 295ac28c-919c-48b9-8a38-a0f792f2b92b
+name: Total Emails with User Overrides (Block)
+description: |
+  This query visualises the amount of emails subject to a user type policy with action of block, summarizing the data daily
+description-detailed: |
+  This query visualises the amount of emails subject to a user type policy with action of block, summarizing the data daily
+  Query is also included as part of the Defender for Office 365 solution in Sentinel: https://techcommunity.microsoft.com/blog/microsoftdefenderforoffice365blog/part-2-build-custom-email-security-reports-and-dashboards-with-workbooks-in-micr/4411303
+requiredDataConnectors:
+- connectorId: MicrosoftThreatProtection
+  dataTypes:
+  - EmailEvents
+tactics:
+  - InitialAccess
+relevantTechniques:
+  - T1566
+query: |
+  let TimeStart = startofday(ago(30d));
+  let TimeEnd = startofday(now());
+  EmailEvents
+  | where Timestamp >= TimeStart
+  | extend Key = strcat(NetworkMessageId, "-", RecipientEmailAddress)
+  | summarize arg_max(Timestamp, *) by Key
+  | where UserLevelPolicy != "" and UserLevelAction == "Block"
+  | make-series TotalUserOverrides = count() default = 0 on Timestamp from TimeStart to TimeEnd step 1d
+  | render timechart
+version: 1.1.0

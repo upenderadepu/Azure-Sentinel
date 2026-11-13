@@ -1,0 +1,32 @@
+id: 16cfa413-238f-4355-9f8a-4b97ce7572ac
+name: Spam Detections by Detection technology
+description: |
+  This query visualises total emails with Spam detections over time by various Spam Detection technologies/controls.
+description-detailed: |
+  This query visualises total emails with Spam detections over time summarizing the data daily by various Spam Detection technologies/controls in Microsoft Defender for Office 365.
+  Taken from the the Microsoft Defender for Office 365 Detections and Insights - Microsoft Sentinel workbook.
+  https://techcommunity.microsoft.com/blog/microsoftdefenderforoffice365blog/part-2-build-custom-email-security-reports-and-dashboards-with-workbooks-in-micr/4411303
+requiredDataConnectors:
+- connectorId: MicrosoftThreatProtection
+  dataTypes:
+  - EmailEvents
+tactics:
+  - InitialAccess
+relevantTechniques:
+  - T1566
+query: |
+  //This query visualises total emails with Spam detections over time summarizing the data daily by various Spam Detection technologies/controls in Microsoft Defender for Office 365.
+  //(v4) Single mv-expand over DetectionMethods.Spam replaces the previous 8-way union: less scan, and new spam techniques appear automatically.
+  let minTime = startofday(ago(30d));
+  let maxTime = startofday(now());
+  EmailEvents
+  | where Timestamp >= minTime
+  | where OrgLevelPolicy != "Phishing simulation" and OrgLevelPolicy != "SecOps Mailbox"
+  | where DetectionMethods has "Spam"
+  | extend Key = strcat(NetworkMessageId, '-', RecipientEmailAddress)
+  | summarize arg_max(Timestamp, *) by Key
+  | mv-expand Details = parse_json(DetectionMethods).Spam to typeof(string)
+  | where Timestamp < maxTime
+  | make-series Count = count() default = 0 on Timestamp from minTime to maxTime step 1d by Details
+  // | render timechart
+version: 1.1.0

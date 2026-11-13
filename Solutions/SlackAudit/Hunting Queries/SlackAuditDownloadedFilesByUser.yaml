@@ -1,0 +1,30 @@
+id: 7865b00c-26c8-46db-9422-bb9e4ee696ac
+name: SlackAudit - Downloaded files stats
+description: |-
+  This hunt highlights Slack users with the highest file-download volume over the last 24 hours to help identify unusual collection or staging activity.
+severity: Medium
+requiredDataConnectors:
+  - connectorId: SlackAuditAPI
+    dataTypes:
+      - SlackAudit_CL
+tactics:
+- InitialAccess
+- Collection
+relevantTechniques:
+- T1189
+- T1133
+- T1213
+- T1119
+query: |
+  SlackAudit
+  | where TimeGenerated > ago(24h)
+  | where Action =~ 'file_downloaded'
+  | summarize filelist = makeset(EntityFileName) by SrcUserName
+  | project filelist, fcount = array_length(filelist), SrcUserName
+  | top 10 by fcount
+  | extend AccountCustomEntity = SrcUserName
+entityMappings:
+  - entityType: Account
+    fieldMappings:
+      - identifier: FullName
+        columnName: AccountCustomEntity

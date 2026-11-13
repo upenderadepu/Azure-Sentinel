@@ -1,0 +1,42 @@
+{
+  "Name": "Google Cloud Platform Audit Logs",
+  "Author": "Microsoft - support@microsoft.com",
+  "Logo": "<img src=\"https://raw.githubusercontent.com/Azure/Azure-Sentinel/master/Solutions/Google%20Cloud%20Platform%20Audit%20Logs/logo/Google-Cloud-Branding.png\" width=\"75px\" height=\"75px\">",
+  "Description": "The Google Cloud Platform (GCP) audit logs, ingested from Microsoft Sentinel's connector, enables you to capture and track all activity that occurs in your GCP environment. These audit logs provide valuable insights for monitoring user activity, troubleshooting issues, and ensuring compliance with security regulations. They serve as a record of events that practitioners can utilize to monitor access and identify potential threats across GCP resources.",
+  "Data Connectors": [
+    "Data Connectors/GCPAuditLogs_ccp/data_connector_definition.json"
+  ],
+  "Analytic Rules": [
+    "Analytic Rules/GCPBulkVMSnapshotDeletion.yaml",
+    "Analytic Rules/GCPDNSSECDisabledForDNSZone.yaml",
+    "Analytic Rules/GCPDataAccessLoggingExemption.yaml",
+    "Analytic Rules/GCPOpenFirewallRuleCreated.yaml",
+    "Analytic Rules/GCPOrgPolicyDeletion.yaml",
+    "Analytic Rules/GCPStorageBucketMadePublic.yaml",
+    "Analytic Rules/GCPVpcFlowLogsDisabled.yaml"
+  ],
+  "Hunting Queries": [
+    "Hunting Queries/GCPDataAccessLoggingDisabled.yaml",
+    "Hunting Queries/GCPFirewallOperationsByPrincipal.yaml",
+    "Hunting Queries/GCPOrgPolicyModificationsByPrincipal.yaml",
+    "Hunting Queries/GCPVpnTunnelCreation.yaml",
+    "Hunting Queries/GCPVpnTunnelDeletion.yaml"
+  ],
+  "Workbooks": [
+    "Solutions/Google Cloud Platform Audit Logs/Workbooks/GCPAuditLogs.json"
+  ],
+  "BasePath": "C:\\GitHub\\Azure-Sentinel\\Solutions\\Google Cloud Platform Audit Logs",
+  "Metadata": "SolutionMetadata.json",
+  "TemplateSpec": true,
+  "XDR Workbooks": [],
+  "XDR Detections": [
+    "XDR Detections/GCPBulkVMSnapshotDeletion.yaml",
+    "XDR Detections/GCPDNSSECDisabledForDNSZone.yaml",
+    "XDR Detections/GCPDataAccessLoggingExemption.yaml",
+    "XDR Detections/GCPOpenFirewallRuleCreated.yaml",
+    "XDR Detections/GCPOrgPolicyDeletion.yaml",
+    "XDR Detections/GCPStorageBucketMadePublic.yaml",
+    "XDR Detections/GCPVpcFlowLogsDisabled.yaml"
+  ],
+  "Version": "3.2.3"
+}

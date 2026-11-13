@@ -1,6 +1,8 @@
 id: 66fb97d1-55c3-4268-ac22-b9742d0fdccc
 name: Rare domains seen in Cloud Logs
 description: |
+  'This script identifies rare domain accounts accessing cloud resources by examining logs. You can lower the domainLimit value to see domains with fewer access attempts. For example, set domainLimit = 2 to see domains with 2 or fewer access attempts.'
+description_detailed: |
   'This will identify rare domain accounts accessing or attempting to access cloud resources by examining the AuditLogs, OfficeActivity and SigninLogs
   Rare does not mean malicious, but it may be something you would be interested in investigating further
   Additionally, it is possible that there may be many domains if you have allowed access by 3rd party domain accounts.
@@ -28,10 +30,8 @@ query: |
   // Provide customLimit value with default above domainLimit value so it will not block unless changed
   let customLimit = 11;
   let domainLimit = 10;
-  let lookback = 14d;
   let domainLookback = union isfuzzy=true
   (AuditLogs
-  | where TimeGenerated >= ago(lookback)
   | extend UserPrincipalName = tolower(tostring(TargetResources.[0].userPrincipalName))
   // parse out AuditLog values for various locations where UPN could be
   | extend UserPrincipalName = iff(isnotempty(UserPrincipalName),
@@ -42,25 +42,23 @@ query: |
   | where UserPrincipalName has "@" or UserPrincipalName startswith "NT AUTHORITY"
   | extend RareDomain = toupper(tostring(split(UserPrincipalName, "@")[-1]))
   | where isnotempty(RareDomain) 
-  | summarize RareDomainCount = count() by Type, RareDomain
+  | summarize RareDomainCount = count() by Type, RareDomain,UserPrincipalName
   | where RareDomainCount <= domainLimit
   | extend AccountCustomEntity = UserPrincipalName
   // remove comment from below if you would like to have a lower limit for RareDomainCount specific to AuditLog
   //| where RareDomainCount <= customLimit
   ),
   (OfficeActivity
-  | where TimeGenerated >= ago(lookback)
   | extend UserPrincipalName = tolower(UserId)
   | where UserPrincipalName has "@" or UserPrincipalName startswith "NT AUTHORITY"
   | extend RareDomain = toupper(tostring(split(UserPrincipalName, "@")[-1]))
-  | summarize RareDomainCount = count() by Type, RareDomain
+  | summarize RareDomainCount = count() by Type, RareDomain, UserPrincipalName
   | where RareDomainCount <= domainLimit
   | extend AccountCustomEntity = UserPrincipalName
   // remove comment from below if you would like to have a lower limit for RareDomainCount specific to OfficeActivity
   //| where RareDomainCount <= customLimit
   ),
   (SigninLogs
-  | where TimeGenerated >= ago(lookback)
   | where UserPrincipalName has "@" or UserPrincipalName startswith "NT AUTHORITY"
   | extend RareDomain = toupper(tostring(split(UserPrincipalName, "@")[-1]))
   | summarize RareDomainCount = count() by Type, RareDomain
@@ -70,7 +68,6 @@ query: |
   );
   let AuditLogsRef = domainLookback | join (
      AuditLogs
-     | where TimeGenerated >= ago(lookback)
      | extend UserPrincipalName = tolower(tostring(TargetResources.[0].userPrincipalName))
      | extend UserPrincipalName = iff(isempty(UserPrincipalName), tostring(InitiatedBy.user.userPrincipalName), UserPrincipalName)
      | extend RareDomain = toupper(tostring(split(UserPrincipalName, "@")[-1]))
@@ -80,7 +77,6 @@ query: |
   ) on Type, RareDomain;
   let OfficeActivityRef = domainLookback | join (
       OfficeActivity
-      | where TimeGenerated >= ago(lookback)
       | extend UserPrincipalName = tolower(UserId)
       | where UserPrincipalName has "@" or UserPrincipalName startswith "NT AUTHORITY"
       | extend RareDomain = toupper(tostring(split(UserPrincipalName, "@")[-1]))
@@ -89,7 +85,6 @@ query: |
   ) on Type, RareDomain;
   let SigninLogsRef = domainLookback | join (
       SigninLogs
-      | where TimeGenerated >= ago(lookback)
       | extend UserPrincipalName = tolower(UserId)
       | where UserPrincipalName has "@" or UserPrincipalName startswith "NT AUTHORITY"
       | extend RareDomain = toupper(tostring(split(UserPrincipalName, "@")[-1]))
@@ -101,3 +96,13 @@ query: |
   Results | project TimeGenerated, Type, RareDomain, UserPrincipalName, OperationName, Category, Result, UPNRefCount 
   | order by TimeGenerated asc 
   | extend timestamp = TimeGenerated, AccountCustomEntity = UserPrincipalName
+version: 1.0.2
+metadata:
+    source:
+        kind: Community
+    author:
+        name: Shain
+    support:
+        tier: Community
+    categories:
+        domains: [ "Security - Other" ]

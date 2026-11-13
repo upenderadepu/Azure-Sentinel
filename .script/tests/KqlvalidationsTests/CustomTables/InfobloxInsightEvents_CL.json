@@ -1,0 +1,153 @@
+{
+    "Name": "InfobloxInsightEvents_CL",
+    "Properties": [
+        {
+            "Name": "TenantId",
+            "Type": "String"
+        },
+        {
+            "Name": "SourceSystem",
+            "Type": "String"
+        },
+        {
+            "Name": "MG",
+            "Type": "String"
+        },
+        {
+            "Name": "ManagementGroupName",
+            "Type": "String"
+        },
+        {
+            "Name": "TimeGenerated",
+            "Type": "DateTime"
+        },
+        {
+            "Name": "Computer",
+            "Type": "String"
+        },
+        {
+            "Name": "RawData",
+            "Type": "String"
+        },
+        {
+            "Name": "threat_level",
+            "Type": "String"
+        },
+        {
+            "Name": "threat_confidence",
+            "Type": "String"
+        },
+        {
+            "Name": "detected_at",
+            "Type": "String"
+        },
+        {
+            "Name": "query",
+            "Type": "String"
+        },
+        {
+            "Name": "tclass",
+            "Type": "String"
+        },
+        {
+            "Name": "actor_name",
+            "Type": "String"
+        },
+        {
+            "Name": "query_type",
+            "Type": "String"
+        },
+        {
+            "Name": "user",
+            "Type": "String"
+        },
+        {
+            "Name": "device_name",
+            "Type": "String"
+        },
+        {
+            "Name": "device_ip",
+            "Type": "String"
+        },
+        {
+            "Name": "tfamily",
+            "Type": "String"
+        },
+        {
+            "Name": "tproperty",
+            "Type": "String"
+        },
+        {
+            "Name": "policy",
+            "Type": "String"
+        },
+        {
+            "Name": "action",
+            "Type": "String"
+        },
+        {
+            "Name": "source",
+            "Type": "String"
+        },
+        {
+            "Name": "indicator",
+            "Type": "String"
+        },
+        {
+            "Name": "response",
+            "Type": "String"
+        },
+        {
+            "Name": "dns_view",
+            "Type": "String"
+        },
+        {
+            "Name": "feed",
+            "Type": "String"
+        },
+        {
+            "Name": "mac_address",
+            "Type": "String"
+        },
+        {
+            "Name": "os_version",
+            "Type": "String"
+        },
+        {
+            "Name": "dhcp_fingerprint",
+            "Type": "String"
+        },
+        {
+            "Name": "response_region",
+            "Type": "String"
+        },
+        {
+            "Name": "response_country",
+            "Type": "String"
+        },
+        {
+            "Name": "device_region",
+            "Type": "String"
+        },
+        {
+            "Name": "device_country",
+            "Type": "String"
+        },
+        {
+            "Name": "InfobloxInsightID",
+            "Type": "String"
+        },
+        {
+            "Name": "InfobloxInsightLogType",
+            "Type": "String"
+        },
+        {
+            "Name": "Type",
+            "Type": "String"
+        },
+        {
+            "Name": "_ResourceId",
+            "Type": "String"
+        }
+    ]
+}

@@ -1,0 +1,25 @@
+id: 9cb7c337-f176-4af6-b0e8-b6b7552d762d
+name: Flare infected device results
+description: |
+    'This query searches for infected device events on Darkweb or Telegram.'
+severity: Medium
+status: Available
+requiredDataConnectors:
+  - connectorId: Flare
+    dataTypes:
+      - FireworkV2_CL
+queryFrequency: 1h
+queryPeriod: 1h
+triggerOperator: gt
+triggerThreshold: 0
+tactics:
+  - CredentialAccess
+relevantTechniques:
+  - T1555
+query: |
+  FireworkV2_CL
+  | where notempty(uid) and RiskScore >= 3
+  | extend index_name = split(uid, "/")[0]
+  | where index_name in ("bot", "stealer_log")
+version: 3.0.0
+kind: Scheduled

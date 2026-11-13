@@ -1,0 +1,25 @@
+id: 924de8ef-7543-515c-bc17-53920acaece2
+Function:
+  Title: corelight_stepping parser for Corelight
+  Version: '2.0.0'
+  LastUpdated: '2026-08-17'
+Category: Microsoft Sentinel Parser
+FunctionName: corelight_stepping
+FunctionAlias: corelight_stepping
+FunctionQuery: |+
+  let dummy_table = datatable(TimeGenerated: datetime) [];
+  let corelight_stepping = view () {
+      union isfuzzy=true Corelight_v3_stepping_CL, dummy_table
+        | extend
+            _path=path,
+            _system_name=system_name,
+            _write_ts=write_ts
+      | extend
+          EventVendor="Corelight",
+          EventProduct="CorelightSensor",
+          EventType="stepping",
+          ts=TimeGenerated
+  };
+  corelight_stepping
+
+...

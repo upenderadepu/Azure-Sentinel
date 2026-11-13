@@ -1,0 +1,461 @@
+import datetime
+import logging
+import os
+import re
+import sys
+import time
+from collections import namedtuple
+
+import azure.functions as func
+import msal
+import requests
+from greynoise.api import APIConfig, GreyNoise
+from greynoise.exceptions import RateLimitError
+from requests.adapters import HTTPAdapter
+from requests_ratelimiter import LimiterSession
+from urllib3.util import Retry
+
+from .stixGen import GreyNoiseStixGenerator
+
+REQUIRED_ENVIRONMENT_VARIABLES = [
+    "GREYNOISE_KEY",
+    "GREYNOISE_LIMIT",
+    "CLIENT_ID",
+    "CLIENT_SECRET",
+    "TENANT_ID",
+    "WORKSPACE_ID",
+    ]
+
+# Wait between retries after GreyNoise returns HTTP 429. With the default 3 tries this stays
+# well inside the 2 hour functionTimeout in host.json.
+RATE_LIMIT_BACKOFF_SECONDS = 300
+
+# Attempts per batch when the upload API returns 429 or 503, and the wait used when the response
+# does not say how long to wait. The API allows 100 requests per minute per user.
+UPLOAD_MAX_ATTEMPTS = 5
+UPLOAD_DEFAULT_RETRY_SECONDS = 60
+
+
+def upload_retry_delay(response) -> int:
+    """Seconds to wait before retrying a throttled upload: the Retry-After header, else the
+    'Try again in N seconds' message in the body, else the default, plus a 5 second margin."""
+    retry_after = response.headers.get('Retry-After', '')
+    if retry_after.isdigit():
+        return int(retry_after) + 5
+    match = re.search(r'Try again in (\d+) seconds', response.text or '')
+    if match:
+        return int(match.group(1)) + 5
+    return UPLOAD_DEFAULT_RETRY_SECONDS + 5
+
+GreyNoiseSetup = namedtuple("GreyNoiseSetup", ["api_key", "query", "tries", "size"])
+MSALSetup = namedtuple("MSALSetup", ["tenant_id", "client_id", "client_secret", "workspace_id"])
+class GreyNoiseSentinelUpdater(object):
+    """Simple wrapper class to handle consuming IPs"""
+
+    def __init__(self, greynoise_setup: GreyNoiseSetup,
+                 msal_setup: MSALSetup):
+        super(GreyNoiseSentinelUpdater, self).__init__()
+
+        self.greynoise_query = greynoise_setup.query
+        self.greynoise_size = greynoise_setup.size
+        self.greynoise_tries = greynoise_setup.tries
+        self.msal_tenant_id = msal_setup.tenant_id
+        self.msal_client_id = msal_setup.client_id
+        self.msal_client_secret = msal_setup.client_secret
+        self.msal_workspace_id = msal_setup.workspace_id
+
+        # Setup RateLimiter and Retry Adapter
+        self.limiter_session = LimiterSession(
+            per_minute=90,
+            limit_statuses=[429, 503],
+            )
+        # 429 is deliberately not retried here: urllib3's 1-4 second backoff is too short for the
+        # upload API, and its retries bypass the rate limiter. upload_indicators_to_sentinel waits
+        # as long as the API asks instead. raise_on_status=False hands the final response back so
+        # raise_for_status() reports it.
+        retry_strategy = Retry(
+            total=3,
+            backoff_factor=1,
+            status_forcelist=[500, 502, 504],
+            allowed_methods={'POST'},
+            raise_on_status=False,
+            )
+        self.limiter_session.mount("https://", HTTPAdapter(max_retries=retry_strategy))
+
+        # Setup GreyNoise Session
+        self.session = GreyNoise(
+            APIConfig(
+                api_key=greynoise_setup.api_key,
+                integration_name="azuresentinel-consumer-v1.0",
+            )
+        )
+        self.gn_stix_generator = GreyNoiseStixGenerator()
+
+
+    def get_token(self):
+        """Gets an access token to access office service.
+        Args:
+            tenant_id (str): the tenant id
+            client_id (str): the client id
+            client_secret (str): the secret id for the client
+        Returns:
+            A token access key.
+        """
+        logging.info("Getting token for tenant: {0}".format(self.msal_tenant_id))
+        logging.info("Using client_id: {0}".format(self.msal_client_id))
+        logging.info("Using workspace_id: {0}".format(self.msal_workspace_id))
+        try:
+            context = msal.ConfidentialClientApplication(self.msal_client_id,
+                                                        authority='https://login.microsofto'
+                                                                'nline.com/' + self.msal_tenant_id,
+                                                        client_credential=self.msal_client_secret)
+            token, token_ttl = self.acquire_token(context)
+            # Set expiry of MSAL token to 55 minutes to avoid token expiry during upload
+            msal_token_expiry = datetime.datetime.now() + datetime.timedelta(seconds=token_ttl - 300)
+            return token, msal_token_expiry
+        except requests.exceptions.RequestException as e:
+            logging.info("Error getting token for tenant: {0}".format(self.msal_tenant_id))
+            raise e
+
+
+    def acquire_token(self, context):
+        """Gets an access token to access ms graph TI Upload service.
+        Args:
+            context: the authentication context
+        Returns:
+            A token access key.
+        """
+        scope = "https://management.azure.com/.default"
+
+        try:
+            result = context.acquire_token_silent([scope],
+                                                account=None)
+            if not result:
+                result = context.acquire_token_for_client(scopes=[
+                    scope])
+
+            if 'access_token' in result:
+                bearer_token = result['access_token']
+                token_expiry_seconds = result['expires_in']
+                return bearer_token, token_expiry_seconds
+            else:
+                error_code = result.get("error")
+                error_message = result.get("error_description")
+                logging.info("Error acquiring token for tenant with code: {0}".format(error_code))
+                logging.info(error_message)
+                raise ValueError(error_message)
+
+        except requests.exceptions.RequestException as e:
+            logging.info("Error acquiring token for tenant.")
+            raise e
+        
+    def upload_indicators_to_sentinel(self, token: str, indicators: list):
+        """Uploads a list of indicators to Azure Sentinel Threat Intelligence
+        Endpoint Docs: # https://learn.microsoft.com/en-us/azure/sentinel/upload-indicators-api#request-body
+            
+        API Limits are 100 indicators per request and 100 requests per minute.
+            Args:
+                token (str): the access token
+                indicators (list): the list of indicators to upload
+            Returns:
+                A response object."""
+        url = "https://api.ti.sentinel.azure.com/workspaces/{0}/threat-intelligence-stix-objects:upload".format(self.msal_workspace_id)
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer {0}'.format(token)
+        }
+        params = {
+            'api-version': '2024-02-01-preview'
+        }
+        payload = {
+            'sourcesystem': 'GreyNoise',
+            'stixobjects': indicators
+        }
+
+        # Retry only this batch on 429/503, so batches already uploaded from the same GreyNoise
+        # page are not sent again.
+        for attempt in range(1, UPLOAD_MAX_ATTEMPTS + 1):
+            response = self.limiter_session.request("POST", url,
+                                        headers=headers,
+                                        params=params,
+                                        json=payload,
+                                        timeout=30,
+                                        )
+            if response.status_code not in (429, 503):
+                break
+            if attempt == UPLOAD_MAX_ATTEMPTS:
+                logging.error("Upload API still returned HTTP %s after %s attempts, exiting." % (response.status_code, attempt))
+                logging.error(response.text)
+                sys.exit(1)
+            sleep_for = upload_retry_delay(response)
+            logging.warning("Upload API returned HTTP %s (attempt %s of %s), waiting %s seconds before retrying this batch..."
+                            % (response.status_code, attempt, UPLOAD_MAX_ATTEMPTS, sleep_for))
+            time.sleep(sleep_for)
+
+        try:
+            response.raise_for_status()
+        except requests.HTTPError as e:
+            if e.response.status_code in (401, 403):
+                logging.error("HTTP: " + str(e.response.status_code))
+                logging.error('Did you add the Azure Sentinel Contributor role to your service principal?')
+                logging.error('More info here: https://learn.microsoft.com/en-us/azure/sentinel/upload-indicators-api#acquire-an-access-token')
+                logging.error(e.response.text)
+            elif e.response.status_code:
+                logging.error("HTTP: " + str(e.response.status_code))
+                logging.error(e.response.text)
+            logging.error('Cannot upload indicators to Azure Sentinel, exiting.')
+            sys.exit(1)
+        
+        try:
+            # Check for submission errors
+            if response.json().get('errors') != []:
+                    logging.warning('Nonfatal error in submitting indicator. While a field failed, \n'  \
+                                    'the rest of the indicator succeeded and we can continue.')
+                    logging.warning('Error: ' + str(response.json().get('errors')))
+    
+            return response.json()
+        except requests.exceptions.JSONDecodeError:
+            return []
+    
+    def chunks(self, l: list, chunk_size: int):
+        """Yield successive n-sized chunks from list."""
+        for i in range(0, len(l), chunk_size):
+            yield l[i:i + chunk_size]
+
+
+    def consume_ips(self):
+        logging.info(
+            "Starting consumption of GreyNoise indicators with query %s"
+            % (self.greynoise_query)
+        )
+        total_addresses = 0             # counter for total IPs consumed
+        payload_size = None             # total IPs available from query
+        tries = int(self.greynoise_tries)
+        scroll = ""                     # scroll token for pagination
+        complete = False
+
+        # MS Graph TI Upload API limits are 100 indicators per request and 100 requests per minute.
+        # Get MSAL token
+        token, msal_expiry_time = self.get_token()
+        if token:
+            logging.info("MSAL token obtained")
+        
+        while not complete:
+            if datetime.datetime.now() > msal_expiry_time:
+                logging.info("MSAL token expiring soon, getting new token")
+                token, msal_expiry_time = self.get_token()
+                if token:
+                    logging.info("MSAL token obtained")
+            try:
+                if self.greynoise_size != 0 and self.greynoise_size<= 2000:
+                    payload = self.session.query(
+                        query=self.greynoise_query,
+                        size=self.greynoise_size,
+                        scroll=scroll,
+                        exclude_raw=True,
+                    )
+                else:
+                    payload = self.session.query(
+                        query=self.greynoise_query, 
+                        scroll=scroll,
+                        size=2000,
+                        exclude_raw=True,
+                    )
+
+                # this protects from bad / invalid queries
+                # and exits out before proceeding
+                if payload["request_metadata"]["count"] == 0:
+                    logging.info("GreyNoise Query return no results, exiting")
+                    sys.exit(1)
+
+                # Capture the total number of indicators available
+                elif payload["request_metadata"]["count"] and payload_size is None:
+                    payload_size = int(payload["request_metadata"]["count"])
+                    logging.info("Total Indicators found: %s results" % payload_size)
+
+                # Loop to generate STIX objects and upload to Sentinel
+                stix_objects = []
+                counter = 0
+                chunk_size = 100    # MS Graph TI Upload API limits are 100 indicators per request and 100 requests per minute.
+                for batch in self.chunks(payload["data"], chunk_size):
+                    for gn_object in batch:
+                        stix_object = self.gn_stix_generator.generate_indicator(gn_object)
+                        expected_chunk_size = len(batch)
+                        stix_objects.append(stix_object)
+                        counter += 1
+                        if counter == expected_chunk_size:
+                            # send batch to sentinel
+                            self.upload_indicators_to_sentinel(token, stix_objects)
+                            # reset counter and stix_objects
+                            counter = 0
+                            stix_objects = []
+                            # logging.info("Sent 100 GreyNoise indicators to Sentinel" )
+
+                # the scroll is for pagination but does not always exist because
+                # we have consumed all the IPs
+                scroll = payload["request_metadata"].get("scroll")
+                complete = payload["request_metadata"]["complete"]
+
+                addresses = len(payload["data"])
+                total_addresses += addresses
+
+                logging.info(
+                    "Sent %s GreyNoise indicators to Sentinel for a total of %s addresses"
+                    % (addresses, total_addresses)
+                )
+
+                # this is a hacky workaround to deal with an edge case on the API where if
+                # you limit the results on a query, the complete flag doesn't flip to
+                # true correctly
+                if (
+                    self.greynoise_size == 0
+                    # and self.greynoise_size < int(payload["count"])  # noqa: W503
+                    and total_addresses >=  payload_size # noqa: W503
+                ):
+                    break
+                elif (
+                    self.greynoise_size != 0
+                    and self.greynoise_size < int(payload["request_metadata"]["count"])  # noqa: W503
+                    and self.greynoise_size <= total_addresses # noqa: W503
+                ):
+                    break
+
+            except RateLimitError:
+                # The GreyNoise SDK raises RateLimitError with no message on HTTP 429, so name it
+                # here and wait long enough for the limit to reset instead of the 10 second retry.
+                if tries != 0:
+                    tries -= 1
+                    logging.error(
+                        "GreyNoise API rate limit exceeded (HTTP 429). Trying again in %s seconds using same scroll..."
+                        % RATE_LIMIT_BACKOFF_SECONDS
+                    )
+                    time.sleep(RATE_LIMIT_BACKOFF_SECONDS)
+                else:
+                    logging.error(
+                        "Exiting program. GreyNoise API rate limit exceeded (HTTP 429) and max tries met. "
+                        "Check the API key's plan and quota, and that no other connector shares the key. "
+                        "Last scroll: %s" % scroll
+                    )
+                    sys.exit(3)
+            except Exception as reqErr:
+                # repr() keeps the exception type visible when its message is empty
+                logging.exception("Fetching or uploading IPs failed: %r" % reqErr)
+                if tries != 0:
+                    tries -= 1
+                    logging.error("Trying again in 10 seconds using same scroll...")
+                    time.sleep(10)
+                else:
+                    logging.error("Exiting program. Max tries met. Last scroll: %s" % scroll)
+                    sys.exit(3)
+
+        logging.info(
+            "Ingest process completed.  Inserted %s Indicators into Microsoft Sentinel Threat Intelligence."
+            % total_addresses
+        )
+
+
+def checkEnvironmentVariables(env):
+    # the following checks will ensure required environment variables are set
+    # and any others will have some type of defaulting
+    unset_environment_variables = []
+
+    for env_var in REQUIRED_ENVIRONMENT_VARIABLES:
+        if not env.get(env_var, False):
+            unset_environment_variables.append(env_var)
+
+    if unset_environment_variables:
+        logging.error(
+            "The following required environment variables are unset: %s"
+            % str(unset_environment_variables)
+        )
+        sys.exit(2)
+
+def build_query_string(env):
+    classifications = env.get("GREYNOISE_CLASSIFICATIONS", "malicious")
+    logging.info("Building query string for %s" % classifications)
+
+    # a user can accidentally set the environment to an empty string
+    if len(classifications) == 0:
+        return '(classification:malicious)'
+    
+    classifications = classifications.split(",")
+    length_of_classifications = len(classifications)
+    
+    classification_string = "("
+    for item in classifications:
+        length_of_classifications -= 1
+        classification_string += "classification:" + item
+        if length_of_classifications > 0:
+            classification_string += " OR "
+    
+    classification_string += ")"
+    return classification_string
+
+
+def main(mytimer: func.TimerRequest) -> None:
+    utc_timestamp = datetime.datetime.utcnow().replace(
+        tzinfo=datetime.timezone.utc).isoformat()
+
+    if mytimer.past_due:
+        logging.info('The timer is past due!')
+
+    env = os.environ.copy()
+
+    checkEnvironmentVariables(env)
+
+    # SET VARS
+    query_time = "1"
+    size = int(env.get("GREYNOISE_LIMIT", 0))
+
+    # our classifications are formatted for greynoise
+    classifications = build_query_string(env)
+
+
+     # obtain our query for greynoise
+    try:
+        query_time = int(query_time)
+        if query_time > 90 or query_time < 1:
+            logging.error("Time input is not a valid integer between 1 and 90")
+            sys.exit(1)
+        else:
+            if query_time == 1:
+                logging.info("Using default query time of 1 day")
+            else:
+                logging.info("Using custom query time of %s day(s)" % str(query_time))
+            query_time = "last_seen:%sd" % query_time
+    except ValueError:
+        logging.error("Input for time is not valid")
+        sys.exit(1)
+
+    # build our query
+    query = classifications + " " + query_time  
+
+    if size != "":
+        logging.info("Querying GreyNoise API")
+        try:
+            size = int(size)
+            if size == 0:
+                logging.info("No size limit provided, returning all indicators available")
+            elif size <= 1:
+                logging.info("Limiting results to %s" % str(size))
+
+        except ValueError:
+            logging.error("Input for size is not valid")
+            sys.exit(1)
+    else:
+        size = 0
+        logging.info("No size limited provided, returning all indicators available")
+
+     # set up everything required to pass into the updater
+    greynoise_setup = GreyNoiseSetup(
+        env.get("GREYNOISE_KEY"), query, env.get("GREYNOISE_MAX_TRIES", 3), size
+    )
+    msal_setup = MSALSetup(
+        env.get("TENANT_ID"), env.get("CLIENT_ID"), env.get("CLIENT_SECRET"), env.get("WORKSPACE_ID")
+    )
+
+    g = GreyNoiseSentinelUpdater(greynoise_setup, msal_setup)
+    g.consume_ips()
+
+    logging.info('Python timer trigger function ran at %s', utc_timestamp)
+    

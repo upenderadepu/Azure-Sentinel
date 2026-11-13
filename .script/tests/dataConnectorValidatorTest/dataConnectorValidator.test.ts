@@ -27,13 +27,19 @@ describe("dataConnectorValidator", () => {
     await checkValid(".script/tests/dataConnectorValidatorTest/testFiles/missingIdAndConnectivityCriteria.json");
   });
 
+    // Skipping json files if exists in Template folder.
+    it("should skip .json file if exist under Templates folder", async () => {
+      await checkValid(".script/tests/dataConnectorValidatorTest/testFiles/Templates/Connector_REST_API_template.json");
+    });
+
   it("should throw an exception when dataConnectorSchema.json is missing a required property", async () => {
     await checkInvalid(".script/tests/dataConnectorValidatorTest/testFiles/missingPublisherProperty.json", "SchemaError");
   });
 
-  it("should throw an exception when Syslog Data connector is missing a additional requirement banner property", async () => {
-    await checkInvalid(".script/tests/dataConnectorValidatorTest/testFiles/missingAdditionalRequirementBanner.json", "SchemaError");
-  });
+  // Skipping as additional banner is no more mandatory.
+  // it("should throw an exception when Syslog Data connector is missing a additional requirement banner property", async () => {
+  //   await checkInvalid(".script/tests/dataConnectorValidatorTest/testFiles/missingAdditionalRequirementBanner.json", "SchemaError");
+  // });
 
   it("should throw an exception when DataConnector FileName is having space in file name", async () => {
     await checkInvalid(".script/tests/dataConnectorValidatorTest/testFiles/spaceIn DataConnector FileName.json", "DataConnectorValidationError");
@@ -56,7 +62,7 @@ describe("dataConnectorValidator", () => {
   });
 
   it("should pass when Syslog data connector have valid set of permissions", async () => {
-    await checkValid(".script/tests/dataConnectorValidatorTest/testFiles/validSyslogConnectorPermissions.json");
+    await checkValid(".script/tests/dataConnectorValidatorTest/testFiles/validSyslogConnectorPermissions.json") || await checkValid(".script/tests/dataConnectorValidatorTest/testFiles/validSyslogConnectorDataSourcesPermissions.json");
   });
 
   it("should throw an exception when Syslog data connector have Invalid set of permissions", async () => {
@@ -69,6 +75,14 @@ describe("dataConnectorValidator", () => {
 
   it("should throw an exception when Azure Function data connector have Invalid set of permissions", async () => {
     await checkInvalid(".script/tests/dataConnectorValidatorTest/testFiles/Agari/invalidAzureFunctionConnectorPermissions.json","DataConnectorValidationError");
+  });
+
+  it("should pass when validSyslogDataConnector.json is valid", async () => {
+    await checkValid(".script/tests/dataConnectorValidatorTest/testFiles/validAzureDiagnosticsDataConnector.json");
+  });
+
+  it("should throw an exception when Syslog data connector have Invalid set of permissions", async () => {
+    await checkInvalid(".script/tests/dataConnectorValidatorTest/testFiles/invalidAzureDiagnosticsDataConnector.json","DataConnectorValidationError");
   });
 
   async function checkValid(filePath: string): Promise<Chai.PromisedAssertion> {

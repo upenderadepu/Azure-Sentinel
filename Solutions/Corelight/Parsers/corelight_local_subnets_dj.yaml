@@ -1,0 +1,26 @@
+id: f2aa9ef8-f6f0-5249-9474-0a3c6455ca81
+Function:
+  Title: corelight_local_subnets_dj parser for Corelight
+  Version: '2.0.0'
+  LastUpdated: '2026-08-17'
+Category: Microsoft Sentinel Parser
+FunctionName: corelight_local_subnets_dj
+FunctionAlias: corelight_local_subnets_dj
+FunctionQuery: |+
+  let dummy_table = datatable(TimeGenerated: datetime) [];
+  let corelight_local_subnets_dj = view () {
+      union isfuzzy=true Corelight_v3_local_subnets_dj_CL, dummy_table
+        | extend
+            _path=path,
+            _system_name=system_name,
+            _write_ts=write_ts,
+            v=subnet_v
+      | extend
+          EventVendor="Corelight",
+          EventProduct="CorelightSensor",
+          EventType="local_subnets_dj",
+          ts=TimeGenerated
+  };
+  corelight_local_subnets_dj
+
+...

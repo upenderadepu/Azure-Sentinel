@@ -1,0 +1,25 @@
+id: 5a92ec66-ac26-535f-af45-8883d8de0edd
+Function:
+  Title: corelight_http2 parser for Corelight
+  Version: '2.0.0'
+  LastUpdated: '2026-08-17'
+Category: Microsoft Sentinel Parser
+FunctionName: corelight_http2
+FunctionAlias: corelight_http2
+FunctionQuery: |+
+  let dummy_table = datatable(TimeGenerated: datetime) [];
+  let corelight_http2 = view () {
+      union isfuzzy=true Corelight_v3_http2_CL, dummy_table
+        | extend
+            _path=path,
+            _system_name=system_name,
+            _write_ts=write_ts
+      | extend
+          EventVendor="Corelight",
+          EventProduct="CorelightSensor",
+          EventType="http2",
+          ts=TimeGenerated
+  };
+  corelight_http2
+
+...

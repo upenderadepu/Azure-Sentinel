@@ -1,0 +1,25 @@
+id: 8d9f0029-33f4-54c4-8660-d1cc88c1fbfd
+Function:
+  Title: corelight_known_domains parser for Corelight
+  Version: '2.0.0'
+  LastUpdated: '2026-08-17'
+Category: Microsoft Sentinel Parser
+FunctionName: corelight_known_domains
+FunctionAlias: corelight_known_domains
+FunctionQuery: |+
+  let dummy_table = datatable(TimeGenerated: datetime) [];
+  let corelight_known_domains = view () {
+      union isfuzzy=true Corelight_v3_known_domains_CL, dummy_table
+        | extend
+            _path=path,
+            _system_name=system_name,
+            _write_ts=write_ts
+      | extend
+          EventVendor="Corelight",
+          EventProduct="CorelightSensor",
+          EventType="known_domains",
+          ts=TimeGenerated
+  };
+  corelight_known_domains
+
+...

@@ -1,0 +1,25 @@
+id: f04a84a8-6839-5a76-a2a5-b90faa13ff56
+Function:
+  Title: corelight_radius parser for Corelight
+  Version: '2.0.0'
+  LastUpdated: '2026-08-17'
+Category: Microsoft Sentinel Parser
+FunctionName: corelight_radius
+FunctionAlias: corelight_radius
+FunctionQuery: |+
+  let dummy_table = datatable(TimeGenerated: datetime) [];
+  let corelight_radius = view () {
+      union isfuzzy=true Corelight_v3_radius_CL, dummy_table
+        | extend
+            _path=path,
+            _system_name=system_name,
+            _write_ts=write_ts
+      | extend
+          EventVendor="Corelight",
+          EventProduct="CorelightSensor",
+          EventType="radius",
+          ts=TimeGenerated
+  };
+  corelight_radius
+
+...

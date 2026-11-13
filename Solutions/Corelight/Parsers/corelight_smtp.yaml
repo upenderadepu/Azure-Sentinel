@@ -1,0 +1,96 @@
+id: 133ef0a8-1236-4d7d-af60-c34cdf2d6aed
+Function:
+  Title: Corelight Smtp Events
+  Version: '2.0.0'
+  LastUpdated: '2026-08-17'
+Category: Microsoft Sentinel Parser
+FunctionName: corelight_smtp
+FunctionAlias: corelight_smtp
+FunctionQuery: |
+  let dummy_table = datatable(TimeGenerated: datetime, uid: string) [];
+    let corelight_smtp = view () {
+        union isfuzzy=true Corelight_v3_smtp_CL, dummy_table
+        | summarize arg_max(TimeGenerated, *) by uid
+        | join kind=leftouter 
+        ( corelight_conn
+        | project uid, local_orig, local_resp
+        ) on $left.uid == $right.uid
+        | project-away uid1
+        | extend
+            path_list = path,
+            path = "",
+            date_ = log_date,
+            to_ = email_to
+        | extend
+            EventVendor = "Corelight",
+            EventProduct = "CorelightSensor",
+            EventType = "smtp",
+            ts = TimeGenerated,
+            url_domain = domains,
+            recipient = rcptto,
+            url = urls,
+            src = id_orig_h,
+            src_ip = id_orig_h,
+            src_port = id_orig_p,
+            dest = id_resp_h,
+            dest_ip = id_resp_h,
+            dest_port = id_resp_p,
+            sensor_name = coalesce(system_name, "unknown")
+        | extend
+            is_broadcast =iff(src in("0.0.0.0", "255.255.255.255") or dest in("255.255.255.255", "0.0.0.0"),"true","false"),
+            is_dest_internal_ip = iff(local_resp == true, "true", "false"),
+            is_src_internal_ip = iff(local_orig == true, "true", "false"),
+            direction=case(local_orig==true and local_resp==true, "internal", local_orig==true and local_resp==false, "outbound", local_orig==false and local_resp==false, "external", local_orig==false and local_resp==true, "inbound", "unknown")
+        | project
+            TimeGenerated,
+            path,
+            system_name,
+            write_ts,
+            uid,
+            id_orig_h,
+            id_orig_p,
+            id_resp_h,
+            id_resp_p,
+            trans_depth,
+            helo,
+            mailfrom,
+            rcptto,
+            date_,        
+            from,
+            to_,
+            cc,
+            reply_to,
+            msg_id,
+            in_reply_to,
+            subject,
+            x_originating_ip,
+            first_received,
+            second_received,
+            last_reply,
+            path_list,
+            user_agent,
+            tls,
+            fuids,
+            is_webmail,
+            urls,
+            domains,
+            EventVendor,
+            EventProduct,
+            EventType,
+            ts,
+            url_domain,
+            recipient,
+            url,
+            src,
+            src_ip,
+            src_port,
+            dest,
+            dest_ip,
+            dest_port,
+            sensor_name,
+            is_broadcast,
+            is_dest_internal_ip,
+            is_src_internal_ip,
+            direction
+    };
+    corelight_smtp

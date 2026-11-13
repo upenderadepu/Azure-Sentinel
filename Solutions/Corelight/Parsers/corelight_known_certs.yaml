@@ -1,0 +1,25 @@
+id: b7d78147-6352-5818-9e3c-7ab565f4c7b1
+Function:
+  Title: corelight_known_certs parser for Corelight
+  Version: '2.0.0'
+  LastUpdated: '2026-08-17'
+Category: Microsoft Sentinel Parser
+FunctionName: corelight_known_certs
+FunctionAlias: corelight_known_certs
+FunctionQuery: |+
+  let dummy_table = datatable(TimeGenerated: datetime) [];
+  let corelight_known_certs = view () {
+      union isfuzzy=true Corelight_v3_known_certs_CL, dummy_table
+        | extend
+            _path=path,
+            _system_name=system_name,
+            _write_ts=write_ts
+      | extend
+          EventVendor="Corelight",
+          EventProduct="CorelightSensor",
+          EventType="known_certs",
+          ts=TimeGenerated
+  };
+  corelight_known_certs
+
+...

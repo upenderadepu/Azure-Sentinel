@@ -1,0 +1,36 @@
+id: 04528635-a5f1-438b-ab74-21ca7bc3aa32
+name: SlackAudit - Empty User Agent
+description: |
+  'This query shows connections to the Slack Workspace with empty User Agent.'
+severity: Low
+status: Available
+requiredDataConnectors:
+  - connectorId: SlackAuditAPI
+    dataTypes:
+      - SlackAudit_CL
+queryFrequency: 1d
+queryPeriod: 1d
+triggerOperator: gt
+triggerThreshold: 0
+tactics:
+  - InitialAccess
+relevantTechniques:
+  - T1133
+query: |
+  SlackAudit
+  | where isempty(UserAgentOriginal)
+  | extend AccountCustomEntity = SrcUserName
+  | project TimeGenerated, AccountCustomEntity, SrcUserName, UserAgentOriginal
+entityMappings:
+- entityType: Account
+  fieldMappings:
+  - identifier: FullName
+    columnName: AccountCustomEntity
+alertDetailsOverride:
+  alertDisplayNameFormat: Slack audit empty user agent for {{SrcUserName}}
+  alertDescriptionFormat: Slack activity from {{SrcUserName}} at {{TimeGenerated}}.
+customDetails:
+  SlackUser: SrcUserName
+  UserAgent: UserAgentOriginal
+version: 1.0.1
+kind: Scheduled

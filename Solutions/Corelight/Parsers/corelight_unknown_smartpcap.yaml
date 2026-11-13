@@ -1,0 +1,25 @@
+id: b00a9394-2c4e-50e7-b0bb-29ee3a90af58
+Function:
+  Title: corelight_unknown_smartpcap parser for Corelight
+  Version: '2.0.0'
+  LastUpdated: '2026-08-17'
+Category: Microsoft Sentinel Parser
+FunctionName: corelight_unknown_smartpcap
+FunctionAlias: corelight_unknown_smartpcap
+FunctionQuery: |+
+  let dummy_table = datatable(TimeGenerated: datetime) [];
+  let corelight_unknown_smartpcap = view () {
+      union isfuzzy=true Corelight_v3_unknown_smartpcap_CL, dummy_table
+        | extend
+            _path=path,
+            _system_name=system_name,
+            _write_ts=write_ts
+      | extend
+          EventVendor="Corelight",
+          EventProduct="CorelightSensor",
+          EventType="unknown-smartpcap",
+          ts=TimeGenerated
+  };
+  corelight_unknown_smartpcap
+
+...

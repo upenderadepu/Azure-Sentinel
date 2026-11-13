@@ -1,0 +1,19 @@
+| **Version** | **Date Modified (DD-MM-YYYY)** | **Change History**                                                    |
+|-------------|--------------------------------|-----------------------------------------------------------------------|
+| 3.2.4       | 09-11-2026                     | Consolidated conditional `_Im_NetworkSession` union branches in **Analytic Rules** (`AnomalyFoundInNetworkSessionTraffic`, `DetectPortMisuseByAnomalyBasedDetection`) and **Hunting Query** (`DetectPortMisuseByAnomalyHunting`) into a single `_Im_NetworkSession` lookup filtered by `directLookback` to resolve Kusto `CRT0013` semantic pass visitor limit errors. |
+| 3.2.3       | 09-11-2026                     | Updated **Parser** `NetworkSessionEssentialsCustomParser` to include a fallback empty schema when optional custom summary tables are not present in the workspace. |
+| 3.2.2       | 25-10-2026                     | Added 6 Microsoft Defender XDR custom detections for ASIM Network Session analytics rules and packaged V3.1 solution. |
+| 3.0.13      | 16-09-2026                     | Added  NetworkSessionEssentialsCustomParser to parse and normalize the tables used in dependent Security Content. Updated Workbooks and Analytic rules to use parser. |
+| 3.0.12      | 02-09-2026                     | Added **Summarize Data for Network Session Essentials using log ingestion API** Playbook |
+| 3.0.11      | 24-03-2026                     | Bump solution version and Updated links to remove review.learn.                                 |
+| 3.0.10      | 14-02-2026                     | Updated links to remove review.learn.                                 |
+| 3.0.9       | 06-02-2026                     | Updated the relevant techniques in the **hunting queries**.	       |
+| 3.0.8       | 23-09-2025                     | Removed duplicate and redundant query blocks that previously handled different eps ranges, reducing code complexity and improving maintainability.
+| 3.0.7       | 4-07-2025                      | Summary rules added and updated requiredDataConnectors.			       |
+| 3.0.6       | 15-04-2025                     | Updated **Analytic Rule** NetworkPortSweepFromExternalNetwork.			       |
+| 3.0.5       | 12-12-2024                     | Added IllumioSaaS solution in a domain solution list			       |
+| 3.0.4       | 03-06-2024                     | Added missing AMA **Data Connector** reference in **Analytical rule** and **Hunting Query**.             |
+| 3.0.3       | 12-03-2024                     | Added 3 new **Hunting Queries** and 2 new **Analytic Rules**.          |
+| 3.0.2       | 07-02-2024                     | Updated **Analytic Rule** (DetectPortMisuseByAnomalyBasedDetection). <br/> Updated  Solution description. |
+| 3.0.1       | 02-01-2024                     | Tagged for dependent solutions for deployment.                         |
+| 3.0.0       | 24-07-2023                     | Updated ApiVersion for **Watchlist**.                                  |
